@@ -1,0 +1,92 @@
+import { lazy, Suspense, type ReactNode } from 'react';
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { Spin } from 'antd';
+import { MainLayout } from '@/components/layout/MainLayout';
+import { LabLayout } from '@/components/layout/LabLayout';
+import { useAuthStore } from '@/stores/authStore';
+import { Logo } from '@/components/common/Logo';
+import { AppTour } from '@/components/tour/AppTour';
+import { TourLauncher } from '@/components/tour/TourLauncher';
+
+const AccessPage = lazy(() => import('@/features/auth/AccessPage'));
+const WorkspacePage = lazy(() => import('@/features/workspace/WorkspacePage'));
+const OrchestrationPage = lazy(() => import('@/features/orchestration/OrchestrationPage'));
+const InstancesPage = lazy(() => import('@/features/instances/InstancesPage'));
+const PoliciesPage = lazy(() => import('@/features/policies/PoliciesPage'));
+const ConsolePage = lazy(() => import('@/features/console/ConsolePage'));
+const ExperimentPage = lazy(() => import('@/features/experiments/ExperimentPage'));
+const ReportsPage = lazy(() => import('@/features/reports/ReportsPage'));
+const ReportDetailPage = lazy(() => import('@/features/reports/ReportDetailPage'));
+const AdminPage = lazy(() => import('@/features/admin/AdminPage'));
+
+function PageLoader() {
+  return (
+    <div style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
+      <Logo size={44} />
+      <Spin />
+    </div>
+  );
+}
+
+function RequireAuth({ children }: { children: ReactNode }) {
+  const status = useAuthStore((s) => s.status);
+  const location = useLocation();
+  if (status !== 'authenticated') {
+    return <Navigate to="/access" replace state={{ from: location.pathname }} />;
+  }
+  return <>{children}</>;
+}
+
+function RequireAdmin({ children }: { children: ReactNode }) {
+  const role = useAuthStore((s) => s.role);
+  if (role !== 'admin') return <Navigate to="/workspace" replace />;
+  return <>{children}</>;
+}
+
+export function App() {
+  return (
+    <>
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+        <Route path="/access" element={<AccessPage />} />
+        <Route
+          element={
+            <RequireAuth>
+              <MainLayout />
+            </RequireAuth>
+          }
+        >
+          <Route path="/workspace" element={<WorkspacePage />} />
+          <Route path="/orchestration" element={<OrchestrationPage />} />
+          <Route path="/instances" element={<InstancesPage />} />
+          <Route path="/policies/:instanceId" element={<PoliciesPage />} />
+          <Route path="/reports" element={<ReportsPage />} />
+          <Route path="/reports/:reportId" element={<ReportDetailPage />} />
+          <Route
+            path="/admin"
+            element={
+              <RequireAdmin>
+                <AdminPage />
+              </RequireAdmin>
+            }
+          />
+        </Route>
+        <Route
+          element={
+            <RequireAuth>
+              <LabLayout />
+            </RequireAuth>
+          }
+        >
+          <Route path="/console/:sessionId" element={<ConsolePage />} />
+          <Route path="/experiments/:pairId" element={<ExperimentPage />} />
+        </Route>
+        <Route path="/" element={<Navigate to="/workspace" replace />} />
+        <Route path="*" element={<Navigate to="/workspace" replace />} />
+      </Routes>
+      </Suspense>
+      <AppTour />
+      <TourLauncher />
+    </>
+  );
+}

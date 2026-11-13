@@ -1,0 +1,60 @@
+/* Agent Security Lab — 深色攻防实验舱（深海蓝灰，非纯黑） */
+:root[data-theme='lab'] {
+  --fg-brand-primary: #6bc7b3;
+  --fg-brand-secondary: #4fb0a5;
+  --fg-brand-light: #1d3a3a;
+  --fg-brand-deep: #0d1a20;
+
+  --fg-bg-page: #111c23;
+  --fg-bg-card: #20333c;
+  --fg-bg-subtle: #192831;
+  --fg-text-1: #e8f0ee;
+  --fg-text-2: #91a5a1;
+  --fg-text-3: #6b7e7a;
+  --fg-border: #30434a;
+
+  --fg-allow: #4fd1a8;
+  --fg-observe: #e8b45a;
+  --fg-block: #f0787c;
+  --fg-info: #7faed9;
+  --fg-disabled: #5d6f6b;
+  --fg-allow-text: #4fd1a8;
+  --fg-observe-text: #e8b45a;
+  --fg-block-text: #f0787c;
+  --fg-info-text: #7faed9;
+
+  --fg-allow-bg: rgba(79, 209, 168, 0.12);
+  --fg-observe-bg: rgba(232, 180, 90, 0.12);
+  --fg-block-bg: rgba(240, 120, 124, 0.12);
+  --fg-info-bg: rgba(127, 174, 217, 0.12);
+
+  --fg-gradient-brand: linear-gradient(135deg, #6bc7b3 0%, #4fb0a5 100%);
+  --fg-gradient-subtle: linear-gradient(180deg, #192831 0%, #111c23 100%);
+  --fg-gradient-lab: linear-gradient(180deg, #111c23 0%, #16242b 100%);
+
+  --fg-radius-sm: 8px;
+  --fg-radius-md: 12px;
+  --fg-radius-lg: 16px;
+  --fg-shadow-1: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --fg-shadow-2: 0 4px 16px rgba(0, 0, 0, 0.36);
+  --fg-shadow-3: 0 10px 32px rgba(0, 0, 0, 0.44);
+
+  --fg-chart-1: #6bc7b3;
+  --fg-chart-2: #4fb0a5;
+  --fg-chart-3: #7faed9;
+  --fg-chart-4: #e8b45a;
+  --fg-chart-5: #f0787c;
+  --fg-chart-6: #a99be0;
+  --fg-chart-7: #5fd0c8;
+  --fg-chart-8: #91a5a1;
+
+  --fg-scrollbar-track: #16242b;
+  --fg-scrollbar-thumb: #30434a;
+  --fg-scrollbar-thumb-hover: #3f5760;
+
+  --fg-sidebar-bg: #16242b;
+  --fg-topbar-bg: rgba(17, 28, 35, 0.86);
+
+  --fg-lab-accent: #6bc7b3;
+  --fg-lab-glow: rgba(107, 199, 179, 0.22);
+}

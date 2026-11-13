@@ -1,0 +1,65 @@
+/* Agent Security Lab — 浅色科研工作台 */
+:root,
+:root[data-theme='light'] {
+  /* 品牌：深海松绿—青瓷绿 */
+  --fg-brand-primary: #176b63;
+  --fg-brand-secondary: #2d9184;
+  --fg-brand-light: #e4f2ef;
+  --fg-brand-deep: #123f3c;
+
+  /* 基础 */
+  --fg-bg-page: #f4f7f6;
+  --fg-bg-card: #ffffff;
+  --fg-bg-subtle: #edf2f1;
+  --fg-text-1: #20312f;
+  --fg-text-2: #71817d;
+  --fg-text-3: #9aa7a3;
+  --fg-border: #e2eae7;
+
+  /* 安全状态色（跨空间共享语义） */
+  --fg-allow: #2b9477;
+  --fg-observe: #d69a43;
+  --fg-block: #d85f63;
+  --fg-info: #5689b8;
+  --fg-disabled: #9aa7a3;
+  --fg-allow-text: #1f7a5f;
+  --fg-observe-text: #a9781f;
+  --fg-block-text: #c24a4f;
+  --fg-info-text: #3f6f9c;
+
+  /* 状态浅底 */
+  --fg-allow-bg: #e6f4ef;
+  --fg-observe-bg: #faf0dd;
+  --fg-block-bg: #fbe9ea;
+  --fg-info-bg: #e8f0f8;
+
+  /* 渐变 */
+  --fg-gradient-brand: linear-gradient(135deg, #176b63 0%, #2d9184 100%);
+  --fg-gradient-subtle: linear-gradient(180deg, #e4f2ef 0%, #f4f7f6 100%);
+  --fg-gradient-lab: linear-gradient(180deg, #111c23 0%, #16242b 100%);
+
+  /* 圆角与阴影 */
+  --fg-radius-sm: 8px;
+  --fg-radius-md: 12px;
+  --fg-radius-lg: 16px;
+  --fg-shadow-1: 0 1px 2px rgba(18, 31, 29, 0.04);
+  --fg-shadow-2: 0 4px 12px rgba(18, 31, 29, 0.06);
+  --fg-shadow-3: 0 8px 24px rgba(18, 31, 29, 0.08);
+
+  /* 图表多色板（6–8 色，亮度/图案可区分） */
+  --fg-chart-1: #176b63;
+  --fg-chart-2: #2d9184;
+  --fg-chart-3: #5689b8;
+  --fg-chart-4: #d69a43;
+  --fg-chart-5: #d85f63;
+  --fg-chart-6: #7c6bb8;
+  --fg-chart-7: #4fb0a5;
+  --fg-chart-8: #9aa7a3;
+
+  --fg-scrollbar-track: #edf2f1;
+  --fg-scrollbar-thumb: #c4d2ce;
+  --fg-scrollbar-thumb-hover: #a7bab5;
+
+  --fg-sidebar-bg: #ffffff;
+  --fg-topbar-bg: rgba(255, 255, 255, 0.86);
+}
