@@ -1,8 +1,9 @@
 import { Switch, Tooltip, Progress } from 'antd';
-import { AlertCircle, ShieldCheck, ShieldOff } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import { ModeBadge } from '@/components/common/ModeBadge';
 import { SimBadge } from '@/components/common/SimBadge';
 import { RiskRing } from '@/components/common/RiskRing';
+import { GuardIcon } from '@/components/icons/SecurityIcons';
 import { useSessionStore } from '@/stores/sessionStore';
 import { useQuotaStore } from '@/stores/quotaStore';
 import { PRESET_META } from '@/utils/constants';
@@ -47,23 +48,18 @@ export function TopStatusBar({ preset = 'standard', onToggleGuard, guardDisabled
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
-        <div
+        <span
           style={{
-            width: 34,
-            height: 34,
-            borderRadius: 9,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: guardOn ? 'var(--fg-allow-bg)' : 'var(--fg-block-bg)',
+            display: 'inline-flex',
             color: guardOn ? 'var(--fg-allow-text)' : 'var(--fg-block-text)',
             flexShrink: 0,
           }}
+          title={guardOn ? '旁路监护运行中' : '旁路监护已关闭'}
         >
-          {guardOn ? <ShieldCheck size={18} strokeWidth={1.7} /> : <ShieldOff size={18} strokeWidth={1.7} />}
-        </div>
+          <GuardIcon size={20} strokeWidth={1.5} />
+        </span>
         <div style={{ minWidth: 0, lineHeight: 1.25 }}>
-          <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--fg-text-1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 260 }}>
+          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--fg-text-1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 260 }}>
             {session?.instance_name || '攻防控制台'}
           </div>
           <div className="mono" style={{ fontSize: 10.5, color: 'var(--fg-text-3)' }}>
@@ -89,15 +85,12 @@ export function TopStatusBar({ preset = 'standard', onToggleGuard, guardDisabled
         <span
           className="mono"
           style={{
-            fontSize: 10.5,
-            fontWeight: 700,
-            letterSpacing: '0.04em',
+            fontSize: 11,
             padding: '3px 8px',
-            borderRadius: 6,
-            color: lab ? '#6bc7b3' : '#176b63',
-            background: lab ? 'rgba(107,199,179,0.12)' : '#e4f2ef',
-            border: `1px solid ${lab ? 'rgba(107,199,179,0.3)' : '#cfe6e0'}`,
-            textTransform: 'uppercase',
+            borderRadius: 4,
+            color: 'var(--fg-text-2)',
+            border: '1px solid var(--fg-border)',
+            whiteSpace: 'nowrap',
           }}
           title={PRESET_META[preset]?.desc}
         >
@@ -118,7 +111,7 @@ export function TopStatusBar({ preset = 'standard', onToggleGuard, guardDisabled
               size="small"
               showInfo={false}
               strokeColor={globalPct > 85 ? 'var(--fg-block)' : globalPct > 60 ? 'var(--fg-observe)' : 'var(--fg-brand-primary)'}
-              trailColor={lab ? '#30434a' : '#e2eae7'}
+              trailColor={lab ? '#2b323c' : '#e2e5e8'}
             />
           </div>
         </Tooltip>

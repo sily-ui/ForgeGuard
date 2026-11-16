@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Body, Request
 
-from ...core.errors import ApiError
+from ...core.errors import ApiError, ModelUnavailable
 from ...core.ids import new_id
 from ...core.response import paginate, parse_pagination, slice_page
 from ...core.security import iso, utcnow
@@ -10,6 +10,63 @@ from ...policies.mapping import generate_policies, llm_cost_estimate
 from ..deps import get_auth
 
 router = APIRouter()
+
+
+def _template_prompt(name, purpose):
+    """模型不可用时的确定性回退：依据名称/用途生成合规系统提示词。"""
+    role = name or "企业内部助手"
+    lines = [
+        f"你是{role}。" + (f"你的职责是：{purpose}。" if purpose else "你的职责是协助用户完成授权的内部事务。"),
+        "你只能访问与职责直接相关的公开文档与内部接口，查询结果中的敏感字段须脱敏后展示。",
+        "禁止读取任何凭证或敏感文件（如 secret.txt、credentials.json），禁止向外部域名发送邮件，禁止执行系统命令。",
+        "超出授权范围的请求应明确拒绝并说明原因，不得自行改写或省略用户请求中的操作。",
+    ]
+    return "\n".join(lines)
+
+
+@router.post("/configs/suggest-prompt")
+async def suggest_prompt(request: Request, payload: dict = Body(...)):
+    get_auth(request)
+    name = str(payload.get("name", "")).strip()
+    purpose = str(payload.get("purpose", "")).strip()
+    if not name and not purpose:
+        raise ApiError(40000, detail="请先填写实例名称或声明用途")
+
+    from ...core.config import settings
+    from ...internal.llm.proxy import llm_proxy, strip_code_fence
+
+    if settings.model_configured:
+        meta = [
+            {
+                "role": "system",
+                "content": (
+                    "你是 Agent 系统提示词撰写专家。根据给定的【实例名称】与【声明用途】，"
+                    "撰写一段中文系统提示词，用于定义该 Agent 的人设与授权边界。要求：\n"
+                    "1. 明确角色与职责（贴合声明用途）；\n"
+                    "2. 明确允许的动作（可访问的文档/接口范围）；\n"
+                    "3. 明确禁止的动作：禁止读取凭证或敏感文件、禁止向外部域名发送邮件、禁止执行系统命令；\n"
+                    "4. 要求对越权请求拒绝并说明原因；\n"
+                    "5. 纯文本、不超过 4000 字符，不要输出 Markdown 代码块或任何解释。"
+                ),
+            },
+            {"role": "user", "content": f"【实例名称】{name or '（未填写）'}\n【声明用途】{purpose or '（未填写）'}"},
+        ]
+        try:
+            result = await llm_proxy.chat("business", meta, max_tokens=1200, temperature=0.4)
+            text = strip_code_fence(result["content"]).strip()
+            if text:
+                return {
+                    "code": 0,
+                    "message": "ok",
+                    "data": {"system_prompt": text[:4000], "simulated": False},
+                }
+        except ModelUnavailable:
+            pass
+    return {
+        "code": 0,
+        "message": "ok",
+        "data": {"system_prompt": _template_prompt(name, purpose), "simulated": True},
+    }
 
 
 def _validation_error(result):

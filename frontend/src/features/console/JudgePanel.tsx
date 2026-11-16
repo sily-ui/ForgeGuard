@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Button, Input, Tag } from 'antd';
 import {
-  ShieldCheck,
   BellRing,
   HelpCircle,
   Check,
@@ -14,6 +13,7 @@ import {
   ChevronRight,
   AlertTriangle,
 } from 'lucide-react';
+import { GuardIcon } from '@/components/icons/SecurityIcons';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { JudgeBadge } from '@/components/common/JudgeBadge';
 import { JsonViewer } from '@/components/common/JsonViewer';
@@ -51,7 +51,7 @@ export function JudgePanel({ fullCalls, onResolveChallenge, onFeedback }: Props)
   return (
     <div data-tour="judge-panel" style={colStyle}>
       <div style={tabStripStyle}>
-        <TabBtn active={tab === 'judge'} onClick={() => setTab('judge')} icon={<ShieldCheck size={14} />} label="判定取证" />
+        <TabBtn active={tab === 'judge'} onClick={() => setTab('judge')} icon={<GuardIcon size={14} />} label="判定取证" />
         <TabBtn active={tab === 'alerts'} onClick={() => setTab('alerts')} icon={<BellRing size={14} />} label="告警" count={alerts.length} />
         <TabBtn active={tab === 'challenges'} onClick={() => setTab('challenges')} icon={<HelpCircle size={14} />} label="质询" count={challengeList.length} highlight={challengeList.length > 0} />
       </div>
@@ -68,7 +68,7 @@ function JudgeDetail({ live, full }: { live: ReturnType<typeof useSessionStore.g
   if (!live && !full) {
     return (
       <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--fg-text-3)' }}>
-        <ShieldCheck size={28} strokeWidth={1.4} style={{ opacity: 0.5, marginBottom: 10 }} />
+        <GuardIcon size={28} strokeWidth={1.4} style={{ opacity: 0.5, marginBottom: 10 }} />
         <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg-text-2)' }}>三级判定取证</div>
         <div style={{ fontSize: 11.5, lineHeight: 1.7, marginTop: 6 }}>
           在中间「调用链」选择一次调用，
@@ -93,7 +93,7 @@ function JudgeDetail({ live, full }: { live: ReturnType<typeof useSessionStore.g
       {/* 结论 */}
       <div style={verdictCardStyle}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-          <span className="mono" style={{ fontSize: 13, fontWeight: 700, color: 'var(--fg-text-1)' }}>{tool}</span>
+          <span className="mono" style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg-text-1)' }}>{tool}</span>
           <span style={{ fontSize: 11, color: 'var(--fg-text-3)' }}>{TOOL_META[tool]?.label}</span>
           <span style={{ marginLeft: 'auto' }}>
             <StatusBadge action={action} size="sm" />
@@ -103,7 +103,7 @@ function JudgeDetail({ live, full }: { live: ReturnType<typeof useSessionStore.g
           <Tag color={risk === 'high' ? 'error' : risk === 'medium' ? 'warning' : 'success'} style={{ margin: 0 }}>
             风险 {RISK_META[risk]?.label ?? risk}
           </Tag>
-          {boundary && <Tag style={{ margin: 0 }}>{BOUNDARY_META[boundary] ?? boundary}</Tag>}
+          {boundary && <span style={miniTagStyle}>{BOUNDARY_META[boundary] ?? boundary}</span>}
           {judgedBy && <JudgeBadge judgedBy={judgedBy} size="sm" />}
           {judgement?.is_violation && <Tag color="error" style={{ margin: 0 }}>越权</Tag>}
           {judgement?.guard_unavailable && <Tag color="warning" style={{ margin: 0 }}>监护降级</Tag>}
@@ -133,7 +133,6 @@ function JudgeDetail({ live, full }: { live: ReturnType<typeof useSessionStore.g
           <LayerCard
             tag="A"
             name="L1 · 确定性规则"
-            hue="#7faed9"
             skipped={layers?.layers.l1?.skipped}
             available={!layers?.layers.l1?.skipped}
             timing={timings?.l1}
@@ -157,7 +156,6 @@ function JudgeDetail({ live, full }: { live: ReturnType<typeof useSessionStore.g
           <LayerCard
             tag="B"
             name="L2 · 注入分类"
-            hue="#4fb0a5"
             skipped={layers?.layers.l2?.skipped}
             available={layers?.layers.l2?.available}
             timing={timings?.l2}
@@ -189,7 +187,6 @@ function JudgeDetail({ live, full }: { live: ReturnType<typeof useSessionStore.g
           <LayerCard
             tag="C"
             name="L3 · 语义判定"
-            hue="#a99be0"
             skipped={layers?.layers.l3?.skipped}
             available={layers?.layers.l3?.available}
             timing={timings?.l3}
@@ -217,7 +214,7 @@ function JudgeDetail({ live, full }: { live: ReturnType<typeof useSessionStore.g
         <div>
           <div style={{ ...microLabelStyle, display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
             <Box size={12} /> 仿真沙盒结果
-            <Tag color="processing" style={{ margin: 0, fontSize: 9.5 }}>SIM</Tag>
+            <span className="mono" style={miniTagStyle}>SIM</span>
           </div>
           <JsonViewer data={full.sandbox_result} maxHeight={180} collapsed />
         </div>
@@ -266,17 +263,17 @@ function AlertCard({ alert, onFeedback }: { alert: Alert; onFeedback: Props['onF
     <div style={{ ...alertCardStyle, borderLeft: `3px solid ${levelColor}` }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 6 }}>
         <AlertTriangle size={13} style={{ color: levelColor }} />
-        <span style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--fg-text-1)' }}>{alert.label}</span>
+        <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--fg-text-1)' }}>{alert.label}</span>
         <Tag style={{ margin: 0, fontSize: 9.5, lineHeight: '15px', padding: '0 5px' }} color={alert.level === 'high' ? 'error' : alert.level === 'medium' ? 'warning' : 'default'}>
           {RISK_META[alert.level]?.label ?? alert.level}
         </Tag>
-        {alert.session_level && <Tag style={{ margin: 0, fontSize: 9.5, lineHeight: '15px', padding: '0 5px' }} color="processing">会话级</Tag>}
+        {alert.session_level && <span style={miniTagStyle}>会话级</span>}
         <span className="mono" style={{ marginLeft: 'auto', fontSize: 9.5, color: 'var(--fg-text-3)' }}>T{alert.turn}</span>
       </div>
       <div style={{ fontSize: 11.5, color: 'var(--fg-text-2)', lineHeight: 1.6, marginBottom: 6 }}>{alert.reason}</div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
         <StatusBadge action={alert.action} size="sm" />
-        {alert.boundary && <Tag style={{ margin: 0, fontSize: 10 }}>{BOUNDARY_META[alert.boundary]}</Tag>}
+        {alert.boundary && <span style={miniTagStyle}>{BOUNDARY_META[alert.boundary]}</span>}
         <span style={{ fontSize: 9.5, color: 'var(--fg-text-3)', alignSelf: 'center' }}>{formatShort(alert.created_at)}</span>
       </div>
       <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -330,7 +327,7 @@ function ChallengeList({ challenges, onResolve }: { challenges: GuardJudgementEv
         <div key={c.call_id} style={challengeCardStyle}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 6 }}>
             <HelpCircle size={14} style={{ color: 'var(--fg-observe)' }} />
-            <span className="mono" style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--fg-text-1)' }}>{c.tool}</span>
+            <span className="mono" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--fg-text-1)' }}>{c.tool}</span>
             <Tag color="warning" style={{ margin: 0, fontSize: 9.5 }}>待裁决</Tag>
             {c.risk && <Tag style={{ margin: 0, fontSize: 9.5 }}>{RISK_META[c.risk]?.label ?? c.risk}</Tag>}
           </div>
@@ -349,17 +346,17 @@ function ChallengeList({ challenges, onResolve }: { challenges: GuardJudgementEv
   );
 }
 
-function LayerCard({ tag, name, hue, skipped, available, timing, children }: { tag: string; name: string; hue: string; skipped?: boolean; available?: boolean; timing?: number; children: React.ReactNode }) {
+function LayerCard({ tag, name, skipped, available, timing, children }: { tag: string; name: string; skipped?: boolean; available?: boolean; timing?: number; children: React.ReactNode }) {
   const [open, setOpen] = useState(true);
   const dim = skipped || available === false;
   return (
     <div style={{ border: '1px solid var(--fg-border)', borderRadius: 10, overflow: 'hidden', opacity: dim ? 0.7 : 1 }}>
       <button onClick={() => setOpen((o) => !o)} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 11px', background: 'var(--fg-bg-subtle)', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
-        <span className="mono" style={{ width: 20, height: 20, borderRadius: 6, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: hue, background: `${hue}1f`, border: `1px solid ${hue}40` }}>
+        <span className="mono" style={{ width: 20, height: 20, borderRadius: 4, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 600, color: 'var(--fg-text-2)', background: 'var(--fg-bg-card)', border: '1px solid var(--fg-border)' }}>
           {tag}
         </span>
         <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--fg-text-1)' }}>{name}</span>
-        {skipped && <Tag style={{ margin: 0, fontSize: 9, lineHeight: '14px', padding: '0 4px' }}>跳过</Tag>}
+        {skipped && <span style={miniTagStyle}>跳过</span>}
         {!skipped && available === false && <Tag color="warning" style={{ margin: 0, fontSize: 9, lineHeight: '14px', padding: '0 4px' }}>降级</Tag>}
         <span style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
           {timing != null && <span className="mono" style={{ fontSize: 9.5, color: 'var(--fg-text-3)' }}>{formatDuration(timing)}</span>}
@@ -385,7 +382,7 @@ function Row({ k, v, highlight }: { k: string; v: string; highlight?: boolean })
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, fontSize: 11.5 }}>
       <span style={{ color: 'var(--fg-text-3)' }}>{k}</span>
-      <span className="mono" style={{ color: highlight ? 'var(--fg-observe-text)' : 'var(--fg-text-1)', fontWeight: highlight ? 700 : 500, textAlign: 'right' }}>{v}</span>
+      <span className="mono" style={{ color: highlight ? 'var(--fg-observe-text)' : 'var(--fg-text-1)', fontWeight: highlight ? 600 : 500, textAlign: 'right' }}>{v}</span>
     </div>
   );
 }
@@ -400,7 +397,7 @@ function TabBtn({ active, onClick, icon, label, count, highlight }: { active: bo
       {icon}
       {label}
       {count != null && count > 0 && (
-        <span className="mono" style={{ fontSize: 9.5, fontWeight: 700, color: highlight ? '#fff' : 'var(--fg-text-3)', background: highlight ? 'var(--fg-observe)' : 'var(--fg-bg-page)', borderRadius: 20, padding: '0 6px', minWidth: 16, textAlign: 'center' }}>
+        <span className="mono" style={{ fontSize: 10, fontWeight: 600, color: highlight ? 'var(--fg-observe-text)' : 'var(--fg-text-3)', minWidth: 14, textAlign: 'center' }}>
           {count}
         </span>
       )}
@@ -410,9 +407,10 @@ function TabBtn({ active, onClick, icon, label, count, highlight }: { active: bo
 
 const colStyle: React.CSSProperties = { display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, background: 'var(--fg-bg-card)', border: '1px solid var(--fg-border)', borderRadius: 14, overflow: 'hidden' };
 const tabStripStyle: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 2, padding: '0 8px', borderBottom: '1px solid var(--fg-border)', background: 'var(--fg-bg-subtle)', flexShrink: 0 };
-const tabBtnStyle: React.CSSProperties = { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '11px 11px', background: 'none', border: 'none', borderBottom: '2px solid transparent', cursor: 'pointer', fontSize: 12.5, fontWeight: 600, transition: 'all 140ms ease' };
+const tabBtnStyle: React.CSSProperties = { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '11px 11px', background: 'none', border: 'none', borderBottom: '2px solid transparent', cursor: 'pointer', fontSize: 12.5, fontWeight: 600, transition: 'color 140ms ease, border-color 140ms ease' };
 const verdictCardStyle: React.CSSProperties = { padding: 13, background: 'var(--fg-bg-subtle)', border: '1px solid var(--fg-border)', borderRadius: 11 };
-const microLabelStyle: React.CSSProperties = { fontSize: 10.5, fontWeight: 700, letterSpacing: '0.04em', color: 'var(--fg-text-3)', textTransform: 'uppercase' };
+const microLabelStyle: React.CSSProperties = { fontSize: 10.5, fontWeight: 500, color: 'var(--fg-text-3)' };
 const alertCardStyle: React.CSSProperties = { padding: 12, background: 'var(--fg-bg-subtle)', border: '1px solid var(--fg-border)', borderRadius: 10 };
-const challengeCardStyle: React.CSSProperties = { padding: 13, background: 'var(--fg-observe-bg)', border: '1px solid var(--fg-observe)40', borderRadius: 11 };
+const challengeCardStyle: React.CSSProperties = { padding: 13, background: 'var(--fg-observe-bg)', border: '1px solid var(--fg-border)', borderRadius: 11 };
 const noteToggleStyle: React.CSSProperties = { display: 'inline-flex', alignItems: 'center', gap: 3, background: 'none', border: 'none', cursor: 'pointer', fontSize: 10.5, color: 'var(--fg-text-3)', padding: 0 };
+const miniTagStyle: React.CSSProperties = { fontSize: 10, fontWeight: 500, color: 'var(--fg-text-2)', border: '1px solid var(--fg-border)', borderRadius: 4, padding: '0 5px', lineHeight: '16px', background: 'var(--fg-bg-card)', whiteSpace: 'nowrap' };

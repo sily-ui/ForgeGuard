@@ -1,26 +1,26 @@
 // 设计 Token 的 TS 镜像，供 X6 节点、图表、内联样式使用（与 CSS 变量保持一致）。
 export const statusColor = {
-  allow: { light: '#2b9477', lab: '#4fd1a8' },
-  observe: { light: '#d69a43', lab: '#e8b45a' },
-  block: { light: '#d85f63', lab: '#f0787c' },
-  info: { light: '#5689b8', lab: '#7faed9' },
-  disabled: { light: '#9aa7a3', lab: '#5d6f6b' },
+  allow: { light: '#2e7d5b', lab: '#4cb88a' },
+  observe: { light: '#c2892b', lab: '#d9a441' },
+  block: { light: '#b5484d', lab: '#e0686d' },
+  info: { light: '#4f7ba6', lab: '#7aa3c8' },
+  disabled: { light: '#97a1a8', lab: '#5d6871' },
 } as const;
 
 export const statusText = {
-  allow: { light: '#1f7a5f', lab: '#4fd1a8' },
-  observe: { light: '#a9781f', lab: '#e8b45a' },
-  block: { light: '#c24a4f', lab: '#f0787c' },
-  info: { light: '#3f6f9c', lab: '#7faed9' },
-  disabled: { light: '#9aa7a3', lab: '#5d6f6b' },
+  allow: { light: '#256b4d', lab: '#4cb88a' },
+  observe: { light: '#8f6a14', lab: '#d9a441' },
+  block: { light: '#a33d43', lab: '#e0686d' },
+  info: { light: '#3d6488', lab: '#7aa3c8' },
+  disabled: { light: '#97a1a8', lab: '#5d6871' },
 } as const;
 
 export const statusBg = {
-  allow: { light: '#e6f4ef', lab: 'rgba(79,209,168,0.12)' },
-  observe: { light: '#faf0dd', lab: 'rgba(232,180,90,0.12)' },
-  block: { light: '#fbe9ea', lab: 'rgba(240,120,124,0.12)' },
-  info: { light: '#e8f0f8', lab: 'rgba(127,174,217,0.12)' },
-  disabled: { light: '#edf2f1', lab: 'rgba(93,111,107,0.14)' },
+  allow: { light: '#e9f2ed', lab: 'rgba(76,184,138,0.12)' },
+  observe: { light: '#f7efdc', lab: 'rgba(217,164,65,0.12)' },
+  block: { light: '#f6e9ea', lab: 'rgba(224,104,109,0.12)' },
+  info: { light: '#e9eff5', lab: 'rgba(122,163,200,0.12)' },
+  disabled: { light: '#eef0f2', lab: 'rgba(93,104,113,0.14)' },
 } as const;
 
 export type StatusKind = keyof typeof statusColor;
@@ -35,18 +35,18 @@ export function status(kind: StatusKind, space: Space = 'light') {
 }
 
 export const chartPalette = {
-  light: ['#176b63', '#2d9184', '#5689b8', '#d69a43', '#d85f63', '#7c6bb8', '#4fb0a5', '#9aa7a3'],
-  lab: ['#6bc7b3', '#4fb0a5', '#7faed9', '#e8b45a', '#f0787c', '#a99be0', '#5fd0c8', '#91a5a1'],
+  light: ['#176b63', '#4f7ba6', '#c2892b', '#b5484d', '#64748b', '#6a8f5f', '#4fb0a5', '#97a1a8'],
+  lab: ['#5fb8a4', '#7aa3c8', '#d9a441', '#e0686d', '#a3b1bf', '#7fae7a', '#4fb0a5', '#6e7984'],
 } as const;
 
 export const brand = {
-  light: { primary: '#176b63', secondary: '#2d9184', light: '#e4f2ef', deep: '#123f3c' },
-  lab: { primary: '#6bc7b3', secondary: '#4fb0a5', light: '#1d3a3a', deep: '#0d1a20' },
+  light: { primary: '#176b63', secondary: '#2d9184', light: '#e7f0ee', deep: '#113c38' },
+  lab: { primary: '#5fb8a4', secondary: '#4fb0a5', light: '#1d3532', deep: '#0f1a18' },
 } as const;
 
 export const surface = {
-  light: { page: '#f4f7f6', card: '#ffffff', subtle: '#edf2f1', border: '#e2eae7', text1: '#20312f', text2: '#71817d', text3: '#9aa7a3' },
-  lab: { page: '#111c23', card: '#20333c', subtle: '#192831', border: '#30434a', text1: '#e8f0ee', text2: '#91a5a1', text3: '#6b7e7a' },
+  light: { page: '#f4f5f6', card: '#ffffff', subtle: '#eef0f2', border: '#e2e5e8', text1: '#1e2429', text2: '#5b6570', text3: '#8d97a1' },
+  lab: { page: '#15181d', card: '#1d222a', subtle: '#191e25', border: '#2b323c', text1: '#e7eaed', text2: '#9aa4ae', text3: '#6e7984' },
 } as const;
 
 // 判定动作 → 状态色语义

@@ -13,9 +13,9 @@ import {
   Wifi,
   WifiOff,
   Loader2,
-  Swords,
   Boxes,
 } from 'lucide-react';
+import { AttackIcon } from '@/components/icons/SecurityIcons';
 import { useConsoleSession } from '@/hooks/useConsoleSession';
 import { sessionApi, experimentApi, instanceApi } from '@/services/api/resources';
 import { ApiClientError } from '@/services/api/client';
@@ -241,7 +241,7 @@ function ConnectionBadge({ connection }: { connection: string }) {
   };
   const m = map[connection] ?? map.closed;
   return (
-    <span className="mono" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 10.5, fontWeight: 600, color: m.color, padding: '3px 9px', borderRadius: 20, background: 'var(--fg-bg-subtle)', border: '1px solid var(--fg-border)' }}>
+    <span className="mono" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 10.5, fontWeight: 600, color: m.color, padding: '3px 9px', borderRadius: 4, background: 'var(--fg-bg-subtle)', border: '1px solid var(--fg-border)' }}>
       {m.icon}
       {m.label}
     </span>
@@ -317,7 +317,7 @@ function CompareModal({
         />
         {dimension === 'guard' ? (
           <div style={compareHintStyle}>
-            <Swords size={15} style={{ color: 'var(--fg-observe)', flexShrink: 0, marginTop: 2 }} />
+            <AttackIcon size={15} style={{ color: 'var(--fg-observe)', flexShrink: 0, marginTop: 2 }} />
             <span>
               以当前会话为起点（A 组，防护<b>{guardEnabled ? '开启' : '关闭'}</b>），创建同实例的 B 组会话并
               <b>取消防护开关</b>（防护{guardEnabled ? '关闭' : '开启'}），重放同一输入，逐步对比判定差异。

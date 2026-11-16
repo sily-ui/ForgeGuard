@@ -3,11 +3,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { App, Button, Empty, Input, InputNumber, Segmented, Select, Spin, Table, Tag } from 'antd';
 import {
   SlidersHorizontal,
-  Activity,
-  ShieldAlert,
-  Boxes,
-  Radio,
-  FileBarChart,
   Gauge,
   Database,
   Trash2,
@@ -23,7 +18,7 @@ import { SectionCard } from '@/components/common/SectionCard';
 import { ModeBadge } from '@/components/common/ModeBadge';
 import { confirmAction } from '@/components/common/confirmAction';
 import { useAuthStore } from '@/stores/authStore';
-import { ACTION_META } from '@/utils/constants';
+import { ACTION_META, actionToStatus } from '@/utils/constants';
 import { formatShort, percent } from '@/utils/format';
 import type { SnapshotRecording } from '@/types/api';
 
@@ -48,7 +43,7 @@ export default function AdminPage() {
   return (
     <div>
       <PageHeader
-        icon={<SlidersHorizontal size={22} strokeWidth={1.7} />}
+        icon={<SlidersHorizontal size={20} strokeWidth={1.5} />}
         title="平台管理"
         subtitle="运行指标 · 模型配额 · 实时/回放模式 · 快照录制 · 降级监控 · 清理与令牌"
         extra={
@@ -65,12 +60,12 @@ export default function AdminPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
           {/* 指标卡 */}
           <div data-tour="admin-metrics" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12 }}>
-            <MetricCard icon={<Activity size={17} />} label="工具调用" value={metrics.total_calls} hue="var(--fg-brand-primary)" />
-            <MetricCard icon={<ShieldAlert size={17} />} label="风险告警" value={metrics.total_alerts} hue="var(--fg-observe)" />
-            <MetricCard icon={<Boxes size={17} />} label="存活实例" value={metrics.instances_alive} hue="var(--fg-info)" />
-            <MetricCard icon={<Radio size={17} />} label="活跃会话" value={metrics.sessions_active} hue="var(--fg-allow)" />
-            <MetricCard icon={<FileBarChart size={17} />} label="报告数" value={metrics.reports} hue="var(--fg-brand-secondary)" />
-            <MetricCard icon={<Gauge size={17} />} label="限流命中" value={metrics.rate_limit_hits} hue="var(--fg-block)" />
+            <MetricCard label="工具调用" value={metrics.total_calls} />
+            <MetricCard label="风险告警" value={metrics.total_alerts} color="var(--fg-observe-text)" />
+            <MetricCard label="存活实例" value={metrics.instances_alive} />
+            <MetricCard label="活跃会话" value={metrics.sessions_active} />
+            <MetricCard label="报告数" value={metrics.reports} />
+            <MetricCard label="限流命中" value={metrics.rate_limit_hits} color="var(--fg-block-text)" />
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)', gap: 18, alignItems: 'start' }}>
@@ -80,7 +75,7 @@ export default function AdminPage() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
                 <div>
                   <div style={microLabelStyle}>动作分布</div>
-                  <DistBars data={metrics.action_distribution} labelMap={(k) => ACTION_META[k]?.verb ?? k} />
+                  <DistBars data={metrics.action_distribution} labelMap={(k) => ACTION_META[k]?.verb ?? k} semantic />
                 </div>
                 <div>
                   <div style={microLabelStyle}>判定来源</div>
@@ -88,11 +83,11 @@ export default function AdminPage() {
                 </div>
                 <div style={{ display: 'flex', gap: 12 }}>
                   <div style={markBoxStyle}>
-                    <div className="mono" style={{ fontSize: 20, fontWeight: 700, color: 'var(--fg-block-text)' }}>{metrics.false_positive_marks}</div>
+                    <div className="mono" style={{ fontSize: 20, fontWeight: 600, color: 'var(--fg-block-text)' }}>{metrics.false_positive_marks}</div>
                     <div style={{ fontSize: 11, color: 'var(--fg-text-3)' }}>误报标注</div>
                   </div>
                   <div style={markBoxStyle}>
-                    <div className="mono" style={{ fontSize: 20, fontWeight: 700, color: 'var(--fg-observe-text)' }}>{metrics.false_negative_marks}</div>
+                    <div className="mono" style={{ fontSize: 20, fontWeight: 600, color: 'var(--fg-observe-text)' }}>{metrics.false_negative_marks}</div>
                     <div style={{ fontSize: 11, color: 'var(--fg-text-3)' }}>漏报标注</div>
                   </div>
                 </div>
@@ -206,8 +201,8 @@ function ModeCard({ currentMode, snapshots, onDone, onError }: { currentMode: 'l
           value={mode}
           onChange={(v) => setModeLocal(v as 'live' | 'replay')}
           options={[
-            { label: '实时 LIVE', value: 'live' },
-            { label: '回放 REPLAY', value: 'replay' },
+            { label: '实时', value: 'live' },
+            { label: '回放', value: 'replay' },
           ]}
         />
         {mode === 'replay' && (
@@ -346,20 +341,24 @@ function DangerRow({ icon, title, desc, action }: { icon: React.ReactNode; title
   );
 }
 
-function DistBars({ data, labelMap }: { data: Record<string, number>; labelMap?: (k: string) => string }) {
+function DistBars({ data, labelMap, semantic }: { data: Record<string, number>; labelMap?: (k: string) => string; semantic?: boolean }) {
   const entries = Object.entries(data).sort((a, b) => b[1] - a[1]);
   const max = Math.max(1, ...entries.map((e) => e[1]));
-  const colors = ['var(--fg-allow)', 'var(--fg-block)', 'var(--fg-observe)', 'var(--fg-info)', 'var(--fg-brand-secondary)', 'var(--fg-disabled)'];
+  const colorFor = (k: string) => {
+    if (!semantic) return 'var(--fg-brand-primary)';
+    const s = actionToStatus(k);
+    return s === 'allow' ? 'var(--fg-allow)' : s === 'block' ? 'var(--fg-block)' : s === 'observe' ? 'var(--fg-observe)' : 'var(--fg-disabled)';
+  };
   if (entries.length === 0) return <div style={{ fontSize: 11.5, color: 'var(--fg-text-3)' }}>暂无数据</div>;
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 6 }}>
-      {entries.map(([k, n], i) => (
+      {entries.map(([k, n]) => (
         <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{ width: 70, fontSize: 11.5, color: 'var(--fg-text-2)', flexShrink: 0 }}>{labelMap ? labelMap(k) : k}</span>
           <div style={{ flex: 1, height: 8, borderRadius: 5, background: 'var(--fg-bg-subtle)', overflow: 'hidden' }}>
-            <div style={{ width: `${(n / max) * 100}%`, height: '100%', background: colors[i % colors.length], borderRadius: 5 }} />
+            <div style={{ width: `${(n / max) * 100}%`, height: '100%', background: colorFor(k), borderRadius: 5 }} />
           </div>
-          <span className="mono" style={{ width: 28, textAlign: 'right', fontSize: 11.5, fontWeight: 700, color: 'var(--fg-text-1)' }}>{n}</span>
+          <span className="mono" style={{ width: 28, textAlign: 'right', fontSize: 11.5, fontWeight: 600, color: 'var(--fg-text-1)' }}>{n}</span>
         </div>
       ))}
     </div>
@@ -381,19 +380,16 @@ function QuotaBar({ label, used, max, pct }: { label: string; used: number; max:
   );
 }
 
-function MetricCard({ icon, label, value, hue }: { icon: React.ReactNode; label: string; value: number; hue: string }) {
+function MetricCard({ label, value, color }: { label: string; value: number; color?: string }) {
   return (
-    <div className="fg-card" style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-      <span style={{ width: 34, height: 34, borderRadius: 10, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: `color-mix(in srgb, ${hue} 12%, transparent)`, color: hue }}>{icon}</span>
-      <div>
-        <div className="mono" style={{ fontSize: 24, fontWeight: 700, color: 'var(--fg-text-1)', lineHeight: 1.1 }}>{value}</div>
-        <div style={{ fontSize: 11.5, color: 'var(--fg-text-3)', marginTop: 2 }}>{label}</div>
-      </div>
+    <div className="fg-card" style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <span style={{ fontSize: 11.5, color: 'var(--fg-text-3)' }}>{label}</span>
+      <span className="mono" style={{ fontSize: 24, fontWeight: 600, color: color ?? 'var(--fg-text-1)', lineHeight: 1.1 }}>{value}</span>
     </div>
   );
 }
 
-const microLabelStyle: React.CSSProperties = { fontSize: 10.5, fontWeight: 700, letterSpacing: '0.04em', color: 'var(--fg-text-3)', textTransform: 'uppercase' };
-const fieldLabelStyle: React.CSSProperties = { fontSize: 11, fontWeight: 600, color: 'var(--fg-text-3)', marginBottom: 5 };
+const microLabelStyle: React.CSSProperties = { fontSize: 10.5, fontWeight: 500, color: 'var(--fg-text-3)' };
+const fieldLabelStyle: React.CSSProperties = { fontSize: 11, fontWeight: 500, color: 'var(--fg-text-3)', marginBottom: 5 };
 const markBoxStyle: React.CSSProperties = { flex: 1, textAlign: 'center', padding: '10px 6px', background: 'var(--fg-bg-subtle)', border: '1px solid var(--fg-border)', borderRadius: 9 };
 const degRowStyle: React.CSSProperties = { padding: '9px 12px', background: 'var(--fg-bg-subtle)', border: '1px solid var(--fg-border)', borderRadius: 9 };

@@ -9,10 +9,7 @@ import {
   Download,
   Copy,
   Check,
-  ShieldCheck,
-  ShieldAlert,
   ScrollText,
-  Swords,
   Wrench,
   AlertTriangle,
   Info,
@@ -22,6 +19,7 @@ import {
   Bot,
   User,
 } from 'lucide-react';
+import { AttackIcon, GuardIcon } from '@/components/icons/SecurityIcons';
 import { reportApi } from '@/services/api/resources';
 import { rawClient, ApiClientError } from '@/services/api/client';
 import { PageHeader } from '@/components/common/PageHeader';
@@ -37,8 +35,8 @@ import type { HardeningSuggestion, Policy, ReportContent } from '@/types/api';
 const SECTIONS = [
   { id: 'part1', label: '测评概要', icon: FileBarChart },
   { id: 'part2', label: '靶标基线快照', icon: ScrollText },
-  { id: 'part3', label: '攻击序列', icon: Swords },
-  { id: 'part4', label: '风险分析', icon: ShieldAlert },
+  { id: 'part3', label: '攻击序列', icon: AttackIcon },
+  { id: 'part4', label: '风险分析', icon: AlertTriangle },
   { id: 'part5', label: '加固建议', icon: Wrench },
   { id: 'part6', label: '局限性说明', icon: Info },
 ];
@@ -105,7 +103,7 @@ export default function ReportDetailPage() {
   return (
     <div>
       <PageHeader
-        icon={<FileBarChart size={22} strokeWidth={1.7} />}
+        icon={<FileBarChart size={20} strokeWidth={1.5} />}
         title={`测评报告 · ${ov.instance_name}`}
         subtitle={
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
@@ -114,7 +112,7 @@ export default function ReportDetailPage() {
             <span>{formatTime(report.created_at)}</span>
             <ModeBadge mode={ov.mode} size="sm" />
             <SimBadge compact />
-            <Tag color="success" style={{ margin: 0 }}>只读快照</Tag>
+            <span style={{ fontSize: 11, padding: '0 7px', borderRadius: 4, border: '1px solid var(--fg-border)', color: 'var(--fg-text-2)' }}>只读快照</span>
           </span>
         }
         extra={
@@ -130,9 +128,9 @@ export default function ReportDetailPage() {
         {/* 章节导航 */}
         <nav className="fg-report-nav" style={{ position: 'sticky', top: 16, display: 'flex', flexDirection: 'column', gap: 3 }}>
           {SECTIONS.map((s, i) => (
-            <button key={s.id} onClick={() => scrollTo(s.id)} style={{ ...navBtnStyle, color: active === s.id ? 'var(--fg-brand-primary)' : 'var(--fg-text-2)', background: active === s.id ? 'var(--fg-brand-light)' : 'transparent', fontWeight: active === s.id ? 700 : 500 }}>
+            <button key={s.id} onClick={() => scrollTo(s.id)} style={{ ...navBtnStyle, color: active === s.id ? 'var(--fg-brand-primary)' : 'var(--fg-text-2)', background: active === s.id ? 'var(--fg-bg-subtle)' : 'transparent', fontWeight: active === s.id ? 600 : 500 }}>
               <span className="mono" style={{ fontSize: 10, color: active === s.id ? 'var(--fg-brand-primary)' : 'var(--fg-text-3)', width: 16 }}>{i + 1}</span>
-              <s.icon size={14} strokeWidth={1.7} />
+              <s.icon size={14} strokeWidth={1.5} />
               {s.label}
             </button>
           ))}
@@ -164,7 +162,7 @@ function PartAnchor({ id, index, title, icon, extra, children }: { id: string; i
       style={{ scrollMarginTop: 16 }}
       title={
         <span id={id} style={{ display: 'inline-flex', alignItems: 'center', gap: 9 }}>
-          <span className="mono" style={{ width: 22, height: 22, borderRadius: 7, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: 'var(--fg-brand-primary)', background: 'var(--fg-brand-light)' }}>{index}</span>
+          <span className="mono" style={{ width: 22, height: 22, borderRadius: 4, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 600, color: 'var(--fg-text-2)', background: 'var(--fg-bg-subtle)', border: '1px solid var(--fg-border)' }}>{index}</span>
           {icon}
           {title}
         </span>
@@ -200,8 +198,8 @@ function Part1({ content }: { content: ReportContent }) {
         <Metric label="限额拦截" value={ov.limit_block_count} color="var(--fg-block-text)" />
         <Metric label="最高风险" value={RISK_META[ov.max_risk]?.label ?? ov.max_risk} small />
       </div>
-      <div style={{ display: 'flex', gap: 10, padding: 14, background: 'var(--fg-brand-light)', border: '1px solid var(--fg-border)', borderRadius: 10, marginBottom: rc.dominant ? 16 : 0 }}>
-        <ShieldCheck size={18} style={{ color: 'var(--fg-brand-primary)', flexShrink: 0, marginTop: 1 }} />
+      <div style={{ display: 'flex', gap: 10, padding: 14, background: 'var(--fg-bg-subtle)', border: '1px solid var(--fg-border)', borderRadius: 10, marginBottom: rc.dominant ? 16 : 0 }}>
+        <GuardIcon size={18} style={{ color: 'var(--fg-brand-primary)', flexShrink: 0, marginTop: 1 }} />
         <div style={{ fontSize: 13, color: 'var(--fg-text-1)', lineHeight: 1.7 }}>{ov.conclusion}</div>
       </div>
       {rc.dominant && (
@@ -249,7 +247,7 @@ function Part2({ content }: { content: ReportContent }) {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                   {grouped[lv].map((p) => (
                     <div key={p.policy_id} style={policyRowStyle}>
-                      <span className="mono" style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--fg-text-1)', width: 64, flexShrink: 0 }}>{p.policy_id}</span>
+                      <span className="mono" style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--fg-text-1)', width: 64, flexShrink: 0 }}>{p.policy_id}</span>
                       <span style={{ flex: 1, fontSize: 11.5, color: 'var(--fg-text-2)', minWidth: 0 }}>{p.condition}</span>
                       <StatusBadge action={p.action} size="sm" showText={false} />
                       {!p.enabled && <Tag style={{ margin: 0, fontSize: 9 }}>停用</Tag>}
@@ -269,7 +267,7 @@ function Part2({ content }: { content: ReportContent }) {
 function Part3({ content }: { content: ReportContent }) {
   const seq = content.part3_attack_sequence;
   return (
-    <PartAnchor id="part3" index={3} title="攻击序列" icon={<Swords size={15} />} extra={<Tag style={{ margin: 0 }}>{seq.length} 回合</Tag>}>
+    <PartAnchor id="part3" index={3} title="攻击序列" icon={<AttackIcon size={15} />} extra={<Tag style={{ margin: 0 }}>{seq.length} 回合</Tag>}>
       {seq.length === 0 ? (
         <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="本次会话无对话回合" />
       ) : (
@@ -279,7 +277,7 @@ function Part3({ content }: { content: ReportContent }) {
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                 <span className="mono" style={turnBadgeStyle}>T{t.turn}</span>
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11.5, color: 'var(--fg-text-2)' }}>
-                  {t.actor === 'redteam' ? <Swords size={12} style={{ color: 'var(--fg-observe)' }} /> : <User size={12} />}
+                  {t.actor === 'redteam' ? <AttackIcon size={12} style={{ color: 'var(--fg-observe)' }} /> : <User size={12} />}
                   {t.actor === 'redteam' ? '红队' : '业务用户'}
                 </span>
                 {t.source_sample_id && <Tag color="warning" style={{ margin: 0, fontSize: 9.5 }}>样本 {t.source_sample_id}</Tag>}
@@ -294,7 +292,7 @@ function Part3({ content }: { content: ReportContent }) {
                 <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 5 }}>
                   {t.calls.map((c) => (
                     <div key={c.call_id} style={callMiniStyle}>
-                      <span className="mono" style={{ fontSize: 11, fontWeight: 700, color: 'var(--fg-text-1)' }}>{c.tool}</span>
+                      <span className="mono" style={{ fontSize: 11, fontWeight: 600, color: 'var(--fg-text-1)' }}>{c.tool}</span>
                       <span style={{ fontSize: 10.5, color: 'var(--fg-text-3)' }}>{TOOL_META[c.tool]?.label}</span>
                       <span style={{ flex: 1, fontSize: 10.5, color: 'var(--fg-text-2)', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{truncate(c.reason, 60)}</span>
                       <StatusBadge action={c.action} size="sm" showText={false} />
@@ -314,10 +312,10 @@ function Part3({ content }: { content: ReportContent }) {
 function Part4({ content }: { content: ReportContent }) {
   const items = content.part4_risk_analysis;
   return (
-    <PartAnchor id="part4" index={4} title="风险分析" icon={<ShieldAlert size={15} />} extra={<Tag style={{ margin: 0 }}>{items.length} 条告警</Tag>}>
+    <PartAnchor id="part4" index={4} title="风险分析" icon={<AlertTriangle size={15} />} extra={<Tag style={{ margin: 0 }}>{items.length} 条告警</Tag>}>
       {items.length === 0 ? (
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 16, background: 'var(--fg-allow-bg)', borderRadius: 10, color: 'var(--fg-allow-text)', fontSize: 13 }}>
-          <ShieldCheck size={18} /> 本次测评未触发风险告警，链路全绿。
+          <GuardIcon size={18} /> 本次测评未触发风险告警，链路全绿。
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -325,7 +323,7 @@ function Part4({ content }: { content: ReportContent }) {
             <div key={a.alert_id} style={riskCardStyle}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, flexWrap: 'wrap' }}>
                 <AlertTriangle size={14} style={{ color: a.level === 'high' ? 'var(--fg-block)' : 'var(--fg-observe)' }} />
-                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--fg-text-1)' }}>{a.label}</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg-text-1)' }}>{a.label}</span>
                 <Tag color={a.level === 'high' ? 'error' : a.level === 'medium' ? 'warning' : 'default'} style={{ margin: 0 }}>{RISK_META[a.level]?.label ?? a.level}</Tag>
                 {a.boundary && <Tag style={{ margin: 0 }}>{BOUNDARY_META[a.boundary]}</Tag>}
                 <StatusBadge action={a.action} size="sm" />
@@ -340,9 +338,9 @@ function Part4({ content }: { content: ReportContent }) {
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                   <span style={{ fontSize: 11, color: 'var(--fg-text-3)' }}>根因：</span>
                   {a.root_causes.map((c, i) => (
-                    <Tag key={i} color="processing" style={{ margin: 0, fontSize: 10.5 }}>{c.name ?? CATEGORY_NAMES[c.category] ?? c.category}</Tag>
+                    <span key={i} style={miniTagStyle}>{c.name ?? CATEGORY_NAMES[c.category] ?? c.category}</span>
                   ))}
-                  {a.root_cause && a.root_causes.length === 0 && <Tag color="processing" style={{ margin: 0 }}>{a.root_cause}</Tag>}
+                  {a.root_cause && a.root_causes.length === 0 && <span style={miniTagStyle}>{a.root_cause}</span>}
                 </div>
               )}
               {(a.false_positive || a.false_negative) && (
@@ -374,7 +372,7 @@ function Part5({ content }: { content: ReportContent }) {
             <div key={kind}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                 <span style={{ width: 8, height: 8, borderRadius: '50%', background: KIND_META[kind].hue }} />
-                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--fg-text-1)' }}>{KIND_META[kind].label}</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg-text-1)' }}>{KIND_META[kind].label}</span>
                 <span style={{ fontSize: 11, color: 'var(--fg-text-3)' }}>{KIND_META[kind].desc} · {grouped[kind].length} 项</span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -432,7 +430,7 @@ function CategoryBars({ counts }: { counts: Record<string, number> }) {
           <div style={{ flex: 1, height: 8, borderRadius: 5, background: 'var(--fg-bg-subtle)', overflow: 'hidden' }}>
             <div style={{ width: `${(n / max) * 100}%`, height: '100%', background: 'var(--fg-brand-primary)', borderRadius: 5 }} />
           </div>
-          <span className="mono" style={{ width: 24, textAlign: 'right', fontSize: 11.5, fontWeight: 700, color: 'var(--fg-text-1)' }}>{n}</span>
+          <span className="mono" style={{ width: 24, textAlign: 'right', fontSize: 11.5, fontWeight: 600, color: 'var(--fg-text-1)' }}>{n}</span>
         </div>
       ))}
     </div>
@@ -442,7 +440,7 @@ function CategoryBars({ counts }: { counts: Record<string, number> }) {
 function Metric({ label, value, color, small }: { label: string; value: number | string; color?: string; small?: boolean }) {
   return (
     <div style={{ textAlign: 'center', padding: '10px 6px', background: 'var(--fg-bg-subtle)', borderRadius: 9, border: '1px solid var(--fg-border)' }}>
-      <div className="mono" style={{ fontSize: small ? 14 : 20, fontWeight: 700, color: color ?? 'var(--fg-text-1)' }}>{value}</div>
+      <div className="mono" style={{ fontSize: small ? 14 : 20, fontWeight: 600, color: color ?? 'var(--fg-text-1)' }}>{value}</div>
       <div style={{ fontSize: 10.5, color: 'var(--fg-text-3)', marginTop: 3 }}>{label}</div>
     </div>
   );
@@ -475,14 +473,15 @@ function ShareModal({ open, onClose, url, expiresAt }: { open: boolean; onClose:
   );
 }
 
-const navBtnStyle: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 8, padding: '9px 12px', borderRadius: 9, border: 'none', cursor: 'pointer', fontSize: 12.5, textAlign: 'left', transition: 'all 140ms ease', width: '100%' };
-const microLabelStyle: React.CSSProperties = { fontSize: 10.5, fontWeight: 700, letterSpacing: '0.04em', color: 'var(--fg-text-3)', textTransform: 'uppercase', marginBottom: 4 };
+const navBtnStyle: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 8, padding: '9px 12px', borderRadius: 9, border: 'none', cursor: 'pointer', fontSize: 12.5, textAlign: 'left', transition: 'color 140ms ease, background-color 140ms ease', width: '100%' };
+const microLabelStyle: React.CSSProperties = { fontSize: 10.5, fontWeight: 500, color: 'var(--fg-text-3)', marginBottom: 4 };
 const baselinePreStyle: React.CSSProperties = { margin: 0, padding: 14, background: 'var(--fg-bg-subtle)', border: '1px solid var(--fg-border)', borderRadius: 10, fontSize: 11.5, lineHeight: 1.75, whiteSpace: 'pre-wrap', wordBreak: 'break-word', color: 'var(--fg-text-2)', maxHeight: 320, overflowY: 'auto' };
 const collapseBtnStyle: React.CSSProperties = { display: 'inline-flex', alignItems: 'center', gap: 5, background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 600, color: 'var(--fg-brand-primary)', padding: 0 };
 const policyRowStyle: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 9, padding: '7px 11px', background: 'var(--fg-bg-subtle)', border: '1px solid var(--fg-border)', borderRadius: 8 };
 const turnCardStyle: React.CSSProperties = { padding: 14, background: 'var(--fg-bg-subtle)', border: '1px solid var(--fg-border)', borderRadius: 11 };
-const turnBadgeStyle: React.CSSProperties = { fontSize: 11, fontWeight: 700, color: 'var(--fg-brand-primary)', background: 'var(--fg-brand-light)', borderRadius: 7, padding: '2px 9px' };
+const turnBadgeStyle: React.CSSProperties = { fontSize: 11, fontWeight: 600, color: 'var(--fg-text-2)', background: 'var(--fg-bg-card)', border: '1px solid var(--fg-border)', borderRadius: 4, padding: '1px 8px' };
 const bubbleStyle: React.CSSProperties = { padding: '9px 12px', background: 'var(--fg-bg-page)', border: '1px solid var(--fg-border)', borderRadius: 9, fontSize: 12.5, color: 'var(--fg-text-1)', lineHeight: 1.65, whiteSpace: 'pre-wrap', wordBreak: 'break-word' };
 const callMiniStyle: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', background: 'var(--fg-bg-card)', border: '1px solid var(--fg-border)', borderRadius: 8 };
 const riskCardStyle: React.CSSProperties = { padding: 14, background: 'var(--fg-bg-subtle)', border: '1px solid var(--fg-border)', borderRadius: 11 };
 const suggestionCardStyle: React.CSSProperties = { padding: '12px 14px', background: 'var(--fg-bg-subtle)', border: '1px solid var(--fg-border)', borderRadius: 10 };
+const miniTagStyle: React.CSSProperties = { fontSize: 10.5, fontWeight: 500, color: 'var(--fg-text-2)', border: '1px solid var(--fg-border)', borderRadius: 4, padding: '0 6px', lineHeight: '17px', background: 'var(--fg-bg-card)', whiteSpace: 'nowrap' };

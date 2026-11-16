@@ -24,7 +24,7 @@ export function RiskRing({ score, maxRisk = 'none', size = 44, stroke = 4, label
     <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }} title={`累计风险分 ${score.toFixed(2)}`}>
       <div style={{ position: 'relative', width: size, height: size }}>
         <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
-          <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={space === 'lab' ? '#30434a' : '#e2eae7'} strokeWidth={stroke} />
+          <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={space === 'lab' ? '#2b323c' : '#e2e5e8'} strokeWidth={stroke} />
           <circle
             cx={size / 2}
             cy={size / 2}
@@ -47,7 +47,7 @@ export function RiskRing({ score, maxRisk = 'none', size = 44, stroke = 4, label
             alignItems: 'center',
             justifyContent: 'center',
             fontSize: size * 0.26,
-            fontWeight: 700,
+            fontWeight: 600,
             color: c.text,
           }}
         >

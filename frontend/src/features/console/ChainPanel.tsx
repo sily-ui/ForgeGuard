@@ -115,8 +115,7 @@ function CallRow({ call, index, active, onSelect }: { call: LiveCall; index: num
         borderLeft: `3px solid ${statusBorderColor(call)}`,
         borderRadius: 10,
         cursor: 'pointer',
-        transition: 'all 140ms ease',
-        boxShadow: active ? '0 0 0 2px var(--fg-lab-glow)' : 'none',
+        transition: 'background-color 140ms ease, border-color 140ms ease',
       }}
     >
       <span className="mono" style={{ fontSize: 10, color: 'var(--fg-text-3)', width: 22, flexShrink: 0 }}>
@@ -124,7 +123,7 @@ function CallRow({ call, index, active, onSelect }: { call: LiveCall; index: num
       </span>
       <span style={{ flex: 1, minWidth: 0 }}>
         <span style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-          <span className="mono" style={{ fontSize: 12, fontWeight: 700, color: 'var(--fg-text-1)' }}>{call.tool}</span>
+          <span className="mono" style={{ fontSize: 12, fontWeight: 600, color: 'var(--fg-text-1)' }}>{call.tool}</span>
           <span style={{ fontSize: 10.5, color: 'var(--fg-text-3)' }}>{meta?.label}</span>
           <span className="mono" style={{ fontSize: 9.5, color: 'var(--fg-text-3)', marginLeft: 'auto' }}>T{call.turn}</span>
         </span>
@@ -168,7 +167,7 @@ function StatChip({ label, value, kind }: { label: string; value: number; kind: 
   const color = kind === 'allow' ? 'var(--fg-allow-text)' : kind === 'block' ? 'var(--fg-block-text)' : 'var(--fg-observe-text)';
   return (
     <Tooltip title={`${label} ${value} 次`}>
-      <span className="mono" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10.5, fontWeight: 700, color, padding: '2px 7px', borderRadius: 6, background: 'var(--fg-bg-subtle)', border: '1px solid var(--fg-border)' }}>
+      <span className="mono" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10.5, fontWeight: 600, color, padding: '2px 7px', borderRadius: 6, background: 'var(--fg-bg-subtle)', border: '1px solid var(--fg-border)' }}>
         {value}
         <span style={{ fontSize: 9, fontWeight: 500, color: 'var(--fg-text-3)' }}>{label}</span>
       </span>
@@ -196,15 +195,15 @@ const panelHeaderStyle: React.CSSProperties = {
   flexShrink: 0,
   flexWrap: 'wrap',
 };
-const panelTitleStyle: React.CSSProperties = { display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 13, fontWeight: 700, color: 'var(--fg-text-1)' };
-const countPillStyle: React.CSSProperties = { fontSize: 10.5, fontWeight: 700, color: 'var(--fg-lab-accent)', background: 'var(--fg-bg-subtle)', borderRadius: 20, padding: '1px 8px', marginLeft: 2 };
+const panelTitleStyle: React.CSSProperties = { display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 13, fontWeight: 600, color: 'var(--fg-text-1)' };
+const countPillStyle: React.CSSProperties = { fontSize: 10.5, fontWeight: 500, color: 'var(--fg-text-3)', marginLeft: 2 };
 const colFooterStyle: React.CSSProperties = { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 14px', borderTop: '1px solid var(--fg-border)', flexShrink: 0 };
 const pendingBadgeStyle: React.CSSProperties = {
   fontSize: 10,
-  fontWeight: 700,
+  fontWeight: 600,
   color: 'var(--fg-observe-text)',
   background: 'var(--fg-observe-bg)',
-  border: '1px solid var(--fg-observe)40',
+  border: '1px solid var(--fg-border)',
   borderRadius: 6,
   padding: '2px 7px',
   whiteSpace: 'nowrap',

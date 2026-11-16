@@ -24,10 +24,12 @@ def get_auth(request: Request):
 
 
 def get_sse_auth(request: Request):
-    """EventSource 无法携带请求头，SSE 通道额外支持查询参数令牌。"""
+    """SSE 通道鉴权：优先 Authorization 头，兼容查询参数令牌（旧式 EventSource 客户端）。"""
     header = request.headers.get("Authorization", "")
     token = header[7:].strip() if header.startswith("Bearer ") else request.query_params.get("token")
-    return resolve_token(token)
+    ctx = resolve_token(token)
+    rate_limiter.check(f"ip:{client_ip(request)}", GENERAL_LIMIT)
+    return ctx
 
 
 def heavy_check(request: Request, kind: str):

@@ -48,7 +48,7 @@ export function TourLauncher() {
     <div className="fg-tour-menu">
       <div className="fg-tour-menu-head">
         <div className="fg-tour-menu-title">
-          <LifeBuoy size={15} strokeWidth={1.8} /> 新手引导中心
+          <LifeBuoy size={15} strokeWidth={1.5} /> 新手引导中心
         </div>
         <div className="fg-tour-menu-sub">每个页面首次进入自动播放，也可随时重看</div>
       </div>
@@ -59,7 +59,7 @@ export function TourLauncher() {
           return (
             <button key={m.id} type="button" className={here ? 'fg-tour-menu-item here' : 'fg-tour-menu-item'} onClick={() => play(m.id)}>
               <span className="fg-tour-menu-icon">
-                <m.icon size={15} strokeWidth={1.7} />
+                <m.icon size={15} strokeWidth={1.5} />
               </span>
               <span className="fg-tour-menu-text">
                 <span className="fg-tour-menu-label">
@@ -108,7 +108,7 @@ export function TourLauncher() {
         className="fg-tour-fab"
         style={{ bottom: lab ? 70 : 24 }}
       >
-        <Compass size={20} strokeWidth={1.8} />
+        <Compass size={20} strokeWidth={1.5} />
         {pending && <span className="fg-tour-fab-dot" />}
       </button>
     </Popover>

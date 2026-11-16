@@ -51,16 +51,28 @@ def _used(db, key):
 
 
 def _consume(db, key, amount, limit):
+    from sqlalchemy.dialects.sqlite import insert as sqlite_insert
+
     from ..models import db as dbmod
 
-    row = db.get(dbmod.QuotaCounter, key)
-    if row is None:
-        row = dbmod.QuotaCounter(key=key, used=0, max_calls=limit)
-        db.add(row)
-    if row.used + amount > row.max_calls:
-        return False
-    row.used += amount
-    return True
+    # 先原子建行（并发下仅一个成功），再以条件 UPDATE 原子自增，消除读-改-写竞态。
+    db.execute(
+        sqlite_insert(dbmod.QuotaCounter)
+        .values(key=key, used=0, max_calls=limit)
+        .on_conflict_do_nothing()
+    )
+    updated = (
+        db.query(dbmod.QuotaCounter)
+        .filter(
+            dbmod.QuotaCounter.key == key,
+            dbmod.QuotaCounter.used + amount <= dbmod.QuotaCounter.max_calls,
+        )
+        .update(
+            {dbmod.QuotaCounter.used: dbmod.QuotaCounter.used + amount},
+            synchronize_session=False,
+        )
+    )
+    return updated == 1
 
 
 def status(session_id=None):
@@ -88,18 +100,24 @@ def status(session_id=None):
 def check_and_consume(session_id, amount=1):
     from ..models import db as dbmod
 
-    with dbmod.session_scope() as db:
-        global_ok = _consume(db, _global_key(), amount, settings.quota_global_daily)
-        session_ok = True
-        if session_id:
-            session_ok = _consume(
-                db, f"session:{session_id}", amount, settings.quota_session_max
-            )
-    if not global_ok or not session_ok:
+    global_ok = True
+    session_ok = True
+    try:
+        with dbmod.session_scope() as db:
+            global_ok = _consume(db, _global_key(), amount, settings.quota_global_daily)
+            if session_id:
+                session_ok = _consume(
+                    db, f"session:{session_id}", amount, settings.quota_session_max
+                )
+            if not global_ok or not session_ok:
+                scope = "全局" if not global_ok else "会话"
+                # 在事务内抛出以回滚全局/会话两处自增，避免部分扣减泄漏。
+                raise QuotaExhausted(f"{scope}模型调用额度用尽")
+    except QuotaExhausted:
+        # 模式切换独立提交，须在写事务回滚之后执行，避免 SQLite 写锁自死锁。
         if settings.snapshot_mode == "auto" and not global_ok:
             set_mode(MODE_REPLAY, reason="全局模型配额耗尽，自动切换快照回放")
-        scope = "全局" if not global_ok else "会话"
-        raise QuotaExhausted(f"{scope}模型调用额度用尽")
+        raise
 
 
 def adjust(global_max=None, session_max=None):

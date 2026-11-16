@@ -5,13 +5,12 @@ import { Button, Empty, Spin, Tag, Tooltip } from 'antd';
 import {
   ArrowLeft,
   GitCompare,
-  ShieldCheck,
-  ShieldOff,
   ExternalLink,
   ArrowRight,
   Equal,
   Diff,
 } from 'lucide-react';
+import { GuardIcon } from '@/components/icons/SecurityIcons';
 import { experimentApi, sessionApi } from '@/services/api/resources';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { RiskRing } from '@/components/common/RiskRing';
@@ -78,9 +77,9 @@ export default function ExperimentPage() {
           </span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <Tag color={exp.dimension === 'guard' ? 'warning' : 'processing'} style={{ margin: 0 }}>
+          <span style={{ fontSize: 11, padding: '1px 8px', borderRadius: 4, border: '1px solid var(--fg-border)', color: 'var(--fg-text-2)' }}>
             {exp.dimension === 'guard' ? '防护对照' : '实例对照'}
-          </Tag>
+          </span>
           <SimBadge />
         </div>
       </div>
@@ -90,9 +89,9 @@ export default function ExperimentPage() {
           {/* 实验概要 */}
           <div data-tour="exp-summary" style={cardStyle}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-              <span style={iconBoxStyle}><GitCompare size={18} /></span>
+              <GitCompare size={18} strokeWidth={1.5} style={{ color: 'var(--fg-text-3)', flexShrink: 0 }} />
               <div>
-                <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--fg-text-1)' }}>
+                <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--fg-text-1)' }}>
                   {exp.dimension === 'guard' ? '同一靶标 · 防护开关对照' : '同一输入 · 不同靶标对照'}
                 </div>
                 <div style={{ fontSize: 11.5, color: 'var(--fg-text-3)', marginTop: 2 }}>
@@ -124,15 +123,15 @@ export default function ExperimentPage() {
 
           {/* A/B 概要 */}
           <div data-tour="exp-runs" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-            <RunSummary label="A 组 · 起点" run={exp.run_a} session={sessionAQuery.data} loading={sessionAQuery.isLoading} accent="#7faed9" onOpen={() => navigate(`/console/${exp.run_a.session_id}`)} />
-            <RunSummary label="B 组 · 对照" run={exp.run_b} session={sessionBQuery.data} loading={sessionBQuery.isLoading} accent="#e8b45a" onOpen={() => navigate(`/console/${exp.run_b.session_id}`)} />
+            <RunSummary label="A 组 · 起点" run={exp.run_a} session={sessionAQuery.data} loading={sessionAQuery.isLoading} accent="#7aa3c8" onOpen={() => navigate(`/console/${exp.run_a.session_id}`)} />
+            <RunSummary label="B 组 · 对照" run={exp.run_b} session={sessionBQuery.data} loading={sessionBQuery.isLoading} accent="#d9a441" onOpen={() => navigate(`/console/${exp.run_b.session_id}`)} />
           </div>
 
           {/* 逐步对比 */}
           <div data-tour="exp-rows" style={cardStyle}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-              <Diff size={16} style={{ color: 'var(--fg-lab-accent)' }} />
-              <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--fg-text-1)' }}>逐步判定对比</span>
+              <Diff size={16} strokeWidth={1.5} style={{ color: 'var(--fg-text-3)' }} />
+              <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--fg-text-1)' }}>逐步判定对比</span>
               <span style={{ fontSize: 11, color: 'var(--fg-text-3)' }}>左 A 组 · 右 B 组，判定动作不一致的步骤高亮</span>
             </div>
             {exp.rows.length === 0 ? (
@@ -148,8 +147,8 @@ export default function ExperimentPage() {
                 {exp.rows.map((row) => {
                   const diff = (row.run_a.action ?? null) !== (row.run_b.action ?? null);
                   return (
-                    <div key={row.step} style={{ ...diffRowStyle, borderColor: diff ? 'var(--fg-observe)55' : 'var(--fg-border)', background: diff ? 'var(--fg-observe-bg)' : 'var(--fg-bg-subtle)' }}>
-                      <span className="mono" style={{ width: 40, fontSize: 11, fontWeight: 700, color: diff ? 'var(--fg-observe-text)' : 'var(--fg-text-3)', flexShrink: 0 }}>
+                    <div key={row.step} style={{ ...diffRowStyle, borderColor: diff ? 'var(--fg-observe)' : 'var(--fg-border)', background: diff ? 'var(--fg-observe-bg)' : 'var(--fg-bg-subtle)' }}>
+                      <span className="mono" style={{ width: 40, fontSize: 11, fontWeight: 600, color: diff ? 'var(--fg-observe-text)' : 'var(--fg-text-3)', flexShrink: 0 }}>
                         {String(row.step).padStart(2, '0')}
                       </span>
                       <CallCell call={row.run_a} />
@@ -173,7 +172,7 @@ function RunSummary({ label, run, session, loading, accent, onOpen }: { label: s
   return (
     <div style={{ ...cardStyle, borderTop: `3px solid ${accent}` }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-        <span style={{ fontSize: 13, fontWeight: 700, color: accent }}>{label}</span>
+        <span style={{ fontSize: 13, fontWeight: 600, color: accent }}>{label}</span>
         <span className="mono" style={{ fontSize: 10, color: 'var(--fg-text-3)' }}>{run.session_id}</span>
         <Button size="small" type="text" icon={<ExternalLink size={13} />} onClick={onOpen} style={{ marginLeft: 'auto', color: accent }}>
           控制台
@@ -186,12 +185,12 @@ function RunSummary({ label, run, session, loading, accent, onOpen }: { label: s
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
             <RiskRing score={session.risk_score} maxRisk={session.max_risk} size={48} stroke={5} />
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--fg-text-1)' }}>{session.instance_name}</div>
+              <div style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--fg-text-1)' }}>{session.instance_name}</div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
                 {session.guard_enabled ? (
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--fg-allow-text)' }}><ShieldCheck size={12} /> 防护开启</span>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--fg-allow-text)' }}><GuardIcon size={12} /> 防护开启</span>
                 ) : (
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--fg-block-text)' }}><ShieldOff size={12} /> 防护关闭</span>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--fg-block-text)' }}><GuardIcon size={12} /> 防护关闭</span>
                 )}
               </div>
             </div>
@@ -211,7 +210,7 @@ function RunSummary({ label, run, session, loading, accent, onOpen }: { label: s
 function CallCell({ call }: { call: ExperimentCall }) {
   if (call.note || !call.tool) {
     return (
-      <span style={{ flex: 1, minWidth: 0, fontSize: 11, color: 'var(--fg-text-3)', fontStyle: 'italic', display: 'flex', alignItems: 'center' }}>
+      <span style={{ flex: 1, minWidth: 0, fontSize: 11, color: 'var(--fg-text-3)', display: 'flex', alignItems: 'center' }}>
         {call.note ?? '本次运行未发生该步'}
       </span>
     );
@@ -219,7 +218,7 @@ function CallCell({ call }: { call: ExperimentCall }) {
   return (
     <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
       <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <span className="mono" style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--fg-text-1)' }}>{call.tool}</span>
+        <span className="mono" style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--fg-text-1)' }}>{call.tool}</span>
         <span style={{ fontSize: 10, color: 'var(--fg-text-3)' }}>{TOOL_META[call.tool]?.label}</span>
         <span style={{ marginLeft: 'auto' }}><StatusBadge action={call.action ?? 'unknown'} size="sm" showText={false} /></span>
       </span>
@@ -239,7 +238,7 @@ function CallCell({ call }: { call: ExperimentCall }) {
 function Metric({ label, value, color, small }: { label: string; value: number | string; color?: string; small?: boolean }) {
   return (
     <div style={{ textAlign: 'center', padding: '8px 4px', background: 'var(--fg-bg-subtle)', borderRadius: 8, border: '1px solid var(--fg-border)' }}>
-      <div className="mono" style={{ fontSize: small ? 13 : 18, fontWeight: 700, color: color ?? 'var(--fg-text-1)' }}>{value}</div>
+      <div className="mono" style={{ fontSize: small ? 13 : 18, fontWeight: 600, color: color ?? 'var(--fg-text-1)' }}>{value}</div>
       <div style={{ fontSize: 10, color: 'var(--fg-text-3)', marginTop: 2 }}>{label}</div>
     </div>
   );
@@ -247,8 +246,7 @@ function Metric({ label, value, color, small }: { label: string; value: number |
 
 const labNavStyle: React.CSSProperties = { height: 46, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '0 16px', borderBottom: '1px solid var(--fg-border)', background: 'var(--fg-bg-subtle)' };
 const cardStyle: React.CSSProperties = { background: 'var(--fg-bg-card)', border: '1px solid var(--fg-border)', borderRadius: 14, padding: 18 };
-const iconBoxStyle: React.CSSProperties = { width: 38, height: 38, borderRadius: 11, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'var(--fg-bg-subtle)', color: 'var(--fg-lab-accent)', border: '1px solid var(--fg-border)' };
 const inputBoxStyle: React.CSSProperties = { fontSize: 12.5, color: 'var(--fg-text-1)', lineHeight: 1.65, background: 'var(--fg-bg-subtle)', border: '1px solid var(--fg-border)', borderRadius: 9, padding: '10px 13px', whiteSpace: 'pre-wrap', wordBreak: 'break-word' };
 const diffChipStyle: React.CSSProperties = { display: 'inline-flex', gap: 8, fontSize: 11, padding: '4px 10px', borderRadius: 7, background: 'var(--fg-bg-subtle)', border: '1px solid var(--fg-border)' };
-const diffHeadStyle: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 10, padding: '0 12px 6px', fontSize: 10.5, fontWeight: 700, color: 'var(--fg-text-3)', letterSpacing: '0.04em' };
-const diffRowStyle: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', border: '1px solid var(--fg-border)', borderRadius: 10, transition: 'all 160ms ease' };
+const diffHeadStyle: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 10, padding: '0 12px 6px', fontSize: 10.5, fontWeight: 500, color: 'var(--fg-text-3)' };
+const diffRowStyle: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', border: '1px solid var(--fg-border)', borderRadius: 10, transition: 'background-color 160ms ease, border-color 160ms ease' };

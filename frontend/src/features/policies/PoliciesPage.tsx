@@ -4,8 +4,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { App, Button, Empty, Input, Modal, Segmented, Select, Spin, Switch, Tag, Tooltip } from 'antd';
 import {
   ArrowLeft,
-  ShieldCheck,
-  Layers,
   Filter,
   Lock,
   Unlock,
@@ -21,14 +19,15 @@ import { SectionCard } from '@/components/common/SectionCard';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { EmptyState } from '@/components/common/EmptyState';
 import { JsonViewer } from '@/components/common/JsonViewer';
+import { GuardIcon } from '@/components/icons/SecurityIcons';
 import { PRESET_META } from '@/utils/constants';
 import { formatShort } from '@/utils/format';
 import type { Action, Policy } from '@/types/api';
 
 const LEVEL_META: Record<string, { name: string; desc: string; hue: string }> = {
-  L1: { name: 'L1 · 确定性规则', desc: '工具存在性 / 对象边界 / 参数边界 / 调用约束，命中即短路', hue: '#5689b8' },
-  L2: { name: 'L2 · 注入分类', desc: '注入概率打分，高危短路、灰区质询', hue: '#2d9184' },
-  L3: { name: 'L3 · 语义判定', desc: '对照基线摘要的语义越权判定，输出固定 JSON', hue: '#7c6bb8' },
+  L1: { name: 'L1 · 确定性规则', desc: '工具存在性 / 对象边界 / 参数边界 / 调用约束，命中即短路', hue: '#4f7ba6' },
+  L2: { name: 'L2 · 注入分类', desc: '注入概率打分，高危短路、灰区质询', hue: '#176b63' },
+  L3: { name: 'L3 · 语义判定', desc: '对照基线摘要的语义越权判定，输出固定 JSON', hue: '#64748b' },
 };
 
 const ACTION_OPTIONS: { value: Action; label: string }[] = [
@@ -115,7 +114,7 @@ export default function PoliciesPage() {
   return (
     <div>
       <PageHeader
-        icon={<ShieldCheck size={22} strokeWidth={1.7} />}
+        icon={<GuardIcon size={20} strokeWidth={1.5} />}
         title="策略管理"
         subtitle={
           instance ? (
@@ -157,32 +156,19 @@ export default function PoliciesPage() {
                     flex: 1,
                     textAlign: 'left',
                     padding: '16px 18px',
-                    background: levelFilter === lv ? `${meta.hue}12` : 'transparent',
+                    background: levelFilter === lv ? 'var(--fg-bg-subtle)' : 'transparent',
                     border: 'none',
-                    borderBottom: `3px solid ${levelFilter === lv ? meta.hue : 'transparent'}`,
+                    borderBottom: `2px solid ${levelFilter === lv ? meta.hue : 'transparent'}`,
                     cursor: 'pointer',
-                    transition: 'all 160ms ease',
+                    transition: 'background-color 160ms ease, border-color 160ms ease',
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                      <span
-                        style={{
-                          width: 30,
-                          height: 30,
-                          borderRadius: 9,
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          background: `${meta.hue}1a`,
-                          color: meta.hue,
-                        }}
-                      >
-                        <Layers size={16} strokeWidth={1.8} />
-                      </span>
-                      <span style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--fg-text-1)' }}>{meta.name}</span>
+                      <span style={{ width: 6, height: 6, borderRadius: '50%', background: meta.hue, flexShrink: 0 }} />
+                      <span style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--fg-text-1)' }}>{meta.name}</span>
                     </span>
-                    <span className="mono" style={{ fontSize: 18, fontWeight: 700, color: meta.hue }}>
+                    <span className="mono" style={{ fontSize: 18, fontWeight: 600, color: 'var(--fg-text-1)' }}>
                       {counts[lv] ?? 0}
                     </span>
                   </div>
@@ -252,13 +238,16 @@ export default function PoliciesPage() {
                         zIndex: 1,
                         padding: '7px 16px',
                         fontSize: 11,
-                        fontWeight: 700,
-                        letterSpacing: '0.06em',
-                        color: LEVEL_META[lv].hue,
+                        fontWeight: 500,
+                        color: 'var(--fg-text-2)',
                         background: 'var(--fg-bg-subtle)',
                         borderBottom: '1px solid var(--fg-border)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
                       }}
                     >
+                      <span style={{ width: 6, height: 6, borderRadius: '50%', background: LEVEL_META[lv].hue }} />
                       {LEVEL_META[lv].name} · {grouped[lv].length} 条
                     </div>
                     {grouped[lv].map((p) => (
@@ -358,13 +347,13 @@ function PolicyRow({ policy, active, onSelect }: { policy: Policy; active: boole
         width: '100%',
         textAlign: 'left',
         padding: '11px 16px',
-        background: active ? 'var(--fg-brand-light)' : 'transparent',
+        background: active ? 'var(--fg-bg-subtle)' : 'transparent',
         border: 'none',
         borderLeft: `3px solid ${active ? 'var(--fg-brand-primary)' : 'transparent'}`,
         borderBottom: '1px solid var(--fg-border)',
         cursor: 'pointer',
         opacity: policy.enabled ? 1 : 0.55,
-        transition: 'background 140ms ease',
+        transition: 'background-color 140ms ease',
       }}
     >
       <span style={{ flexShrink: 0, color: policy.enabled ? 'var(--fg-allow-text)' : 'var(--fg-text-3)' }}>
@@ -372,7 +361,7 @@ function PolicyRow({ policy, active, onSelect }: { policy: Policy; active: boole
       </span>
       <span style={{ flex: 1, minWidth: 0 }}>
         <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span className="mono" style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--fg-text-1)' }}>
+          <span className="mono" style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--fg-text-1)' }}>
             {policy.policy_id}
           </span>
           <span style={{ fontSize: 11, color: 'var(--fg-text-3)' }}>{policy.rule_type}</span>
@@ -406,7 +395,7 @@ function PolicyDetail({ policy }: { policy: Policy }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-        <span className="mono" style={{ fontSize: 14, fontWeight: 700, color: 'var(--fg-text-1)' }}>
+        <span className="mono" style={{ fontSize: 14, fontWeight: 600, color: 'var(--fg-text-1)' }}>
           {policy.policy_id}
         </span>
         <StatusBadge action={policy.action} size="sm" />

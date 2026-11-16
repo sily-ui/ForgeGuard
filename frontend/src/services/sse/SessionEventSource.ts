@@ -33,12 +33,14 @@ export class SessionEventSource {
     if (this.stopped) return;
     this.controller = new AbortController();
     const { sessionId, token } = this.opts;
-    const params = new URLSearchParams({ token });
+    const params = new URLSearchParams();
     if (this.lastId > 0) params.set('last_event_id', String(this.lastId));
-    const url = `/api/v1/sessions/${sessionId}/events?${params.toString()}`;
+    const qs = params.toString();
+    const url = `/api/v1/sessions/${sessionId}/events${qs ? `?${qs}` : ''}`;
 
     fetchEventSource(url, {
       signal: this.controller.signal,
+      headers: { Authorization: `Bearer ${token}` },
       openWhenHidden: true,
       onopen: async (response) => {
         if (response.ok && response.headers.get('content-type')?.includes('text/event-stream')) {

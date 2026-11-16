@@ -40,13 +40,12 @@ const EDGES = [
 ];
 
 function edgeAttrs(kind: string, lab: boolean) {
-  const normal = lab ? '#2d9184' : '#2d9184';
   const map: Record<string, { stroke: string; dash?: string; width: number }> = {
-    normal: { stroke: normal, width: 2 },
-    attack: { stroke: '#e8b45a', width: 2, dash: '6 4' },
-    mirror: { stroke: lab ? '#7faed9' : '#5689b8', width: 1.6, dash: '4 5' },
-    block: { stroke: '#f0787c', width: 2.4 },
-    degrade: { stroke: '#e8b45a', width: 1.6 },
+    normal: { stroke: lab ? '#5fb8a4' : '#176b63', width: 2 },
+    attack: { stroke: lab ? '#d9a441' : '#c2892b', width: 2, dash: '6 4' },
+    mirror: { stroke: lab ? '#7aa3c8' : '#4f7ba6', width: 1.6, dash: '4 5' },
+    block: { stroke: lab ? '#e0686d' : '#b5484d', width: 2.4 },
+    degrade: { stroke: lab ? '#d9a441' : '#c2892b', width: 1.6 },
   };
   const m = map[kind] || map.normal;
   return {
@@ -78,7 +77,7 @@ export function TopologyGraph({ state, height = 268 }: Props) {
       height,
       autoResize: true,
       background: { color: 'transparent' },
-      grid: { visible: true, type: 'dot', size: 22, args: { color: lab ? '#22343d' : '#dfe8e5', thickness: 1 } },
+      grid: { visible: true, type: 'dot', size: 22, args: { color: lab ? '#2b323c' : '#e2e5e8', thickness: 1 } },
       interacting: false,
       panning: false,
       mousewheel: false,
@@ -162,10 +161,10 @@ export function TopologyGraph({ state, height = 268 }: Props) {
     <div style={{ position: 'relative', width: '100%' }}>
       <div ref={containerRef} style={{ width: '100%', height }} />
       <div style={{ position: 'absolute', bottom: 6, left: 12, display: 'flex', gap: 14, fontSize: 10, color: 'var(--fg-text-3)' }}>
-        <Legend color="#2d9184" label="正常调用" />
-        <Legend color="#e8b45a" label="攻击 / 降级" dash />
-        <Legend color={lab ? '#7faed9' : '#5689b8'} label="旁路镜像" dash />
-        <Legend color="#f0787c" label="阻断" />
+        <Legend color={lab ? '#5fb8a4' : '#176b63'} label="正常调用" />
+        <Legend color={lab ? '#d9a441' : '#c2892b'} label="攻击 / 降级" dash />
+        <Legend color={lab ? '#7aa3c8' : '#4f7ba6'} label="旁路镜像" dash />
+        <Legend color={lab ? '#e0686d' : '#b5484d'} label="阻断" />
       </div>
     </div>
   );

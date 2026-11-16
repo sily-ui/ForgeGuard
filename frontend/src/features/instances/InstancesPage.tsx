@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { App, Button, Segmented, Table, Tag, Tooltip, Modal, Radio, Input, Empty, Spin } from 'antd';
-import { Boxes, LayoutGrid, Table2, Plus, Swords, Copy, ShieldCheck, RefreshCw, Trash2, ArrowRight, Clock } from 'lucide-react';
+import { App, Button, Segmented, Table, Tag, Tooltip, Modal, Radio, Input, Spin } from 'antd';
+import { Boxes, LayoutGrid, Table2, Plus, Copy, RefreshCw, Trash2, Clock } from 'lucide-react';
+import { AttackIcon, GuardIcon } from '@/components/icons/SecurityIcons';
 import { PageHeader } from '@/components/common/PageHeader';
 import { SectionCard } from '@/components/common/SectionCard';
 import { SimBadge } from '@/components/common/SimBadge';
@@ -18,7 +19,7 @@ const STATUS_COLOR: Record<string, string> = {
   ready: 'green',
   creating: 'blue',
   pending_retry: 'orange',
-  frozen: 'cyan',
+  frozen: 'default',
   destroyed: 'default',
 };
 
@@ -61,7 +62,7 @@ export default function InstancesPage() {
   return (
     <div>
       <PageHeader
-        icon={<Boxes size={22} strokeWidth={1.7} />}
+        icon={<Boxes size={20} strokeWidth={1.5} />}
         title="实例管理"
         subtitle="运行中的靶标 Agent 实例：进入攻防会话、克隆比对、查看策略、续期与回收"
         extra={
@@ -82,10 +83,10 @@ export default function InstancesPage() {
 
       {/* 统计 */}
       <div data-tour="instances-stats" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 18 }}>
-        <StatCard label="存活实例" value={alive.length} accent="#176b63" />
-        <StatCard label="就绪" value={instances.filter((i) => i.status === 'ready').length} accent="#2b9477" />
-        <StatCard label="累计调用" value={instances.reduce((s, i) => s + (i.stats?.call_count || 0), 0)} accent="#5689b8" />
-        <StatCard label="已销毁" value={instances.filter((i) => i.status === 'destroyed').length} accent="#9aa7a3" />
+        <StatCard label="存活实例" value={alive.length} accent="var(--fg-brand-primary)" />
+        <StatCard label="就绪" value={instances.filter((i) => i.status === 'ready').length} />
+        <StatCard label="累计调用" value={instances.reduce((s, i) => s + (i.stats?.call_count || 0), 0)} />
+        <StatCard label="已销毁" value={instances.filter((i) => i.status === 'destroyed').length} />
       </div>
 
       <div data-tour="instances-filter" style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
@@ -166,11 +167,11 @@ export default function InstancesPage() {
   );
 }
 
-function StatCard({ label, value, accent }: { label: string; value: number; accent: string }) {
+function StatCard({ label, value, accent }: { label: string; value: number; accent?: string }) {
   return (
     <div className="fg-card" style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 6 }}>
       <span style={{ fontSize: 12, color: 'var(--fg-text-3)' }}>{label}</span>
-      <span className="mono" style={{ fontSize: 28, fontWeight: 700, color: accent, lineHeight: 1 }}>{value}</span>
+      <span className="mono" style={{ fontSize: 28, fontWeight: 600, color: accent ?? 'var(--fg-text-1)', lineHeight: 1 }}>{value}</span>
     </div>
   );
 }
@@ -189,16 +190,16 @@ function InstanceCard({ instance, onEnter, entering, onClone, onPolicies, onRene
     <div className="fg-card" style={{ padding: 18, opacity: destroyed ? 0.6 : 1, display: 'flex', flexDirection: 'column', gap: 14 }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
         <div style={{ minWidth: 0 }}>
-          <div style={{ fontSize: 15.5, fontWeight: 700, color: 'var(--fg-text-1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{instance.name}</div>
+          <div style={{ fontSize: 15.5, fontWeight: 600, color: 'var(--fg-text-1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{instance.name}</div>
           <div className="mono" style={{ fontSize: 10.5, color: 'var(--fg-text-3)', marginTop: 2 }}>{instance.instance_id}</div>
         </div>
         <Tag color={STATUS_COLOR[instance.status]} style={{ margin: 0 }}>{INSTANCE_STATUS_META[instance.status]?.label}</Tag>
       </div>
 
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-        <Tag icon={<ShieldCheck size={11} />} color="cyan" style={{ margin: 0 }}>{PRESET_META[instance.guard.preset]?.label || instance.guard.preset}</Tag>
+        <span className="mono" style={{ fontSize: 10.5, padding: '1px 8px', borderRadius: 4, border: '1px solid var(--fg-border)', color: 'var(--fg-text-2)' }}>{PRESET_META[instance.guard.preset]?.label || instance.guard.preset}</span>
         <SimBadge compact />
-        {instance.clone_source_id && <Tag color="purple" style={{ margin: 0, fontSize: 10.5 }}>克隆体</Tag>}
+        {instance.clone_source_id && <span style={{ fontSize: 10.5, padding: '1px 8px', borderRadius: 4, border: '1px solid var(--fg-border)', color: 'var(--fg-text-2)' }}>克隆体</span>}
       </div>
 
       <div>
@@ -219,9 +220,9 @@ function InstanceCard({ instance, onEnter, entering, onClone, onPolicies, onRene
       </div>
 
       <div style={{ display: 'flex', gap: 8, marginTop: 'auto', paddingTop: 4, borderTop: '1px solid var(--fg-border)' }}>
-        <Button type="primary" size="small" icon={<Swords size={13} />} disabled={destroyed} loading={entering} onClick={onEnter} style={{ flex: 1 }}>进入会话</Button>
+        <Button type="primary" size="small" icon={<AttackIcon size={13} />} disabled={destroyed} loading={entering} onClick={onEnter} style={{ flex: 1 }}>进入会话</Button>
         <Tooltip title="克隆比对"><Button size="small" icon={<Copy size={13} />} disabled={destroyed} onClick={onClone} /></Tooltip>
-        <Tooltip title="查看策略"><Button size="small" icon={<ShieldCheck size={13} />} onClick={onPolicies} /></Tooltip>
+        <Tooltip title="查看策略"><Button size="small" icon={<GuardIcon size={13} />} onClick={onPolicies} /></Tooltip>
         <Tooltip title="续期"><Button size="small" icon={<RefreshCw size={13} />} disabled={destroyed} onClick={onRenew} /></Tooltip>
         <Tooltip title="回收"><Button size="small" danger icon={<Trash2 size={13} />} disabled={destroyed} onClick={onRecycle} /></Tooltip>
       </div>

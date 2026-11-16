@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { App, Button, Drawer, Input, InputNumber, Select, Slider, Switch, Tag, Tooltip, Alert } from 'antd';
-import { UserRound, Wrench, Gauge, ShieldCheck, Eye, Save, Rocket, Check, FileText, Mail, Globe, Terminal, Settings2, FilePen } from 'lucide-react';
+import { App, Button, Drawer, Input, InputNumber, Select, Slider, Switch, Tooltip, Alert } from 'antd';
+import { UserRound, Wrench, Gauge, Eye, Save, Rocket, Check, FileText, Mail, Globe, Terminal, Settings2, FilePen, Sparkles } from 'lucide-react';
+import { GuardIcon } from '@/components/icons/SecurityIcons';
 import { PageHeader } from '@/components/common/PageHeader';
 import { SectionCard } from '@/components/common/SectionCard';
 import { PromptEditor } from '@/components/editor/PromptEditor';
@@ -18,7 +19,7 @@ const STEPS = [
   { key: 'identity', label: '基础身份', desc: '名称 · 用途 · 系统提示词', icon: UserRound },
   { key: 'tools', label: '工具能力', desc: '启用工具与权限边界', icon: Wrench },
   { key: 'limits', label: '调用约束', desc: '频次 · 会话 · 超时', icon: Gauge },
-  { key: 'guard', label: '防护档位', desc: '三级判定灵敏度', icon: ShieldCheck },
+  { key: 'guard', label: '防护档位', desc: '三级判定灵敏度', icon: GuardIcon },
 ];
 
 const TOOL_ICONS: Record<string, typeof FileText> = {
@@ -82,6 +83,15 @@ export default function OrchestrationPage() {
     onError: (err) => message.error(err instanceof ApiClientError ? err.message : '创建实例失败'),
   });
 
+  const suggestPromptMutation = useMutation({
+    mutationFn: () => configApi.suggestPrompt(config.name ?? '', config.purpose ?? ''),
+    onSuccess: (data) => {
+      patch({ system_prompt: data.system_prompt });
+      message.success(data.simulated ? '模型不可用，已生成合规模板提示词' : 'AI 已生成系统提示词，可继续编辑');
+    },
+    onError: (err) => message.error(err instanceof ApiClientError ? err.message : '生成系统提示词失败'),
+  });
+
   const enabled = enabledToolNames(config);
   const policies = previewQuery.data?.policies ?? [];
   const grouped = useMemo(() => {
@@ -93,7 +103,7 @@ export default function OrchestrationPage() {
   return (
     <div>
       <PageHeader
-        icon={<Wrench size={22} strokeWidth={1.7} />}
+        icon={<Wrench size={20} strokeWidth={1.5} />}
         title="编排中心"
         subtitle="可视化编排靶标 Agent：身份 → 工具能力 → 调用约束 → 防护档位，实时预览生成的三级策略"
         extra={
@@ -132,16 +142,14 @@ export default function OrchestrationPage() {
                   alignItems: 'flex-start',
                   padding: '12px 13px',
                   borderRadius: 11,
-                  border: `1px solid ${active ? 'var(--fg-brand-primary)' : 'var(--fg-border)'}`,
-                  background: active ? 'var(--fg-brand-light)' : 'var(--fg-bg-card)',
+                  border: '1px solid var(--fg-border)',
+                  background: active ? 'var(--fg-bg-subtle)' : 'var(--fg-bg-card)',
                   cursor: 'pointer',
                   textAlign: 'left',
-                  transition: 'all 160ms ease',
+                  transition: 'background-color 160ms ease, border-color 160ms ease',
                 }}
               >
-                <div style={{ width: 28, height: 28, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: active ? 'var(--fg-brand-primary)' : 'var(--fg-bg-subtle)', color: active ? '#fff' : 'var(--fg-text-3)', flexShrink: 0 }}>
-                  <s.icon size={15} strokeWidth={1.7} />
-                </div>
+                <s.icon size={16} strokeWidth={1.5} style={{ color: active ? 'var(--fg-brand-primary)' : 'var(--fg-text-3)', marginTop: 2, flexShrink: 0 }} />
                 <div style={{ lineHeight: 1.25 }}>
                   <div style={{ fontSize: 13, fontWeight: 600, color: active ? 'var(--fg-brand-primary)' : 'var(--fg-text-1)' }}>{i + 1}. {s.label}</div>
                   <div style={{ fontSize: 10.5, color: 'var(--fg-text-3)', marginTop: 2 }}>{s.desc}</div>
@@ -162,7 +170,24 @@ export default function OrchestrationPage() {
                 <Field label="声明用途" hint="供语义层对照基线，判断越权意图">
                   <Input value={config.purpose} onChange={(e) => patch({ purpose: e.target.value })} placeholder="例如：处理用户咨询与订单查询" />
                 </Field>
-                <Field label="系统提示词" required hint="不超过 4000 字符，明确授权与禁止动作">
+                <Field
+                  label="系统提示词"
+                  required
+                  hint="不超过 4000 字符，明确授权与禁止动作"
+                  action={
+                    <Tooltip title="依据实例名称与声明用途，调用模型自动生成系统提示词">
+                      <Button
+                        size="small"
+                        icon={<Sparkles size={14} />}
+                        loading={suggestPromptMutation.isPending}
+                        disabled={!(config.name ?? '').trim() && !(config.purpose ?? '').trim()}
+                        onClick={() => suggestPromptMutation.mutate()}
+                      >
+                        AI 生成
+                      </Button>
+                    </Tooltip>
+                  }
+                >
                   <PromptEditor value={config.system_prompt} onChange={(v) => patch({ system_prompt: v })} language="markdown" height={260} />
                 </Field>
               </div>
@@ -178,12 +203,10 @@ export default function OrchestrationPage() {
                 return (
                   <SectionCard key={name} padding={0} style={{ border: `1px solid ${spec.enabled ? 'var(--fg-brand-primary)' : 'var(--fg-border)'}` }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px', borderBottom: spec.enabled ? '1px solid var(--fg-border)' : 'none' }}>
-                      <div style={{ width: 34, height: 34, borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', background: spec.enabled ? 'var(--fg-brand-light)' : 'var(--fg-bg-subtle)', color: spec.enabled ? 'var(--fg-brand-primary)' : 'var(--fg-text-3)' }}>
-                        <Icon size={17} strokeWidth={1.7} />
-                      </div>
+                      <Icon size={17} strokeWidth={1.5} style={{ color: spec.enabled ? 'var(--fg-brand-primary)' : 'var(--fg-text-3)', flexShrink: 0 }} />
                       <div style={{ flex: 1 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <span className="mono" style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--fg-text-1)' }}>{name}</span>
+                          <span className="mono" style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--fg-text-1)' }}>{name}</span>
                           <span style={{ fontSize: 12, color: 'var(--fg-text-2)' }}>{meta.label}</span>
                           <SimBadge compact />
                         </div>
@@ -227,19 +250,19 @@ export default function OrchestrationPage() {
                       onClick={() => patch({ guard: { ...config.guard, preset } })}
                       style={{
                         padding: 18,
-                        borderRadius: 13,
-                        border: `2px solid ${active ? 'var(--fg-brand-primary)' : 'var(--fg-border)'}`,
-                        background: active ? 'var(--fg-brand-light)' : 'var(--fg-bg-card)',
+                        borderRadius: 12,
+                        border: `1px solid ${active ? 'var(--fg-brand-primary)' : 'var(--fg-border)'}`,
+                        background: active ? 'var(--fg-bg-subtle)' : 'var(--fg-bg-card)',
                         cursor: 'pointer',
                         textAlign: 'left',
-                        transition: 'all 160ms ease',
+                        transition: 'background-color 160ms ease, border-color 160ms ease',
                       }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                        <span style={{ fontSize: 16, fontWeight: 700, color: active ? 'var(--fg-brand-primary)' : 'var(--fg-text-1)' }}>{meta.label}</span>
+                        <span style={{ fontSize: 16, fontWeight: 600, color: active ? 'var(--fg-brand-primary)' : 'var(--fg-text-1)' }}>{meta.label}</span>
                         {active && <Check size={18} style={{ color: 'var(--fg-brand-primary)' }} />}
                       </div>
-                      <div className="mono" style={{ fontSize: 10.5, color: 'var(--fg-text-3)', textTransform: 'uppercase', marginBottom: 8 }}>{preset}</div>
+                      <div className="mono" style={{ fontSize: 10.5, color: 'var(--fg-text-3)', marginBottom: 8 }}>{preset}</div>
                       <div style={{ fontSize: 12, color: 'var(--fg-text-2)', lineHeight: 1.55 }}>{meta.desc}</div>
                     </button>
                   );
@@ -270,13 +293,13 @@ export default function OrchestrationPage() {
           <SectionCard title="编排摘要" padding={16}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <SummaryRow label="名称" value={config.name || '—'} />
-              <SummaryRow label="防护档位" value={<Tag color="cyan" style={{ margin: 0 }}>{PRESET_META[config.guard.preset]?.label}</Tag>} />
+              <SummaryRow label="防护档位" value={<span className="mono" style={{ fontSize: 11.5, color: 'var(--fg-text-2)', border: '1px solid var(--fg-border)', borderRadius: 4, padding: '1px 8px' }}>{PRESET_META[config.guard.preset]?.label}</span>} />
               <div>
                 <div style={{ fontSize: 11, color: 'var(--fg-text-3)', marginBottom: 6 }}>启用工具 ({enabled.length})</div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
                   {enabled.length === 0 && <span style={{ fontSize: 12, color: 'var(--fg-text-3)' }}>未启用任何工具</span>}
                   {enabled.map((t) => (
-                    <span key={t} className="mono" style={{ fontSize: 10.5, padding: '2px 8px', borderRadius: 6, background: 'var(--fg-brand-light)', color: 'var(--fg-brand-primary)', border: '1px solid #cfe6e0' }}>{t}</span>
+                    <span key={t} className="mono" style={{ fontSize: 10.5, padding: '2px 8px', borderRadius: 4, background: 'var(--fg-bg-subtle)', color: 'var(--fg-text-2)', border: '1px solid var(--fg-border)' }}>{t}</span>
                   ))}
                 </div>
               </div>
@@ -299,7 +322,7 @@ export default function OrchestrationPage() {
                 </div>
               )}
               {validation.warnings.map((w, i) => (
-                <div key={i} style={{ fontSize: 11.5, color: 'var(--fg-observe-text)', lineHeight: 1.5, marginTop: 4 }}>⚠ {w.message}</div>
+                <div key={i} style={{ fontSize: 11.5, color: 'var(--fg-observe-text)', lineHeight: 1.5, marginTop: 4 }}>{w.message}</div>
               ))}
             </SectionCard>
           )}
@@ -315,7 +338,7 @@ export default function OrchestrationPage() {
             {(['L1', 'L2', 'L3'] as const).map((level) => (
               <div key={level}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                  <span className="mono" style={{ fontSize: 12, fontWeight: 700, padding: '2px 9px', borderRadius: 6, background: level === 'L1' ? '#5689b81a' : level === 'L2' ? '#2d91841a' : '#7c6bb81a', color: level === 'L1' ? '#5689b8' : level === 'L2' ? '#2d9184' : '#7c6bb8' }}>{level}</span>
+                  <span className="mono" style={{ fontSize: 12, fontWeight: 600, padding: '2px 9px', borderRadius: 4, background: 'var(--fg-bg-subtle)', color: 'var(--fg-text-2)', border: '1px solid var(--fg-border)' }}>{level}</span>
                   <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg-text-1)' }}>
                     {level === 'L1' ? '确定性规则层' : level === 'L2' ? '注入分类层' : '语义判定层'}
                   </span>
@@ -342,12 +365,13 @@ export default function OrchestrationPage() {
   );
 }
 
-function Field({ label, required, hint, children }: { label: string; required?: boolean; hint?: string; children: React.ReactNode }) {
+function Field({ label, required, hint, action, children }: { label: string; required?: boolean; hint?: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 7 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 7 }}>
         <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg-text-1)' }}>{label}{required && <span style={{ color: 'var(--fg-block)' }}> *</span>}</span>
         {hint && <span style={{ fontSize: 11, color: 'var(--fg-text-3)' }}>{hint}</span>}
+        {action && <span style={{ marginLeft: 'auto' }}>{action}</span>}
       </div>
       {children}
     </div>

@@ -5,8 +5,6 @@ import { Button, Input, Segmented, Spin, Tag, Tooltip } from 'antd';
 import {
   FileBarChart,
   Search,
-  ShieldAlert,
-  ShieldCheck,
   Clock,
   Share2,
   ArrowRight,
@@ -14,6 +12,7 @@ import {
   List,
   FileText,
 } from 'lucide-react';
+import { GuardIcon } from '@/components/icons/SecurityIcons';
 import { reportApi } from '@/services/api/resources';
 import { PageHeader } from '@/components/common/PageHeader';
 import { SectionCard } from '@/components/common/SectionCard';
@@ -52,7 +51,7 @@ export default function ReportsPage() {
   return (
     <div>
       <PageHeader
-        icon={<FileBarChart size={22} strokeWidth={1.7} />}
+        icon={<FileBarChart size={20} strokeWidth={1.5} />}
         title="测评报告"
         subtitle="只读快照报告：测评概要 / 靶标基线 / 攻击序列 / 风险分析 / 加固建议 / 局限性说明"
         extra={
@@ -65,9 +64,9 @@ export default function ReportsPage() {
       />
 
       <div data-tour="reports-stats" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 18 }}>
-        <StatCard icon={<FileBarChart size={18} />} label="报告总数" value={stats.total} hue="var(--fg-brand-primary)" />
-        <StatCard icon={<ShieldCheck size={18} />} label="累计拦截" value={stats.blocked} hue="var(--fg-allow)" />
-        <StatCard icon={<ShieldAlert size={18} />} label="高危报告" value={stats.high} hue="var(--fg-block)" />
+        <StatCard label="报告总数" value={stats.total} />
+        <StatCard label="累计拦截" value={stats.blocked} color="var(--fg-allow-text)" />
+        <StatCard label="高危报告" value={stats.high} color="var(--fg-block-text)" />
       </div>
 
       <div data-tour="reports-list">
@@ -141,7 +140,7 @@ function ReportCard({ report, onOpen }: { report: Report; onOpen: () => void }) 
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
         <RiskRing score={high ? 0.9 : s.max_risk === 'medium' ? 0.5 : 0.15} maxRisk={s.max_risk} size={46} stroke={5} />
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--fg-text-1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--fg-text-1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {s.instance_name}
           </div>
           <div className="mono" style={{ fontSize: 10, color: 'var(--fg-text-3)', marginTop: 2 }}>{report.report_id}</div>
@@ -155,7 +154,7 @@ function ReportCard({ report, onOpen }: { report: Report; onOpen: () => void }) 
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 14, fontSize: 11, color: 'var(--fg-text-3)' }}>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-          <ShieldCheck size={12} style={{ color: 'var(--fg-allow-text)' }} /> 拦截 <b className="mono" style={{ color: 'var(--fg-text-2)' }}>{s.block_count}</b>
+          <GuardIcon size={12} style={{ color: 'var(--fg-allow-text)' }} /> 拦截 <b className="mono" style={{ color: 'var(--fg-text-2)' }}>{s.block_count}</b>
         </span>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
           <Clock size={12} /> {s.turns} 回合
@@ -197,7 +196,7 @@ function ReportTable({ reports, onOpen }: { reports: Report[]; onOpen: (id: stri
                   {RISK_META[r.summary.max_risk]?.label ?? r.summary.max_risk}
                 </Tag>
               </td>
-              <td style={tdStyle}><span className="mono" style={{ color: 'var(--fg-allow-text)', fontWeight: 700 }}>{r.summary.block_count}</span></td>
+              <td style={tdStyle}><span className="mono" style={{ color: 'var(--fg-allow-text)', fontWeight: 600 }}>{r.summary.block_count}</span></td>
               <td style={tdStyle}><span className="mono">{r.summary.turns}</span></td>
               <td style={{ ...tdStyle, maxWidth: 320, color: 'var(--fg-text-2)' }}>{truncate(r.summary.conclusion, 50)}</td>
               <td style={{ ...tdStyle, color: 'var(--fg-text-3)', whiteSpace: 'nowrap' }}>{formatShort(r.created_at)}</td>
@@ -210,16 +209,11 @@ function ReportTable({ reports, onOpen }: { reports: Report[]; onOpen: (id: stri
   );
 }
 
-function StatCard({ icon, label, value, hue }: { icon: React.ReactNode; label: string; value: number; hue: string }) {
+function StatCard({ label, value, color }: { label: string; value: number; color?: string }) {
   return (
-    <div className="fg-card" style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px 18px' }}>
-      <span style={{ width: 42, height: 42, borderRadius: 12, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: `color-mix(in srgb, ${hue} 12%, transparent)`, color: hue }}>
-        {icon}
-      </span>
-      <div>
-        <div className="mono" style={{ fontSize: 24, fontWeight: 700, color: 'var(--fg-text-1)', lineHeight: 1.1 }}>{value}</div>
-        <div style={{ fontSize: 12, color: 'var(--fg-text-3)', marginTop: 2 }}>{label}</div>
-      </div>
+    <div className="fg-card" style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '16px 18px' }}>
+      <span style={{ fontSize: 12, color: 'var(--fg-text-3)' }}>{label}</span>
+      <span className="mono" style={{ fontSize: 28, fontWeight: 600, color: color ?? 'var(--fg-text-1)', lineHeight: 1 }}>{value}</span>
     </div>
   );
 }
@@ -231,8 +225,8 @@ const reportCardStyle: React.CSSProperties = {
   border: '1px solid var(--fg-border)',
   borderRadius: 12,
   cursor: 'pointer',
-  transition: 'all 160ms ease',
+  transition: 'border-color 160ms ease, background-color 160ms ease',
   width: '100%',
 };
-const thStyle: React.CSSProperties = { padding: '10px 14px', fontSize: 11, fontWeight: 700, color: 'var(--fg-text-3)', letterSpacing: '0.04em', borderBottom: '1px solid var(--fg-border)' };
+const thStyle: React.CSSProperties = { padding: '10px 14px', fontSize: 11, fontWeight: 500, color: 'var(--fg-text-3)', borderBottom: '1px solid var(--fg-border)' };
 const tdStyle: React.CSSProperties = { padding: '11px 14px', verticalAlign: 'middle' };

@@ -50,6 +50,8 @@ export const configApi = {
   get: (id: string) => api.get<ConfigDetail>(`/configs/${id}`),
   validate: (config: unknown) => api.post<ValidationResult>('/configs/validate', config),
   preview: (config: unknown) => api.post<ConfigPreview>('/configs/preview', config),
+  suggestPrompt: (name: string, purpose: string) =>
+    api.post<{ system_prompt: string; simulated: boolean }>('/configs/suggest-prompt', { name, purpose }, { timeout: 60000 }),
   create: (config: unknown) => api.post<{ config_id: string; version: string }>('/configs', config),
   update: (id: string, config: unknown) => api.put<{ config_id: string; version: string }>(`/configs/${id}`, config),
   remove: (id: string) => api.delete<{ config_id: string; deleted: boolean }>(`/configs/${id}`),

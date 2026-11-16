@@ -5,16 +5,16 @@ import {
   Send,
   Bot,
   User,
-  Swords,
   FlaskConical,
   Play,
   Square,
-  ShieldOff,
+  HelpCircle,
   Loader2,
   ChevronDown,
   ChevronRight,
   Info,
 } from 'lucide-react';
+import { AttackIcon } from '@/components/icons/SecurityIcons';
 import { sampleApi } from '@/services/api/resources';
 import { useSessionStore } from '@/stores/sessionStore';
 import { CATEGORY_NAMES } from '@/utils/constants';
@@ -61,14 +61,14 @@ export function ChatPanel({
         <TabButton
           active={tab === 'redteam'}
           onClick={() => setTab('redteam')}
-          icon={<Swords size={14} />}
+          icon={<AttackIcon size={14} />}
           label="红队"
           dot={redteamRunning}
         />
         {challengeCount > 0 && (
           <Tooltip title={`${challengeCount} 个调用等待质询裁决，请在右侧「质询」处理`}>
             <span style={pendingPillStyle}>
-              <ShieldOff size={11} /> {challengeCount}
+              <HelpCircle size={11} /> {challengeCount}
             </span>
           </Tooltip>
         )}
@@ -210,7 +210,7 @@ function MessageBubble({ message }: { message: ReturnType<typeof useSessionStore
             color: 'var(--fg-text-3)',
             background: 'var(--fg-bg-subtle)',
             border: '1px solid var(--fg-border)',
-            borderRadius: 20,
+            borderRadius: 6,
             padding: '3px 12px',
             display: 'inline-flex',
             alignItems: 'center',
@@ -226,7 +226,7 @@ function MessageBubble({ message }: { message: ReturnType<typeof useSessionStore
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: isUser ? 'flex-end' : 'flex-start', gap: 4 }}>
       <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 10.5, color: 'var(--fg-text-3)' }}>
-        {isUser ? (redteam ? <Swords size={11} /> : <User size={11} />) : <Bot size={11} />}
+        {isUser ? (redteam ? <AttackIcon size={11} /> : <User size={11} />) : <Bot size={11} />}
         {isUser ? (redteam ? '红队' : '业务用户') : 'Agent'}
         {message.turn != null && <span className="mono">· T{message.turn}</span>}
         {message.source_sample_id && (
@@ -244,7 +244,7 @@ function MessageBubble({ message }: { message: ReturnType<typeof useSessionStore
           lineHeight: 1.65,
           whiteSpace: 'pre-wrap',
           wordBreak: 'break-word',
-          background: isUser ? (redteam ? 'rgba(232,180,90,0.14)' : 'var(--fg-brand-primary)') : 'var(--fg-bg-card)',
+          background: isUser ? (redteam ? 'var(--fg-observe-bg)' : 'var(--fg-brand-primary)') : 'var(--fg-bg-card)',
           color: isUser && !redteam ? '#fff' : 'var(--fg-text-1)',
           border: isUser ? 'none' : '1px solid var(--fg-border)',
           borderTopRightRadius: isUser ? 3 : 12,
@@ -442,7 +442,7 @@ function RedteamTab({
       <div ref={scrollRef} style={scrollAreaStyle}>
         {steps.length === 0 ? (
           <div style={{ padding: '28px 18px', textAlign: 'center', color: 'var(--fg-text-3)', fontSize: 12 }}>
-            <Swords size={24} strokeWidth={1.4} style={{ opacity: 0.5, marginBottom: 8 }} />
+            <AttackIcon size={24} strokeWidth={1.4} style={{ opacity: 0.5, marginBottom: 8 }} />
             <div>启动后，红队每一步将在此实时显示</div>
           </div>
         ) : (
@@ -450,8 +450,8 @@ function RedteamTab({
             {steps.map((s) => (
               <div key={s.id} style={stepCardStyle}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                  <span className="mono" style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--fg-lab-accent)' }}>
-                    {s.round != null ? `ROUND ${s.round}` : 'STEP'}
+                  <span className="mono" style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--fg-text-2)' }}>
+                    {s.round != null ? `第 ${s.round} 轮` : '步骤'}
                   </span>
                   {s.status && <Tag style={{ margin: 0, fontSize: 9.5, lineHeight: '15px', padding: '0 5px' }}>{s.status}</Tag>}
                   <span style={{ marginLeft: 'auto', fontSize: 9.5, color: 'var(--fg-text-3)' }}>{formatShort(s.created_at)}</span>
@@ -507,7 +507,7 @@ const tabBtnStyle: React.CSSProperties = {
   cursor: 'pointer',
   fontSize: 12.5,
   fontWeight: 600,
-  transition: 'all 140ms ease',
+  transition: 'color 140ms ease, border-color 140ms ease',
 };
 const pendingPillStyle: React.CSSProperties = {
   marginLeft: 'auto',
@@ -515,11 +515,11 @@ const pendingPillStyle: React.CSSProperties = {
   alignItems: 'center',
   gap: 4,
   fontSize: 10.5,
-  fontWeight: 700,
+  fontWeight: 600,
   color: 'var(--fg-observe-text)',
   background: 'var(--fg-observe-bg)',
-  border: '1px solid var(--fg-observe)33',
-  borderRadius: 20,
+  border: '1px solid var(--fg-border)',
+  borderRadius: 4,
   padding: '2px 8px',
 };
 const scrollAreaStyle: React.CSSProperties = { flex: 1, minHeight: 0, overflowY: 'auto' };
@@ -543,7 +543,7 @@ const catHeaderStyle: React.CSSProperties = {
   borderBottom: '1px solid var(--fg-border)',
   cursor: 'pointer',
   fontSize: 11.5,
-  fontWeight: 700,
+  fontWeight: 600,
   color: 'var(--fg-text-2)',
   position: 'sticky',
   top: 0,
@@ -574,7 +574,7 @@ const payloadPreStyle: React.CSSProperties = {
   maxHeight: 120,
   overflowY: 'auto',
 };
-const fieldLabelStyle: React.CSSProperties = { fontSize: 11, fontWeight: 600, color: 'var(--fg-text-3)', marginBottom: 5 };
+const fieldLabelStyle: React.CSSProperties = { fontSize: 11, fontWeight: 500, color: 'var(--fg-text-3)', marginBottom: 5 };
 const stepCardStyle: React.CSSProperties = {
   padding: '9px 11px',
   background: 'var(--fg-bg-subtle)',

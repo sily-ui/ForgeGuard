@@ -1,11 +1,9 @@
-import type { ReactNode } from 'react';
+import type { ComponentType, ReactNode } from 'react';
 import type { TourStepProps } from 'antd';
 import {
-  Sparkles,
   Wrench,
   Boxes,
   ScrollText,
-  Swords,
   GitCompare,
   FileBarChart,
   FileText,
@@ -13,7 +11,6 @@ import {
   Compass,
   LayoutGrid,
   Play,
-  ShieldCheck,
   MessageSquare,
   Network,
   Gavel,
@@ -29,11 +26,12 @@ import {
   ListChecks,
   FlaskConical,
   Clock,
-  type LucideIcon,
 } from 'lucide-react';
+import { AttackIcon, GuardIcon } from '@/components/icons/SecurityIcons';
 import type { TourId } from './tourStore';
 
 type Tone = 'brand' | 'allow' | 'block' | 'observe' | 'info';
+type TourIcon = ComponentType<{ size?: number | string; strokeWidth?: number | string }>;
 
 // 行内关键词 chip：取自语义色板，保证引导文案与双空间主题同色。
 function K({ children, tone = 'brand' }: { children: ReactNode; tone?: Tone }) {
@@ -46,10 +44,10 @@ function K({ children, tone = 'brand' }: { children: ReactNode; tone?: Tone }) {
   );
 }
 
-function Title({ icon: Icon, children }: { icon: LucideIcon; children: ReactNode }) {
+function Title({ icon: Icon, children }: { icon: TourIcon; children: ReactNode }) {
   return (
     <span className="fg-tour-step-title">
-      <Icon size={15} strokeWidth={1.8} />
+      <Icon size={15} strokeWidth={1.5} />
       {children}
     </span>
   );
@@ -68,7 +66,7 @@ export const TOURS: Record<TourId, { label: string; steps: TourStepProps[] }> = 
     label: '实验室工作台',
     steps: [
       {
-        title: <Title icon={Sparkles}>欢迎来到 ForgeGuard 智能体安全实验室</Title>,
+        title: <Title icon={FlaskConical}>欢迎来到 ForgeGuard 智能体安全实验室</Title>,
         description: (
           <>
             这是一个「编排靶标 Agent → 发起攻击 → 旁路监护 → 取证报告」的一体化红队测评平台。所有工具调用都在
@@ -111,7 +109,7 @@ export const TOURS: Record<TourId, { label: string; steps: TourStepProps[] }> = 
         placement: 'bottom',
       },
       {
-        title: <Title icon={ShieldCheck}>预置靶标模板</Title>,
+        title: <Title icon={GuardIcon}>预置靶标模板</Title>,
         description: (
           <>
             不想从零配置？每个模板都预设了工具与防护档位，点右侧<K>演示</K>
@@ -181,7 +179,7 @@ export const TOURS: Record<TourId, { label: string; steps: TourStepProps[] }> = 
         placement: place('left', 1000),
       },
       {
-        title: <Title icon={ShieldCheck}>校验 → 保存 → 创建</Title>,
+        title: <Title icon={GuardIcon}>校验 → 保存 → 创建</Title>,
         description: (
           <>
             建议先<K tone="info">校验配置</K>排除错误，再<K>保存配置</K>留档，最后
@@ -225,7 +223,7 @@ export const TOURS: Record<TourId, { label: string; steps: TourStepProps[] }> = 
         placement: 'bottom',
       },
       {
-        title: <Title icon={Swords}>实例卡片：一切操作的起点</Title>,
+        title: <Title icon={AttackIcon}>实例卡片：一切操作的起点</Title>,
         description: (
           <>
             每张卡片可<K tone="allow">进入会话</K>（开启攻防控制台）、<K>克隆</K>（复制一份做对照）、查看
@@ -286,7 +284,7 @@ export const TOURS: Record<TourId, { label: string; steps: TourStepProps[] }> = 
         description: (
           <>
             左侧是靶标身份与会话 ID；中间<K tone="allow">监护开关</K>可实时启停旁路防护（用于对照演示）；右侧风险环、配额、
-            <K tone="info">LIVE / REPLAY</K>模式与 SIM 仿真标识随时可见。
+            <K tone="info">实时 / 回放</K>模式与 SIM 仿真标识随时可见。
           </>
         ),
         target: byClass('.fg-topbar'),
@@ -485,8 +483,8 @@ export const TOURS: Record<TourId, { label: string; steps: TourStepProps[] }> = 
         title: <Title icon={Wallet}>配额与运行模式</Title>,
         description: (
           <>
-            调整全局 / 单会话模型调用上限，防止测评失控消耗；<K tone="info">LIVE</K>实时调用模型，
-            <K tone="observe">REPLAY</K>回放快照，离线也能演示。
+            调整全局 / 单会话模型调用上限，防止测评失控消耗；<K tone="info">实时</K>模式调用模型，
+            <K tone="observe">回放</K>模式读取快照，离线也能演示。
           </>
         ),
         target: anchor('admin-quota'),
@@ -510,18 +508,18 @@ export interface TourMeta {
   id: TourId;
   label: string;
   desc: string;
-  icon: LucideIcon;
+  icon: TourIcon;
   entry: string;
   contextual?: boolean;
   adminOnly?: boolean;
 }
 
 export const TOUR_META: TourMeta[] = [
-  { id: 'workspace', label: '实验室工作台', desc: '平台总览与一键演示', icon: Sparkles, entry: '/workspace' },
+  { id: 'workspace', label: '实验室工作台', desc: '平台总览与一键演示', icon: FlaskConical, entry: '/workspace' },
   { id: 'orchestration', label: '编排中心', desc: '四步配置靶标 Agent', icon: Wrench, entry: '/orchestration' },
   { id: 'instances', label: '实例管理', desc: '进入会话与克隆对照', icon: Boxes, entry: '/instances' },
   { id: 'policies', label: '策略管理', desc: '三级防护策略', icon: ScrollText, entry: '/instances', contextual: true },
-  { id: 'console', label: '攻防控制台', desc: '实时攻击与监护', icon: Swords, entry: '/instances', contextual: true },
+  { id: 'console', label: '攻防控制台', desc: '实时攻击与监护', icon: AttackIcon, entry: '/instances', contextual: true },
   { id: 'experiment', label: '对照实验', desc: 'A/B 判定差异', icon: GitCompare, entry: '/instances', contextual: true },
   { id: 'reports', label: '测评报告', desc: '报告检索与筛选', icon: FileBarChart, entry: '/reports' },
   { id: 'reportDetail', label: '报告详情', desc: '六章节取证报告', icon: FileText, entry: '/reports', contextual: true },

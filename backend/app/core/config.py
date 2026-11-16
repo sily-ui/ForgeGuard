@@ -56,6 +56,13 @@ class Settings:
         self.snapshot_mode = os.environ.get("SNAPSHOT_MODE", "auto")
         self.instance_ttl_minutes = int(os.environ.get("INSTANCE_TTL_MINUTES", "60"))
         self.l2_model_path = os.environ.get("L2_MODEL_PATH", "")
+        self.cors_origins = [
+            o.strip()
+            for o in os.environ.get(
+                "CORS_ORIGINS", "http://127.0.0.1:5173,http://localhost:5173"
+            ).split(",")
+            if o.strip()
+        ]
         self.passcodes = self._load_passcodes()
 
     def _load_passcodes(self):
