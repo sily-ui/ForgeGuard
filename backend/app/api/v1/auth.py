@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Body, Request
+from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 
 from ...core import quota
 from ...core.errors import ApiError
@@ -16,15 +17,21 @@ router = APIRouter()
 
 
 def _consume_one_time(passcode):
+    """原子消费一次性口令：并发请求下仅一个成功，避免先读后写竞态。"""
     with dbmod.session_scope() as db:
-        row = db.get(dbmod.PasscodeUse, passcode)
-        if row is not None and row.used_count > 0:
-            return False
-        if row is None:
-            db.add(dbmod.PasscodeUse(passcode=passcode, used_count=1))
-        else:
-            row.used_count += 1
-    return True
+        consumed = (
+            db.query(dbmod.PasscodeUse)
+            .filter_by(passcode=passcode, used_count=0)
+            .update({"used_count": 1})
+        )
+        if consumed:
+            return True
+        stmt = (
+            sqlite_insert(dbmod.PasscodeUse)
+            .values(passcode=passcode, used_count=1)
+            .on_conflict_do_nothing()
+        )
+        return db.execute(stmt).rowcount == 1
 
 
 @router.post("/auth/token")

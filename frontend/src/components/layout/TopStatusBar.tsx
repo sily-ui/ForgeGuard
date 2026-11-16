@@ -1,5 +1,5 @@
 import { Switch, Tooltip, Progress } from 'antd';
-import { ShieldCheck, ShieldOff } from 'lucide-react';
+import { AlertCircle, ShieldCheck, ShieldOff } from 'lucide-react';
 import { ModeBadge } from '@/components/common/ModeBadge';
 import { SimBadge } from '@/components/common/SimBadge';
 import { RiskRing } from '@/components/common/RiskRing';
@@ -20,6 +20,8 @@ export function TopStatusBar({ preset = 'standard', onToggleGuard, guardDisabled
   const session = useSessionStore((s) => s.session);
   const mode = useSessionStore((s) => s.mode);
   const quota = useQuotaStore((s) => s.quota);
+  const quotaError = useQuotaStore((s) => s.error);
+  const refreshQuota = useQuotaStore((s) => s.refresh);
   const space = useUiStore((s) => s.space);
   const lab = space === 'lab';
   const guardOn = session?.guard_enabled ?? true;
@@ -120,6 +122,25 @@ export function TopStatusBar({ preset = 'standard', onToggleGuard, guardDisabled
             />
           </div>
         </Tooltip>
+        {quotaError && (
+          <Tooltip title={`配额加载失败：${quotaError}（点击重试）`}>
+            <button
+              onClick={() => refreshQuota()}
+              aria-label="重试加载配额"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                padding: 4,
+                border: 'none',
+                background: 'none',
+                cursor: 'pointer',
+                color: 'var(--fg-block)',
+              }}
+            >
+              <AlertCircle size={15} />
+            </button>
+          </Tooltip>
+        )}
         <ModeBadge mode={mode} />
         <SimBadge />
       </div>

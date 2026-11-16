@@ -1,8 +1,11 @@
 import json
+import logging
 import os
 from pathlib import Path
 
 BACKEND_DIR = Path(__file__).resolve().parents[2]
+
+logger = logging.getLogger(__name__)
 
 
 def _load_env_file():
@@ -61,15 +64,23 @@ class Settings:
             return [dict(p) for p in DEFAULT_PASSCODES]
         try:
             items = json.loads(raw)
-            if isinstance(items, list) and items:
-                return items
-        except (ValueError, TypeError):
-            pass
-        return [dict(p) for p in DEFAULT_PASSCODES]
+        except (ValueError, TypeError) as exc:
+            logger.warning("ACCESS_PASSCODES 解析失败（%s），已回退到内置默认口令", exc)
+            return [dict(p) for p in DEFAULT_PASSCODES]
+        if not isinstance(items, list) or not items:
+            logger.warning("ACCESS_PASSCODES 应为非空 JSON 数组，已回退到内置默认口令")
+            return [dict(p) for p in DEFAULT_PASSCODES]
+        return items
 
     @property
     def model_configured(self) -> bool:
         return bool(self.model_base_url and self.model_api_key and self.model_name)
+
+    @property
+    def uses_default_passcodes(self) -> bool:
+        """是否仍在使用内置默认口令（生产环境应通过 ACCESS_PASSCODES 覆盖）。"""
+        active = {p.get("passcode") for p in self.passcodes}
+        return any(p["passcode"] in active for p in DEFAULT_PASSCODES)
 
 
 settings = Settings()

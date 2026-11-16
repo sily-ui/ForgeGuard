@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Input, Form } from 'antd';
 import { KeyRound, ArrowRight, ShieldCheck, Swords, FileBarChart, FlaskConical } from 'lucide-react';
@@ -21,10 +21,9 @@ export default function AccessPage() {
   const setSpace = useUiStore((s) => s.setSpace);
   const [passcode, setPasscode] = useState('');
 
-  useState(() => {
+  useEffect(() => {
     setSpace('light');
-    return null;
-  });
+  }, [setSpace]);
 
   const submit = async () => {
     if (!passcode.trim()) return;
