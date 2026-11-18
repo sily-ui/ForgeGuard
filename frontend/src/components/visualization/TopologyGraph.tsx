@@ -2,7 +2,6 @@ import { useEffect, useRef } from 'react';
 import { Graph } from '@antv/x6';
 import { register } from '@antv/x6-react-shape';
 import { LabNode, type NodeData } from './LabNode';
-import { useUiStore } from '@/stores/uiStore';
 
 register({
   shape: 'fg-lab-node',
@@ -39,13 +38,13 @@ const EDGES = [
   { id: 'e-guard-alert', source: 'guard', target: 'alert', kind: 'mirror' },
 ];
 
-function edgeAttrs(kind: string, lab: boolean) {
+function edgeAttrs(kind: string) {
   const map: Record<string, { stroke: string; dash?: string; width: number }> = {
-    normal: { stroke: lab ? '#5fb8a4' : '#176b63', width: 2 },
-    attack: { stroke: lab ? '#d9a441' : '#c2892b', width: 2, dash: '6 4' },
-    mirror: { stroke: lab ? '#7aa3c8' : '#4f7ba6', width: 1.6, dash: '4 5' },
-    block: { stroke: lab ? '#e0686d' : '#b5484d', width: 2.4 },
-    degrade: { stroke: lab ? '#d9a441' : '#c2892b', width: 1.6 },
+    normal: { stroke: '#176b63', width: 2 },
+    attack: { stroke: '#c2892b', width: 2, dash: '6 4' },
+    mirror: { stroke: '#4f7ba6', width: 1.6, dash: '4 5' },
+    block: { stroke: '#b5484d', width: 2.4 },
+    degrade: { stroke: '#c2892b', width: 1.6 },
   };
   const m = map[kind] || map.normal;
   return {
@@ -67,8 +66,6 @@ interface Props {
 export function TopologyGraph({ state, height = 268 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const graphRef = useRef<Graph | null>(null);
-  const space = useUiStore((s) => s.space);
-  const lab = space === 'lab';
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -77,7 +74,7 @@ export function TopologyGraph({ state, height = 268 }: Props) {
       height,
       autoResize: true,
       background: { color: 'transparent' },
-      grid: { visible: true, type: 'dot', size: 22, args: { color: lab ? '#2b323c' : '#e2e5e8', thickness: 1 } },
+      grid: { visible: true, type: 'dot', size: 22, args: { color: '#e2e5e8', thickness: 1 } },
       interacting: false,
       panning: false,
       mousewheel: false,
@@ -100,7 +97,7 @@ export function TopologyGraph({ state, height = 268 }: Props) {
         id: e.id,
         source: { cell: e.source, anchor: 'right' },
         target: { cell: e.target, anchor: e.kind === 'mirror' ? 'top' : 'left' },
-        attrs: edgeAttrs(e.kind, lab),
+        attrs: edgeAttrs(e.kind),
         connector: { name: 'rounded', args: { radius: 10 } },
         router: e.kind === 'mirror' ? { name: 'manhattan', args: { padding: 16 } } : { name: 'normal' },
         zIndex: 0,
@@ -120,7 +117,7 @@ export function TopologyGraph({ state, height = 268 }: Props) {
       graphRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lab, height]);
+  }, [height]);
 
   // 局部状态更新
   useEffect(() => {
@@ -139,7 +136,7 @@ export function TopologyGraph({ state, height = 268 }: Props) {
     };
     const setEdge = (id: string, kind: string) => {
       const cell = graph.getCellById(id);
-      if (cell && cell.isEdge()) cell.setAttrs(edgeAttrs(kind, lab));
+      if (cell && cell.isEdge()) cell.setAttrs(edgeAttrs(kind));
     };
 
     setData('redteam', { active: !!activeTool, state: activeTool ? 'observe' : 'idle' });
@@ -155,16 +152,16 @@ export function TopologyGraph({ state, height = 268 }: Props) {
     setEdge('e-gw-guard', 'mirror');
     setEdge('e-guard-alert', alertCount > 0 ? 'block' : 'mirror');
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.pulse, state.activeTool, state.lastAction, state.blockCount, state.alertCount, state.callCount, state.guardOn, lab]);
+  }, [state.pulse, state.activeTool, state.lastAction, state.blockCount, state.alertCount, state.callCount, state.guardOn]);
 
   return (
     <div style={{ position: 'relative', width: '100%' }}>
       <div ref={containerRef} style={{ width: '100%', height }} />
-      <div style={{ position: 'absolute', bottom: 6, left: 12, display: 'flex', gap: 14, fontSize: 10, color: 'var(--fg-text-3)' }}>
-        <Legend color={lab ? '#5fb8a4' : '#176b63'} label="正常调用" />
-        <Legend color={lab ? '#d9a441' : '#c2892b'} label="攻击 / 降级" dash />
-        <Legend color={lab ? '#7aa3c8' : '#4f7ba6'} label="旁路镜像" dash />
-        <Legend color={lab ? '#e0686d' : '#b5484d'} label="阻断" />
+      <div style={{ position: 'absolute', bottom: 6, left: 12, display: 'flex', gap: 14, fontSize: 12, color: 'var(--fg-text-3)' }}>
+        <Legend color="#176b63" label="正常调用" />
+        <Legend color="#c2892b" label="攻击 / 降级" dash />
+        <Legend color="#4f7ba6" label="旁路镜像" dash />
+        <Legend color="#b5484d" label="阻断" />
       </div>
     </div>
   );

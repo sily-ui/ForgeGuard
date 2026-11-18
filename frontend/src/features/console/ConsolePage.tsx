@@ -14,6 +14,7 @@ import {
   WifiOff,
   Loader2,
   Boxes,
+  X,
 } from 'lucide-react';
 import { AttackIcon } from '@/components/icons/SecurityIcons';
 import { useConsoleSession } from '@/hooks/useConsoleSession';
@@ -123,7 +124,7 @@ export default function ConsolePage() {
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
         <Logo size={48} />
         <Spin />
-        <div style={{ color: 'var(--fg-text-3)', fontSize: 13 }}>正在接入攻防控制台…</div>
+        <div style={{ color: 'var(--fg-text-3)', fontSize: 14 }}>正在接入攻防控制台…</div>
       </div>
     );
   }
@@ -137,7 +138,7 @@ export default function ConsolePage() {
             实例管理
           </Button>
           <Logo size={24} />
-          <span style={{ fontSize: 12.5, color: 'var(--fg-text-2)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          <span style={{ fontSize: 13.5, color: 'var(--fg-text-2)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             攻防控制台 <span style={{ color: 'var(--fg-text-3)' }}>/</span>{' '}
             <b style={{ color: 'var(--fg-text-1)' }}>{session?.instance_name ?? '—'}</b>
           </span>
@@ -154,11 +155,14 @@ export default function ConsolePage() {
 
       <TopStatusBar preset={instance?.guard.preset ?? 'standard'} guardDisabled />
 
+      <ConsoleHintBar />
+
       {/* 三栏主体 */}
       <div className="fg-console-grid" style={bodyStyle}>
         <ChatPanel
           sessionId={sessionId}
           instanceId={session?.instance_id}
+          enabledTools={instance?.enabled_tools}
           status={status}
           sending={ctrl.sending}
           loadingSample={ctrl.loadingSample}
@@ -178,7 +182,7 @@ export default function ConsolePage() {
           <Tag color={status === 'active' ? 'success' : status === 'paused' ? 'warning' : 'default'} style={{ margin: 0 }}>
             {SESSION_STATUS_META[status]?.label ?? status}
           </Tag>
-          <span style={{ fontSize: 11.5, color: 'var(--fg-text-3)' }}>
+          <span style={{ fontSize: 12.5, color: 'var(--fg-text-3)' }}>
             第 <b className="mono" style={{ color: 'var(--fg-text-2)' }}>{session?.turn ?? 0}</b> 回合 ·{' '}
             <b className="mono" style={{ color: 'var(--fg-text-2)' }}>{session?.call_count ?? 0}</b> 次调用
           </span>
@@ -232,6 +236,78 @@ export default function ConsolePage() {
   );
 }
 
+function ConsoleHintBar() {
+  const [dismissed, setDismissed] = useState(false);
+  useEffect(() => {
+    try {
+      setDismissed(localStorage.getItem('fg-console-hint') === '0');
+    } catch {
+      /* 隐私模式下 localStorage 不可用，忽略 */
+    }
+  }, []);
+  if (dismissed) return null;
+  const steps = ['左侧载入攻击样本或直接发送消息', '中间点击任一工具调用，查看调用链与攻防拓扑', '右侧查看 L1/L2/L3 三级判定证据'];
+  return (
+    <div
+      style={{
+        flexShrink: 0,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 10,
+        padding: '7px 12px',
+        margin: '10px 12px 0',
+        fontSize: 13,
+        color: 'var(--fg-text-2)',
+        background: 'var(--fg-brand-light)',
+        border: '1px solid var(--fg-border)',
+        borderRadius: 9,
+      }}
+    >
+      <span style={{ fontWeight: 600, color: 'var(--fg-brand-primary)', flexShrink: 0 }}>使用方式</span>
+      {steps.map((t, i) => (
+        <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
+          {i > 0 && <span style={{ color: 'var(--fg-text-3)' }}>→</span>}
+          <span
+            className="mono"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 18,
+              height: 18,
+              borderRadius: '50%',
+              fontSize: 11,
+              fontWeight: 600,
+              color: 'var(--fg-brand-primary)',
+              background: 'var(--fg-bg-card)',
+              border: '1px solid var(--fg-border)',
+              flexShrink: 0,
+            }}
+          >
+            {i + 1}
+          </span>
+          <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t}</span>
+        </span>
+      ))}
+      <Button
+        type="text"
+        size="small"
+        icon={<X size={14} />}
+        aria-label="关闭使用提示"
+        onClick={() => {
+          setDismissed(true);
+          try {
+            localStorage.setItem('fg-console-hint', '0');
+          } catch {
+            /* 忽略 */
+          }
+        }}
+        style={{ marginLeft: 'auto', flexShrink: 0, color: 'var(--fg-text-3)' }}
+      />
+    </div>
+  );
+}
+
 function ConnectionBadge({ connection }: { connection: string }) {
   const map: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
     open: { label: '实时连接', color: 'var(--fg-allow-text)', icon: <Wifi size={12} /> },
@@ -241,7 +317,7 @@ function ConnectionBadge({ connection }: { connection: string }) {
   };
   const m = map[connection] ?? map.closed;
   return (
-    <span className="mono" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 10.5, fontWeight: 600, color: m.color, padding: '3px 9px', borderRadius: 4, background: 'var(--fg-bg-subtle)', border: '1px solid var(--fg-border)' }}>
+    <span className="mono" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11.5, fontWeight: 600, color: m.color, padding: '3px 9px', borderRadius: 4, background: 'var(--fg-bg-subtle)', border: '1px solid var(--fg-border)' }}>
       {m.icon}
       {m.label}
     </span>
@@ -325,7 +401,7 @@ function CompareModal({
           </div>
         ) : (
           <div>
-            <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
               <Boxes size={13} /> 选择对照实例（B 组）
             </div>
             <Select
@@ -340,7 +416,7 @@ function CompareModal({
           </div>
         )}
         <div>
-          <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 6 }}>对照输入（可选）</div>
+          <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>对照输入（可选）</div>
           <Input.TextArea
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -388,7 +464,7 @@ const controlBarStyle: React.CSSProperties = {
 const compareHintStyle: React.CSSProperties = {
   display: 'flex',
   gap: 10,
-  fontSize: 12.5,
+  fontSize: 13.5,
   color: 'var(--fg-text-2)',
   lineHeight: 1.7,
   background: 'var(--fg-bg-subtle)',

@@ -1,7 +1,6 @@
 import { useEffect, useId, useState } from 'react';
 import { useTourStore } from './tourStore';
 import { TOURS } from './definitions';
-import { useUiStore } from '@/stores/uiStore';
 
 interface Hole {
   x: number;
@@ -15,7 +14,6 @@ interface Hole {
 export function TourMask() {
   const activeTour = useTourStore((s) => s.activeTour);
   const current = useTourStore((s) => s.current);
-  const space = useUiStore((s) => s.space);
   const [hole, setHole] = useState<Hole | null>(null);
   const maskId = useId();
 
@@ -55,7 +53,7 @@ export function TourMask() {
   }, [activeTour, current]);
 
   if (!activeTour) return null;
-  const color = space === 'lab' ? 'rgba(7, 14, 19, 0.74)' : 'rgba(21, 40, 37, 0.48)';
+  const color = 'rgba(21, 40, 37, 0.48)';
   const vw = window.innerWidth;
   const vh = window.innerHeight;
 

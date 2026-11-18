@@ -22,27 +22,27 @@ const ICONS = {
 };
 
 const ACCENT: Record<string, string> = {
-  redteam: '#e0686d',
-  agent: '#5fb8a4',
-  guard: '#7aa3c8',
-  gateway: '#5fb8a4',
-  tool: '#4fb0a5',
-  sandbox: '#9aa4ae',
-  alert: '#e0686d',
+  redteam: '#b5484d',
+  agent: '#176b63',
+  guard: '#4f7ba6',
+  gateway: '#176b63',
+  tool: '#2d9184',
+  sandbox: '#8d97a1',
+  alert: '#b5484d',
 };
 
 const STATE_COLOR: Record<string, string> = {
-  allow: '#4cb88a',
-  block: '#e0686d',
-  observe: '#d9a441',
-  idle: '#6e7984',
+  allow: '#2e7d5b',
+  block: '#b5484d',
+  observe: '#c2892b',
+  idle: '#c2cad0',
 };
 
 // X6 React 节点：控制台舱位，状态色描边标记实时活动。
 export function LabNode({ node }: { node?: { getData: () => NodeData } }) {
   const data = (node?.getData?.() ?? { label: '', kind: 'agent' }) as NodeData;
   const Icon = ICONS[data.kind] || Bot;
-  const accent = ACCENT[data.kind] || '#5fb8a4';
+  const accent = ACCENT[data.kind] || '#176b63';
   const stateColor = data.state ? STATE_COLOR[data.state] : accent;
   const active = data.active;
 
@@ -54,8 +54,8 @@ export function LabNode({ node }: { node?: { getData: () => NodeData } }) {
     gap: 10,
     padding: '0 12px',
     borderRadius: 8,
-    background: active ? '#191e25' : '#1d222a',
-    border: `1px solid ${active ? stateColor : '#2b323c'}`,
+    background: active ? '#ffffff' : '#fafbfb',
+    border: `1px solid ${active ? stateColor : '#dfe3e7'}`,
     transition: 'background-color 200ms ease, border-color 200ms ease',
     cursor: 'default',
     position: 'relative',
@@ -68,17 +68,17 @@ export function LabNode({ node }: { node?: { getData: () => NodeData } }) {
         <Icon size={16} strokeWidth={1.5} />
       </span>
       <div style={{ minWidth: 0, lineHeight: 1.2, flex: 1 }}>
-        <div style={{ fontSize: 12.5, fontWeight: 600, color: '#e7eaed', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        <div style={{ fontSize: 14.5, fontWeight: 600, color: '#1e2429', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
           {data.label}
         </div>
         {data.sub && (
-          <div className="mono" style={{ fontSize: 9.5, color: '#6e7984', marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          <div className="mono" style={{ fontSize: 11.5, color: '#8d97a1', marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {data.sub}
           </div>
         )}
       </div>
       {data.count != null && data.count > 0 && (
-        <span className="mono" style={{ fontSize: 10.5, fontWeight: 600, color: stateColor, flexShrink: 0 }}>
+        <span className="mono" style={{ fontSize: 12.5, fontWeight: 600, color: stateColor, flexShrink: 0 }}>
           {data.count}
         </span>
       )}

@@ -438,20 +438,38 @@ async def process_message(
             ensure_ascii=False,
         )[:1500]
 
+    message_id = new_id("msg")
+
+    async def publish_delta(delta):
+        await event_bus.publish(
+            session_id,
+            "agent.delta",
+            {"message_id": message_id, "role": "assistant", "delta": delta, "turn": turn, "actor": actor},
+        )
+
     ctx = ReasonContext(
         session_id, config["system_prompt"], limits["max_calls_per_turn"], execute_tool,
-        tools=config["tools"],
+        tools=config["tools"], on_delta=publish_delta,
     )
     messages = []
     if session.context_summary:
         messages.append({"role": "user", "content": f"[此前对话摘要] {session.context_summary}"})
     messages.append({"role": "user", "content": content})
     graph = build_business_graph(ctx)
+    await event_bus.publish(
+        session_id,
+        "agent.message.start",
+        {"message_id": message_id, "role": "assistant", "turn": turn, "actor": actor},
+    )
     try:
         final_state = await graph.ainvoke(
             {"messages": messages, "tool_calls": [], "tool_index": 0}
         )
     except QuotaExhausted:
+        await event_bus.publish(
+            session_id, "agent.message",
+            {"message_id": message_id, "role": "assistant", "content": "（本回合模型配额耗尽，自动切换快照回放）", "turn": turn, "actor": actor},
+        )
         await event_bus.publish(
             session_id, "session.status",
             {
@@ -460,11 +478,17 @@ async def process_message(
             },
         )
         return await replay_for_session(session_id, instance)
+    except Exception as exc:
+        # 收尾流式占位气泡，避免前端停留在“正在响应”
+        await event_bus.publish(
+            session_id, "agent.message",
+            {"message_id": message_id, "role": "assistant", "content": f"（本轮处理失败：{type(exc).__name__}，请重试）", "turn": turn, "actor": actor},
+        )
+        raise
 
     reply = final_state.get("reply", "")
     if ctx.simulated_fallback:
         reply += "\n（注：本轮模型接口不可达，使用离线仿真推理，已留痕）"
-    message_id = new_id("msg")
     await event_bus.publish(
         session_id, "agent.message",
         {"message_id": message_id, "role": "assistant", "content": reply, "turn": turn, "actor": actor},

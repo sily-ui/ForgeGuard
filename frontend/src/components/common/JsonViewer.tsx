@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import { ChevronDown, ChevronRight, Copy, Check } from 'lucide-react';
-import { useUiStore } from '@/stores/uiStore';
 
 interface Props {
   data: unknown;
@@ -10,8 +9,6 @@ interface Props {
 
 // 轻量 JSON 取证视图：等宽字体、可折叠、可复制，避免引入重型编辑器。
 export function JsonViewer({ data, maxHeight = 280, collapsed = false }: Props) {
-  const space = useUiStore((s) => s.space);
-  const lab = space === 'lab';
   const [open, setOpen] = useState(!collapsed);
   const [copied, setCopied] = useState(false);
   const text = useMemo(() => {
@@ -37,7 +34,7 @@ export function JsonViewer({ data, maxHeight = 280, collapsed = false }: Props) 
       style={{
         border: '1px solid var(--fg-border)',
         borderRadius: 8,
-        background: lab ? '#0d1a20' : '#f7faf9',
+        background: '#f7faf9',
         overflow: 'hidden',
       }}
     >
@@ -48,7 +45,7 @@ export function JsonViewer({ data, maxHeight = 280, collapsed = false }: Props) 
           justifyContent: 'space-between',
           padding: '5px 10px',
           borderBottom: open ? '1px solid var(--fg-border)' : 'none',
-          background: lab ? '#16242b' : '#eef3f1',
+          background: '#eef3f1',
         }}
       >
         <button
@@ -61,7 +58,7 @@ export function JsonViewer({ data, maxHeight = 280, collapsed = false }: Props) 
             border: 'none',
             cursor: 'pointer',
             color: 'var(--fg-text-2)',
-            fontSize: 11,
+            fontSize: 13,
             fontWeight: 600,
             padding: 0,
           }}
@@ -85,9 +82,9 @@ export function JsonViewer({ data, maxHeight = 280, collapsed = false }: Props) 
             padding: '10px 12px',
             maxHeight,
             overflow: 'auto',
-            fontSize: 11.5,
+            fontSize: 13,
             lineHeight: 1.6,
-            color: lab ? '#cfe0db' : '#2c3e3b',
+            color: '#2c3e3b',
             whiteSpace: 'pre-wrap',
             wordBreak: 'break-word',
           }}

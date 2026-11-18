@@ -1,11 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Input, Form } from 'antd';
 import { KeyRound, ArrowRight, FlaskConical } from 'lucide-react';
 import { Logo } from '@/components/common/Logo';
 import { AttackIcon, GuardIcon, ForensicsIcon } from '@/components/icons/SecurityIcons';
 import { useAuthStore } from '@/stores/authStore';
-import { useUiStore } from '@/stores/uiStore';
 import { SimBadge } from '@/components/common/SimBadge';
 
 const FEATURES = [
@@ -19,12 +18,7 @@ export default function AccessPage() {
   const login = useAuthStore((s) => s.login);
   const status = useAuthStore((s) => s.status);
   const error = useAuthStore((s) => s.error);
-  const setSpace = useUiStore((s) => s.setSpace);
   const [passcode, setPasscode] = useState('');
-
-  useEffect(() => {
-    setSpace('light');
-  }, [setSpace]);
 
   const submit = async () => {
     if (!passcode.trim()) return;
@@ -53,7 +47,7 @@ export default function AccessPage() {
             <Logo size={34} />
             <div>
               <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--fg-text-1)' }}>Agent Security Lab</div>
-              <div style={{ fontSize: 11.5, color: 'var(--fg-text-3)', marginTop: 1 }}>智能体安全实验室 · ForgeGuard</div>
+              <div style={{ fontSize: 12.5, color: 'var(--fg-text-3)', marginTop: 1 }}>智能体安全实验室 · ForgeGuard</div>
             </div>
           </div>
 
@@ -62,7 +56,7 @@ export default function AccessPage() {
             <br />
             自适应红队与旁路监护
           </h1>
-          <p style={{ fontSize: 14, lineHeight: 1.7, color: 'var(--fg-text-2)', margin: '0 0 28px', maxWidth: 460 }}>
+          <p style={{ fontSize: 15, lineHeight: 1.7, color: 'var(--fg-text-2)', margin: '0 0 28px', maxWidth: 460 }}>
             在内存仿真沙盒中编排靶标 Agent，载入真实攻击样本，观测三级判定网关如何实时拦截越界调用，并生成可追溯的根因加固报告。
           </p>
 
@@ -73,8 +67,8 @@ export default function AccessPage() {
                   <f.icon size={16} strokeWidth={1.5} />
                 </span>
                 <div>
-                  <div style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--fg-text-1)' }}>{f.title}</div>
-                  <div style={{ fontSize: 12.5, color: 'var(--fg-text-2)', lineHeight: 1.5, marginTop: 2 }}>{f.desc}</div>
+                  <div style={{ fontSize: 14.5, fontWeight: 600, color: 'var(--fg-text-1)' }}>{f.title}</div>
+                  <div style={{ fontSize: 13.5, color: 'var(--fg-text-2)', lineHeight: 1.5, marginTop: 2 }}>{f.desc}</div>
                 </div>
               </div>
             ))}
@@ -88,18 +82,18 @@ export default function AccessPage() {
       <div className="fg-access-panel" style={{ flex: '0 0 45%', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 40 }}>
         <div style={{ width: '100%', maxWidth: 380 }}>
           <div style={{ marginBottom: 28 }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--fg-text-2)', fontSize: 12.5, marginBottom: 16 }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--fg-text-2)', fontSize: 13.5, marginBottom: 16 }}>
               <FlaskConical size={14} strokeWidth={1.5} style={{ color: 'var(--fg-info-text)' }} />
               全内存仿真 · 不触及真实系统
             </div>
             <h2 style={{ fontSize: 20, fontWeight: 600, margin: '0 0 8px', color: 'var(--fg-text-1)' }}>进入实验室</h2>
-            <p style={{ fontSize: 13, color: 'var(--fg-text-2)', margin: 0, lineHeight: 1.6 }}>
+            <p style={{ fontSize: 14, color: 'var(--fg-text-2)', margin: 0, lineHeight: 1.6 }}>
               输入准入口令以获取会话令牌。令牌仅存于内存，不写入地址栏。
             </p>
           </div>
 
           <Form layout="vertical" onFinish={submit}>
-            <Form.Item label={<span style={{ fontWeight: 500, fontSize: 13 }}>准入口令</span>} validateStatus={error ? 'error' : undefined} help={error || undefined}>
+            <Form.Item label={<span style={{ fontWeight: 500, fontSize: 14 }}>准入口令</span>} validateStatus={error ? 'error' : undefined} help={error || undefined}>
               <Input.Password
                 size="large"
                 prefix={<KeyRound size={16} strokeWidth={1.5} style={{ color: 'var(--fg-text-3)' }} />}
@@ -110,13 +104,13 @@ export default function AccessPage() {
                 allowClear
               />
             </Form.Item>
-            <Button type="primary" size="large" htmlType="submit" block loading={status === 'loading'} style={{ height: 44, fontWeight: 600, fontSize: 14 }}>
+            <Button type="primary" size="large" htmlType="submit" block loading={status === 'loading'} style={{ height: 44, fontWeight: 600, fontSize: 15 }}>
               进入实验室 <ArrowRight size={16} strokeWidth={1.5} />
             </Button>
           </Form>
 
           <div style={{ marginTop: 24, padding: 16, borderRadius: 12, background: 'var(--fg-bg-subtle)', border: '1px solid var(--fg-border)' }}>
-            <div style={{ fontSize: 11.5, fontWeight: 500, color: 'var(--fg-text-3)', marginBottom: 10 }}>演示口令</div>
+            <div style={{ fontSize: 12.5, fontWeight: 500, color: 'var(--fg-text-3)', marginBottom: 10 }}>演示口令</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <PasscodeHint code="demo-2026" role="评委 / 演示" onPick={() => setPasscode('demo-2026')} />
               <PasscodeHint code="admin-2026" role="平台管理员" onPick={() => setPasscode('admin-2026')} />
@@ -151,8 +145,8 @@ function PasscodeHint({ code, role, onPick }: { code: string; role: string; onPi
       onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--fg-bg-subtle)'; }}
       onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--fg-bg-card)'; }}
     >
-      <span className="mono" style={{ fontSize: 13, color: 'var(--fg-text-1)' }}>{code}</span>
-      <span style={{ fontSize: 11.5, color: 'var(--fg-text-3)' }}>{role}</span>
+      <span className="mono" style={{ fontSize: 14, color: 'var(--fg-text-1)' }}>{code}</span>
+      <span style={{ fontSize: 12.5, color: 'var(--fg-text-3)' }}>{role}</span>
     </button>
   );
 }
@@ -209,7 +203,7 @@ function LabDiagram() {
           </g>
         ))}
       </svg>
-      <figcaption className="mono" style={{ fontSize: 10.5, color: 'var(--fg-text-3)', marginTop: 8 }}>
+      <figcaption className="mono" style={{ fontSize: 11.5, color: 'var(--fg-text-3)', marginTop: 8 }}>
         攻击路径 · 旁路镜像 · 实时阻断
       </figcaption>
     </figure>

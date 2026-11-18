@@ -1,5 +1,6 @@
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 import type { SseEventType, SseRecord } from '@/types/api';
+import { getWorkspaceId } from '@/utils/workspace';
 
 export type SseHandler = (record: SseRecord) => void;
 
@@ -40,7 +41,7 @@ export class SessionEventSource {
 
     fetchEventSource(url, {
       signal: this.controller.signal,
-      headers: { Authorization: `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${token}`, 'X-Workspace-Id': getWorkspaceId() },
       openWhenHidden: true,
       onopen: async (response) => {
         if (response.ok && response.headers.get('content-type')?.includes('text/event-stream')) {

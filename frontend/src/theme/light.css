@@ -1,6 +1,5 @@
 /* Agent Security Lab — 浅色工程工作台：石墨冷灰中性色阶 + 深青绿品牌 */
-:root,
-:root[data-theme='light'] {
+:root {
   /* 品牌：深青绿（唯一强调色，仅用于主操作、选中与关键判定） */
   --fg-brand-primary: #176b63;
   --fg-brand-secondary: #2d9184;
@@ -36,7 +35,6 @@
   /* 强调面：单色，不做跨色相渐变 */
   --fg-gradient-brand: #176b63;
   --fg-gradient-subtle: linear-gradient(180deg, #f7f8f9 0%, #f1f3f4 100%);
-  --fg-gradient-lab: linear-gradient(180deg, #15181d 0%, #181d24 100%);
 
   /* 圆角与阴影：深度靠表面层级与发丝线，阴影只留给浮层 */
   --fg-radius-sm: 8px;

@@ -78,22 +78,22 @@ def _validation_error(result):
     )
 
 
-def _get_config(config_id):
+def _get_config(config_id, workspace="default"):
     with dbmod.session_scope() as db:
         row = db.get(dbmod.Config, config_id)
-        if row is None or row.deleted:
+        if row is None or row.deleted or row.workspace_id != workspace:
             raise ApiError(40400, detail="配置不存在")
         return row
 
 
 @router.get("/configs")
 def list_configs(request: Request, page: int = 1, page_size: int = 20):
-    get_auth(request)
+    ctx = get_auth(request)
     page, page_size = parse_pagination(page, page_size)
     with dbmod.session_scope() as db:
         rows = (
             db.query(dbmod.Config)
-            .filter(dbmod.Config.deleted.is_(False))
+            .filter(dbmod.Config.deleted.is_(False), dbmod.Config.workspace_id == ctx.workspace)
             .order_by(dbmod.Config.created_at.desc())
             .all()
         )
@@ -139,7 +139,7 @@ def preview(request: Request, payload: dict = Body(...)):
 
 @router.post("/configs")
 def create_config(request: Request, payload: dict = Body(...)):
-    get_auth(request)
+    ctx = get_auth(request)
     result = validate_config(payload)
     if not result["valid"]:
         _validation_error(result)
@@ -151,6 +151,7 @@ def create_config(request: Request, payload: dict = Body(...)):
         db.add(
             dbmod.Config(
                 config_id=config_id,
+                workspace_id=ctx.workspace,
                 name=config["name"],
                 version="1.0",
                 payload=config,
@@ -169,8 +170,8 @@ def create_config(request: Request, payload: dict = Body(...)):
 
 @router.get("/configs/{config_id}")
 def get_config(request: Request, config_id: str):
-    get_auth(request)
-    row = _get_config(config_id)
+    ctx = get_auth(request)
+    row = _get_config(config_id, ctx.workspace)
     return {
         "code": 0,
         "message": "ok",
@@ -186,8 +187,8 @@ def get_config(request: Request, config_id: str):
 
 @router.put("/configs/{config_id}")
 def update_config(request: Request, config_id: str, payload: dict = Body(...)):
-    get_auth(request)
-    row = _get_config(config_id)
+    ctx = get_auth(request)
+    row = _get_config(config_id, ctx.workspace)
     result = validate_config(payload)
     if not result["valid"]:
         _validation_error(result)
@@ -214,8 +215,8 @@ def update_config(request: Request, config_id: str, payload: dict = Body(...)):
 
 @router.delete("/configs/{config_id}")
 def delete_config(request: Request, config_id: str):
-    get_auth(request)
-    _get_config(config_id)
+    ctx = get_auth(request)
+    _get_config(config_id, ctx.workspace)
     with dbmod.session_scope() as db:
         record = db.get(dbmod.Config, config_id)
         record.deleted = True
@@ -225,7 +226,7 @@ def delete_config(request: Request, config_id: str):
 
 @router.post("/configs/import")
 def import_config(request: Request, payload: dict = Body(...)):
-    get_auth(request)
+    ctx = get_auth(request)
     raw = payload.get("config", payload)
     result = validate_config(raw)
     if not result["valid"]:
@@ -238,6 +239,7 @@ def import_config(request: Request, payload: dict = Body(...)):
         db.add(
             dbmod.Config(
                 config_id=config_id,
+                workspace_id=ctx.workspace,
                 name=config["name"],
                 version=str(raw.get("version", "1.0")),
                 payload=config,
@@ -263,8 +265,8 @@ def import_config(request: Request, payload: dict = Body(...)):
 
 @router.get("/configs/{config_id}/export")
 def export_config(request: Request, config_id: str):
-    get_auth(request)
-    row = _get_config(config_id)
+    ctx = get_auth(request)
+    row = _get_config(config_id, ctx.workspace)
     payload = dict(row.payload)
     payload["version"] = row.version
     return {"code": 0, "message": "ok", "data": payload}

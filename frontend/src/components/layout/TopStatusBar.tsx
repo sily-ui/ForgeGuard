@@ -3,12 +3,11 @@ import { AlertCircle } from 'lucide-react';
 import { ModeBadge } from '@/components/common/ModeBadge';
 import { SimBadge } from '@/components/common/SimBadge';
 import { RiskRing } from '@/components/common/RiskRing';
+import { PresetTag } from '@/components/common/PresetTag';
 import { GuardIcon } from '@/components/icons/SecurityIcons';
 import { useSessionStore } from '@/stores/sessionStore';
 import { useQuotaStore } from '@/stores/quotaStore';
-import { PRESET_META } from '@/utils/constants';
 import { percent } from '@/utils/format';
-import { useUiStore } from '@/stores/uiStore';
 
 interface Props {
   preset?: string;
@@ -23,8 +22,6 @@ export function TopStatusBar({ preset = 'standard', onToggleGuard, guardDisabled
   const quota = useQuotaStore((s) => s.quota);
   const quotaError = useQuotaStore((s) => s.error);
   const refreshQuota = useQuotaStore((s) => s.refresh);
-  const space = useUiStore((s) => s.space);
-  const lab = space === 'lab';
   const guardOn = session?.guard_enabled ?? true;
   const globalPct = quota ? percent(quota.global_used_calls, quota.global_max_calls) : 0;
 
@@ -59,10 +56,10 @@ export function TopStatusBar({ preset = 'standard', onToggleGuard, guardDisabled
           <GuardIcon size={20} strokeWidth={1.5} />
         </span>
         <div style={{ minWidth: 0, lineHeight: 1.25 }}>
-          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--fg-text-1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 260 }}>
+          <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--fg-text-1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 260 }}>
             {session?.instance_name || '攻防控制台'}
           </div>
-          <div className="mono" style={{ fontSize: 10.5, color: 'var(--fg-text-3)' }}>
+          <div className="mono" style={{ fontSize: 12.5, color: 'var(--fg-text-3)' }}>
             {session?.session_id || '—'}
           </div>
         </div>
@@ -71,7 +68,7 @@ export function TopStatusBar({ preset = 'standard', onToggleGuard, guardDisabled
       <div className="fg-topbar-guard" style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
         <Tooltip title={guardOn ? '旁路监护已启用，实时判定每次工具调用' : '防护已关闭（对照演示），调用不再被判定'}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 10px', borderRadius: 9, background: 'var(--fg-bg-subtle)', border: '1px solid var(--fg-border)', flexShrink: 0 }}>
-            <span style={{ fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap', color: guardOn ? 'var(--fg-allow-text)' : 'var(--fg-block-text)' }}>
+            <span style={{ fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap', color: guardOn ? 'var(--fg-allow-text)' : 'var(--fg-block-text)' }}>
               {guardOn ? '监护开启' : '监护关闭'}
             </span>
             <Switch
@@ -82,27 +79,14 @@ export function TopStatusBar({ preset = 'standard', onToggleGuard, guardDisabled
             />
           </div>
         </Tooltip>
-        <span
-          className="mono"
-          style={{
-            fontSize: 11,
-            padding: '3px 8px',
-            borderRadius: 4,
-            color: 'var(--fg-text-2)',
-            border: '1px solid var(--fg-border)',
-            whiteSpace: 'nowrap',
-          }}
-          title={PRESET_META[preset]?.desc}
-        >
-          {preset}
-        </span>
+        <PresetTag preset={preset} />
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
         <RiskRing score={session?.risk_score ?? 0} maxRisk={session?.max_risk ?? 'none'} size={40} stroke={4} />
         <Tooltip title={quota ? `全局今日 ${quota.global_used_calls}/${quota.global_max_calls} 次模型调用` : '模型配额'}>
           <div style={{ width: 92 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'var(--fg-text-3)', marginBottom: 3 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--fg-text-3)', marginBottom: 3 }}>
               <span>配额</span>
               <span className="mono">{globalPct}%</span>
             </div>
@@ -111,7 +95,7 @@ export function TopStatusBar({ preset = 'standard', onToggleGuard, guardDisabled
               size="small"
               showInfo={false}
               strokeColor={globalPct > 85 ? 'var(--fg-block)' : globalPct > 60 ? 'var(--fg-observe)' : 'var(--fg-brand-primary)'}
-              trailColor={lab ? '#2b323c' : '#e2e5e8'}
+              trailColor="#e2e5e8"
             />
           </div>
         </Tooltip>

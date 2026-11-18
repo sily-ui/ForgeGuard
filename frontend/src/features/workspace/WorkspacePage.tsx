@@ -9,12 +9,13 @@ import { SimBadge } from '@/components/common/SimBadge';
 import { ModeBadge } from '@/components/common/ModeBadge';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { EmptyState } from '@/components/common/EmptyState';
+import { PresetTag } from '@/components/common/PresetTag';
 import { AttackIcon, GuardIcon } from '@/components/icons/SecurityIcons';
 import { templateApi, instanceApi, sessionApi, sampleApi, reportApi } from '@/services/api/resources';
 import { useAuthStore } from '@/stores/authStore';
 import { useQuotaStore } from '@/stores/quotaStore';
 import { ApiClientError } from '@/services/api/client';
-import { PRESET_META, TOOL_META } from '@/utils/constants';
+import { TOOL_META } from '@/utils/constants';
 import { fromNow, formatShort } from '@/utils/format';
 import type { Template } from '@/types/api';
 
@@ -87,9 +88,9 @@ export default function WorkspacePage() {
         <div style={{ flex: 1, minWidth: 280 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <AttackIcon size={16} strokeWidth={1.5} style={{ color: 'var(--fg-text-3)' }} />
-            <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--fg-text-1)' }}>一键演示</span>
+            <span style={{ fontSize: 16, fontWeight: 600, color: 'var(--fg-text-1)' }}>一键演示</span>
           </div>
-          <p style={{ margin: '4px 0 0', fontSize: 12.5, color: 'var(--fg-text-2)', lineHeight: 1.6 }}>
+          <p style={{ margin: '4px 0 0', fontSize: 13.5, color: 'var(--fg-text-2)', lineHeight: 1.6 }}>
             自动选用预置模板创建靶标实例与会话，载入攻击样本后进入实时控制台，全程内存仿真
           </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 12, flexWrap: 'wrap' }}>
@@ -100,7 +101,7 @@ export default function WorkspacePage() {
                   <span
                     className="mono"
                     style={{
-                      fontSize: 11,
+                      fontSize: 12,
                       color: state === 'run' ? 'var(--fg-brand-primary)' : state === 'done' ? 'var(--fg-text-2)' : 'var(--fg-text-3)',
                     }}
                   >
@@ -108,7 +109,7 @@ export default function WorkspacePage() {
                   </span>
                   <span
                     style={{
-                      fontSize: 12,
+                      fontSize: 13,
                       fontWeight: state === 'run' ? 600 : 400,
                       color: state === 'run' ? 'var(--fg-brand-primary)' : state === 'done' ? 'var(--fg-text-2)' : 'var(--fg-text-3)',
                     }}
@@ -161,15 +162,13 @@ export default function WorkspacePage() {
                 >
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                      <span style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--fg-text-1)' }}>{t.name}</span>
-                      <span className="mono" style={{ fontSize: 10.5, color: 'var(--fg-text-2)', border: '1px solid var(--fg-border)', borderRadius: 4, padding: '0 6px' }}>
-                        {PRESET_META[t.suggested_guard]?.label || t.suggested_guard}
-                      </span>
+                      <span style={{ fontSize: 14.5, fontWeight: 600, color: 'var(--fg-text-1)' }}>{t.name}</span>
+                      <PresetTag preset={t.suggested_guard} size="sm" />
                     </div>
-                    <div style={{ fontSize: 12, color: 'var(--fg-text-2)', lineHeight: 1.5 }}>{t.description}</div>
+                    <div style={{ fontSize: 13, color: 'var(--fg-text-2)', lineHeight: 1.5 }}>{t.description}</div>
                     <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
                       {t.suggested_tools.slice(0, 5).map((tool) => (
-                        <span key={tool} className="mono" style={{ fontSize: 10, padding: '1px 7px', borderRadius: 4, background: 'var(--fg-bg-subtle)', color: 'var(--fg-text-2)' }}>
+                        <span key={tool} className="mono" style={{ fontSize: 11, padding: '1px 7px', borderRadius: 4, background: 'var(--fg-bg-subtle)', color: 'var(--fg-text-2)' }}>
                           {TOOL_META[tool]?.label || tool}
                         </span>
                       ))}
@@ -210,10 +209,10 @@ export default function WorkspacePage() {
                   >
                     <StatusBadge action={s.block_count > 0 ? 'block' : 'allow'} size="sm" showText={false} />
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 12.5, fontWeight: 500, color: 'var(--fg-text-1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.instance_name}</div>
-                      <div className="mono" style={{ fontSize: 10, color: 'var(--fg-text-3)' }}>{s.session_id} · {s.turn} 轮</div>
+                      <div style={{ fontSize: 13.5, fontWeight: 500, color: 'var(--fg-text-1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.instance_name}</div>
+                      <div className="mono" style={{ fontSize: 11, color: 'var(--fg-text-3)' }}>{s.session_id} · {s.turn} 轮</div>
                     </div>
-                    <span style={{ fontSize: 10.5, color: 'var(--fg-text-3)' }}>{fromNow(s.created_at)}</span>
+                    <span style={{ fontSize: 11.5, color: 'var(--fg-text-3)' }}>{fromNow(s.created_at)}</span>
                   </button>
                 ))}
               </div>
@@ -235,8 +234,8 @@ export default function WorkspacePage() {
                   >
                     <FileBarChart size={15} strokeWidth={1.5} style={{ color: 'var(--fg-text-3)' }} />
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 12.5, fontWeight: 500, color: 'var(--fg-text-1)' }}>{r.summary.instance_name}</div>
-                      <div style={{ fontSize: 10.5, color: 'var(--fg-text-3)' }}>拦截 {r.summary.block_count} · {formatShort(r.created_at)}</div>
+                      <div style={{ fontSize: 13.5, fontWeight: 500, color: 'var(--fg-text-1)' }}>{r.summary.instance_name}</div>
+                      <div style={{ fontSize: 11.5, color: 'var(--fg-text-3)' }}>拦截 {r.summary.block_count} · {formatShort(r.created_at)}</div>
                     </div>
                     <ArrowRight size={13} style={{ color: 'var(--fg-text-3)' }} />
                   </button>
@@ -248,7 +247,7 @@ export default function WorkspacePage() {
       </div>
 
       {role === 'admin' && quota && (
-        <div className="mono" style={{ marginTop: 16, fontSize: 11.5, color: 'var(--fg-text-3)', display: 'flex', gap: 16 }}>
+        <div className="mono" style={{ marginTop: 16, fontSize: 12.5, color: 'var(--fg-text-3)', display: 'flex', gap: 16 }}>
           <span>全局配额今日 {quota.global_used_calls}/{quota.global_max_calls}</span>
           <span>存活实例 {instances.filter((i) => i.status !== 'destroyed').length}</span>
         </div>
@@ -268,10 +267,10 @@ function CapabilityCard({ icon, title, desc, onClick }: { icon: React.ReactNode;
     >
       <span style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--fg-text-3)' }}>
         {icon}
-        <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--fg-text-1)' }}>{title}</span>
+        <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--fg-text-1)' }}>{title}</span>
         <ArrowRight size={14} style={{ marginLeft: 'auto', color: 'var(--fg-text-3)' }} />
       </span>
-      <span style={{ fontSize: 12, color: 'var(--fg-text-2)', lineHeight: 1.55 }}>{desc}</span>
+      <span style={{ fontSize: 13, color: 'var(--fg-text-2)', lineHeight: 1.55 }}>{desc}</span>
     </button>
   );
 }

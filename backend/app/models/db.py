@@ -57,9 +57,19 @@ class PasscodeUse(Base):
     used_count = Column(Integer, default=0)
 
 
+class Workspace(Base):
+    """匿名工作区：无登录场景下，每个浏览器实例凭 workspace_id 隔离各自的数据。"""
+
+    __tablename__ = "workspaces"
+    workspace_id = Column(String, primary_key=True)
+    created_at = Column(String, nullable=False)
+    last_seen_at = Column(String, nullable=False)
+
+
 class Config(Base):
     __tablename__ = "configs"
     config_id = Column(String, primary_key=True)
+    workspace_id = Column(String, default="default", nullable=False, index=True)
     name = Column(String, nullable=False)
     version = Column(String, default="1.0")
     payload = Column(JSON, nullable=False)
@@ -80,6 +90,7 @@ class ConfigVersion(Base):
 class Instance(Base):
     __tablename__ = "instances"
     instance_id = Column(String, primary_key=True)
+    workspace_id = Column(String, default="default", nullable=False, index=True)
     name = Column(String, nullable=False)
     source_config_id = Column(String, nullable=False)
     clone_source_id = Column(String, nullable=True)
@@ -111,6 +122,7 @@ class PolicySnapshot(Base):
 class Session(Base):
     __tablename__ = "sessions"
     session_id = Column(String, primary_key=True)
+    workspace_id = Column(String, default="default", nullable=False, index=True)
     instance_id = Column(String, index=True, nullable=False)
     status = Column(String, default="active")
     turn = Column(Integer, default=0)
@@ -188,6 +200,7 @@ class Alert(Base):
 class Report(Base):
     __tablename__ = "reports"
     report_id = Column(String, primary_key=True)
+    workspace_id = Column(String, default="default", nullable=False, index=True)
     session_id = Column(String, index=True, nullable=False)
     policy_snapshot_id = Column(String, nullable=False)
     config_version = Column(String, default="1.0")
@@ -202,6 +215,7 @@ class Report(Base):
 class Experiment(Base):
     __tablename__ = "experiments"
     pair_id = Column(String, primary_key=True)
+    workspace_id = Column(String, default="default", nullable=False, index=True)
     dimension = Column(String, nullable=False)
     source_session_id = Column(String, nullable=False)
     run_a = Column(JSON, nullable=False)
@@ -258,6 +272,28 @@ def get_engine():
 def init_db():
     engine = get_engine()
     Base.metadata.create_all(engine)
+    _migrate_workspace_columns(engine)
+
+
+_WORKSPACE_TABLES = ("configs", "instances", "sessions", "reports", "experiments")
+
+
+def _migrate_workspace_columns(engine):
+    """为存量 SQLite 库补充 workspace_id 列（create_all 不会修改已存在的表）。"""
+    from sqlalchemy import text
+
+    with engine.connect() as conn:
+        for table in _WORKSPACE_TABLES:
+            columns = {row[1] for row in conn.execute(text(f"PRAGMA table_info({table})"))}
+            if not columns or "workspace_id" in columns:
+                continue
+            conn.execute(
+                text(f"ALTER TABLE {table} ADD COLUMN workspace_id VARCHAR NOT NULL DEFAULT 'default'")
+            )
+            conn.execute(
+                text(f"CREATE INDEX IF NOT EXISTS ix_{table}_workspace_id ON {table} (workspace_id)")
+            )
+        conn.commit()
 
 
 @contextmanager

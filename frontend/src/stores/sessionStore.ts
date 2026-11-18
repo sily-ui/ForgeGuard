@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 import type {
+  AgentDeltaEvent,
+  AgentMessageEvent,
   Alert,
   CallRecord,
   ChainUpdateEvent,
@@ -81,6 +83,8 @@ interface SessionState {
   addUserMessage: (content: string, actor?: string, sampleId?: string | null) => string;
   addSystemMessage: (content: string) => void;
   upsertAssistantMessage: (id: string, content: string, turn: number, actor?: string) => void;
+  startAssistantMessage: (id: string, turn: number, actor?: string) => void;
+  appendAssistantDelta: (id: string, delta: string, turn: number, actor?: string) => void;
   applyEvent: (record: SseRecord) => void;
   resolveChallengeLocal: (callId: string, approved: boolean) => void;
   setRedteamRunning: (v: boolean) => void;
@@ -200,12 +204,50 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       };
     }),
 
+  startAssistantMessage: (id, turn, actor) =>
+    set((s) => {
+      if (s.messages.some((m) => m.id === id)) return s;
+      return {
+        messages: [
+          ...s.messages,
+          { id, role: 'assistant', content: '', turn, actor, created_at: new Date().toISOString(), pending: true },
+        ],
+      };
+    }),
+
+  appendAssistantDelta: (id, delta, turn, actor) =>
+    set((s) => {
+      if (s.messages.some((m) => m.id === id)) {
+        return {
+          messages: s.messages.map((m) =>
+            m.id === id ? { ...m, content: m.content + delta, pending: true } : m,
+          ),
+        };
+      }
+      return {
+        messages: [
+          ...s.messages,
+          { id, role: 'assistant', content: delta, turn, actor, created_at: new Date().toISOString(), pending: true },
+        ],
+      };
+    }),
+
   applyEvent: (record) => {
     const { event, data } = record;
     const state = get();
     switch (event) {
+      case 'agent.message.start': {
+        const d = data as unknown as AgentDeltaEvent;
+        get().startAssistantMessage(d.message_id, d.turn, d.actor);
+        break;
+      }
+      case 'agent.delta': {
+        const d = data as unknown as AgentDeltaEvent;
+        get().appendAssistantDelta(d.message_id, d.delta, d.turn, d.actor);
+        break;
+      }
       case 'agent.message': {
-        const d = data as unknown as { message_id: string; content: string; turn: number; actor: string };
+        const d = data as unknown as AgentMessageEvent;
         get().upsertAssistantMessage(d.message_id, d.content, d.turn, d.actor);
         set({ sending: false });
         break;

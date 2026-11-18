@@ -20,10 +20,10 @@ from ..deps import get_auth, get_sse_auth, heavy_check
 router = APIRouter()
 
 
-def _session_row(session_id):
+def _session_row(session_id, workspace="default"):
     with dbmod.session_scope() as db:
         row = db.get(dbmod.Session, session_id)
-        if row is None:
+        if row is None or row.workspace_id != workspace:
             raise ApiError(40400, detail="会话不存在")
         return row
 
@@ -56,11 +56,11 @@ def _session_view(row):
 
 @router.post("/sessions")
 def create_session(request: Request, payload: dict = Body(...)):
-    get_auth(request)
+    ctx = get_auth(request)
     instance_id = payload.get("instance_id")
     with dbmod.session_scope() as db:
         instance = db.get(dbmod.Instance, instance_id) if instance_id else None
-    if instance is None:
+    if instance is None or instance.workspace_id != ctx.workspace:
         raise ApiError(40400, detail="实例不存在")
     if instance.status == "destroyed":
         raise ApiError(40900, detail="实例已销毁，无法创建会话")
@@ -76,6 +76,7 @@ def create_session(request: Request, payload: dict = Body(...)):
         db.add(
             dbmod.Session(
                 session_id=session_id,
+                workspace_id=ctx.workspace,
                 instance_id=instance.instance_id,
                 status="active",
                 turn=0,
@@ -118,10 +119,10 @@ def create_session(request: Request, payload: dict = Body(...)):
 
 @router.get("/sessions")
 def list_sessions(request: Request, instance_id: str | None = None, page: int = 1, page_size: int = 20):
-    get_auth(request)
+    ctx = get_auth(request)
     page, page_size = parse_pagination(page, page_size)
     with dbmod.session_scope() as db:
-        query = db.query(dbmod.Session)
+        query = db.query(dbmod.Session).filter(dbmod.Session.workspace_id == ctx.workspace)
         if instance_id:
             query = query.filter(dbmod.Session.instance_id == instance_id)
         rows = query.order_by(dbmod.Session.created_at.desc()).all()
@@ -135,8 +136,8 @@ def list_sessions(request: Request, instance_id: str | None = None, page: int = 
 
 @router.get("/sessions/{session_id}")
 def get_session(request: Request, session_id: str):
-    get_auth(request)
-    row = _session_row(session_id)
+    ctx = get_auth(request)
+    row = _session_row(session_id, ctx.workspace)
     data = _session_view(row)
     data["context_summary"] = row.context_summary
     data["skip_guard_turns"] = row.skip_guard_turns or []
@@ -145,13 +146,13 @@ def get_session(request: Request, session_id: str):
 
 @router.post("/sessions/{session_id}/messages")
 async def send_message(request: Request, session_id: str, payload: dict = Body(...)):
-    get_auth(request)
+    ctx = get_auth(request)
     content = str(payload.get("content", "")).strip()
     if not content:
         raise ApiError(40000, detail="消息内容不能为空")
     if len(content) > 4000:
         raise ApiError(40000, detail="消息长度超过 4000 字符上限")
-    _session_row(session_id)
+    _session_row(session_id, ctx.workspace)
     result = await process_message(
         session_id,
         content,
@@ -173,8 +174,8 @@ async def send_message(request: Request, session_id: str, payload: dict = Body(.
 
 @router.post("/sessions/{session_id}/pause")
 def pause_session(request: Request, session_id: str):
-    get_auth(request)
-    row = _session_row(session_id)
+    ctx = get_auth(request)
+    row = _session_row(session_id, ctx.workspace)
     if row.status not in ("active",):
         raise ApiError(40900, detail=f"会话当前状态为 {row.status}，无法暂停")
     with dbmod.session_scope() as db:
@@ -185,8 +186,8 @@ def pause_session(request: Request, session_id: str):
 
 @router.post("/sessions/{session_id}/resume")
 def resume_session(request: Request, session_id: str):
-    get_auth(request)
-    row = _session_row(session_id)
+    ctx = get_auth(request)
+    row = _session_row(session_id, ctx.workspace)
     if row.status != "paused":
         raise ApiError(40900, detail=f"会话当前状态为 {row.status}，无法恢复")
     with dbmod.session_scope() as db:
@@ -197,8 +198,8 @@ def resume_session(request: Request, session_id: str):
 
 @router.post("/sessions/{session_id}/terminate")
 def terminate_session(request: Request, session_id: str):
-    get_auth(request)
-    row = _session_row(session_id)
+    ctx = get_auth(request)
+    row = _session_row(session_id, ctx.workspace)
     if row.status == "terminated":
         raise ApiError(40900, detail="会话已终止")
     now = iso(utcnow())
@@ -217,8 +218,8 @@ def terminate_session(request: Request, session_id: str):
 
 @router.post("/sessions/{session_id}/reset")
 def reset_session(request: Request, session_id: str):
-    get_auth(request)
-    row = _session_row(session_id)
+    ctx = get_auth(request)
+    row = _session_row(session_id, ctx.workspace)
     with dbmod.session_scope() as db:
         instance = db.get(dbmod.Instance, row.instance_id)
     if instance is None or instance.status == "destroyed":
@@ -236,6 +237,7 @@ def reset_session(request: Request, session_id: str):
         db.add(
             dbmod.Session(
                 session_id=new_session_id,
+                workspace_id=ctx.workspace,
                 instance_id=instance.instance_id,
                 status="active",
                 turn=0,
@@ -292,8 +294,8 @@ def _call_view(c):
 
 @router.get("/sessions/{session_id}/calls")
 def list_calls(request: Request, session_id: str):
-    get_auth(request)
-    _session_row(session_id)
+    ctx = get_auth(request)
+    _session_row(session_id, ctx.workspace)
     with dbmod.session_scope() as db:
         rows = (
             db.query(dbmod.CallRecord)
@@ -328,8 +330,8 @@ def _alert_view(a):
 
 @router.get("/sessions/{session_id}/alerts")
 def list_alerts(request: Request, session_id: str, level: str | None = None, action: str | None = None):
-    get_auth(request)
-    _session_row(session_id)
+    ctx = get_auth(request)
+    _session_row(session_id, ctx.workspace)
     with dbmod.session_scope() as db:
         query = db.query(dbmod.Alert).filter(dbmod.Alert.session_id == session_id)
         if level:
@@ -343,10 +345,13 @@ def list_alerts(request: Request, session_id: str, level: str | None = None, act
 
 @router.post("/alerts/{alert_id}/feedback")
 def alert_feedback(request: Request, alert_id: str, payload: dict = Body(...)):
-    get_auth(request)
+    ctx = get_auth(request)
     with dbmod.session_scope() as db:
         row = db.get(dbmod.Alert, alert_id)
         if row is None:
+            raise ApiError(40400, detail="告警不存在")
+        session = db.get(dbmod.Session, row.session_id)
+        if session is None or session.workspace_id != ctx.workspace:
             raise ApiError(40400, detail="告警不存在")
         if "false_positive" in payload:
             row.false_positive = bool(payload["false_positive"])
@@ -360,8 +365,8 @@ def alert_feedback(request: Request, alert_id: str, payload: dict = Body(...)):
 
 @router.post("/sessions/{session_id}/challenges/{call_id}")
 def challenge_decision(request: Request, session_id: str, call_id: str, payload: dict = Body(...)):
-    get_auth(request)
-    _session_row(session_id)
+    ctx = get_auth(request)
+    _session_row(session_id, ctx.workspace)
     if "approved" not in payload:
         raise ApiError(40000, detail="缺少 approved 字段")
     resolved = runtime.resolve_challenge(call_id, bool(payload["approved"]))
@@ -376,9 +381,9 @@ def challenge_decision(request: Request, session_id: str, call_id: str, payload:
 
 @router.post("/sessions/{session_id}/redteam/start")
 async def start_redteam(request: Request, session_id: str, payload: dict = Body(default={})):
-    get_auth(request)
+    ctx = get_auth(request)
     heavy_check(request, "redteam")
-    row = _session_row(session_id)
+    row = _session_row(session_id, ctx.workspace)
     if row.status != "active":
         raise ApiError(40900, detail="仅活跃会话可启动红队")
     if runtime.redteam_flags.get(session_id):
@@ -396,8 +401,8 @@ async def start_redteam(request: Request, session_id: str, payload: dict = Body(
 
 @router.post("/sessions/{session_id}/redteam/stop")
 def stop_redteam_route(request: Request, session_id: str):
-    get_auth(request)
-    _session_row(session_id)
+    ctx = get_auth(request)
+    _session_row(session_id, ctx.workspace)
     redteam_mod.stop_redteam(session_id)
     return {"code": 0, "message": "ok", "data": {"session_id": session_id, "status": "stopping"}}
 
@@ -406,7 +411,7 @@ def stop_redteam_route(request: Request, session_id: str):
 def record_snapshot(request: Request, session_id: str, payload: dict = Body(default={})):
     ctx = get_auth(request)
     ctx.require("admin")
-    _session_row(session_id)
+    _session_row(session_id, ctx.workspace)
     name = payload.get("name") or f"会话录制-{session_id}"
     snapshot_id = record_session(session_id, name)
     return {"code": 0, "message": "ok", "data": {"snapshot_id": snapshot_id, "name": name}}
@@ -414,9 +419,10 @@ def record_snapshot(request: Request, session_id: str, payload: dict = Body(defa
 
 @router.get("/sessions/{session_id}/events")
 async def session_events(request: Request, session_id: str):
-    get_sse_auth(request)
+    ctx = get_sse_auth(request)
     with dbmod.session_scope() as db:
-        if db.get(dbmod.Session, session_id) is None:
+        row = db.get(dbmod.Session, session_id)
+        if row is None or row.workspace_id != ctx.workspace:
             raise ApiError(40400, detail="会话不存在")
     last_id_raw = request.headers.get("Last-Event-ID") or request.query_params.get("last_event_id") or "0"
     try:

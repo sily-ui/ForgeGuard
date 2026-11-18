@@ -1,22 +1,18 @@
-import { useUiStore } from '@/stores/uiStore';
-
 // 仿真标记：所有工具调用均为内存仿真，必须始终可见。细边框小标签，不做装饰。
 export function SimBadge({ compact = false }: { compact?: boolean }) {
-  const space = useUiStore((s) => s.space);
-  const lab = space === 'lab';
   return (
     <span
       title="全部工具调用为内存仿真，不触及真实系统"
       style={{
         display: 'inline-flex',
         alignItems: 'center',
-        height: compact ? 18 : 22,
+        height: compact ? 20 : 24,
         padding: '0 6px',
         borderRadius: 4,
-        fontSize: compact ? 10.5 : 11,
+        fontSize: compact ? 11.5 : 12,
         fontWeight: 500,
-        color: lab ? '#7aa3c8' : '#3d6488',
-        border: `1px solid ${lab ? 'rgba(122,163,200,0.35)' : 'rgba(79,123,166,0.3)'}`,
+        color: '#3d6488',
+        border: '1px solid rgba(79,123,166,0.3)',
         whiteSpace: 'nowrap',
       }}
     >

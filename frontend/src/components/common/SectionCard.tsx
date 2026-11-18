@@ -33,7 +33,7 @@ export function SectionCard({ title, extra, children, padding = 16, style, bodyS
             borderBottom: '1px solid var(--fg-border)',
           }}
         >
-          <div style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--fg-text-1)', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ fontSize: 14.5, fontWeight: 600, color: 'var(--fg-text-1)', display: 'flex', alignItems: 'center', gap: 8 }}>
             {title}
           </div>
           {extra && <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>{extra}</div>}

@@ -13,7 +13,7 @@ from .instances import _diff_configs
 router = APIRouter()
 
 
-def _new_session_for(instance, guard_enabled):
+def _new_session_for(instance, guard_enabled, workspace="default"):
     session_id = new_id("sess")
     snapshot_id = freeze_snapshot(
         instance.instance_id, instance.config_payload, session_id=session_id, id_prefix="pol"
@@ -23,6 +23,7 @@ def _new_session_for(instance, guard_enabled):
         db.add(
             dbmod.Session(
                 session_id=session_id,
+                workspace_id=workspace,
                 instance_id=instance.instance_id,
                 status="active",
                 turn=0,
@@ -50,7 +51,7 @@ def _new_session_for(instance, guard_enabled):
 
 @router.post("/experiments/compare")
 async def compare(request: Request, payload: dict = Body(...)):
-    get_auth(request)
+    ctx = get_auth(request)
     heavy_check(request, "compare")
     idem_key = request.headers.get("X-Idempotency-Key")
     cached = get_cached(idem_key, "experiments.compare")
@@ -63,7 +64,7 @@ async def compare(request: Request, payload: dict = Body(...)):
     content = str(payload.get("input", "")).strip()
     with dbmod.session_scope() as db:
         source = db.get(dbmod.Session, source_session_id) if source_session_id else None
-    if source is None:
+    if source is None or source.workspace_id != ctx.workspace:
         raise ApiError(40400, detail="起点会话不存在")
     if not content:
         with dbmod.session_scope() as db:
@@ -79,7 +80,7 @@ async def compare(request: Request, payload: dict = Body(...)):
 
     with dbmod.session_scope() as db:
         source_instance = db.get(dbmod.Instance, source.instance_id)
-    if source_instance is None or source_instance.status == "destroyed":
+    if source_instance is None or source_instance.workspace_id != ctx.workspace:
         raise ApiError(40900, detail="起点实例已销毁，无法对照")
 
     if dimension == "guard":
@@ -95,14 +96,14 @@ async def compare(request: Request, payload: dict = Body(...)):
         target_instance_id = payload.get("target_instance_id")
         with dbmod.session_scope() as db:
             target_instance = db.get(dbmod.Instance, target_instance_id) if target_instance_id else None
-        if target_instance is None:
+        if target_instance is None or target_instance.workspace_id != ctx.workspace:
             raise ApiError(40400, detail="对照实例不存在")
         if target_instance.status == "destroyed":
             raise ApiError(40900, detail="对照实例已销毁")
         guard_enabled = bool(payload.get("guard_enabled", True))
         diff_items = _diff_configs(source_instance.config_payload, target_instance.config_payload)
 
-    run_b_session_id = _new_session_for(target_instance, guard_enabled)
+    run_b_session_id = _new_session_for(target_instance, guard_enabled, workspace=ctx.workspace)
     result_b = await process_message(run_b_session_id, content)
 
     pair_id = new_id("exp")
@@ -113,6 +114,7 @@ async def compare(request: Request, payload: dict = Body(...)):
         db.add(
             dbmod.Experiment(
                 pair_id=pair_id,
+                workspace_id=ctx.workspace,
                 dimension=dimension,
                 source_session_id=source_session_id,
                 run_a=run_a,
@@ -167,10 +169,10 @@ def _calls_of(db, session_id):
 
 @router.get("/experiments/{pair_id}")
 def get_experiment(request: Request, pair_id: str):
-    get_auth(request)
+    ctx = get_auth(request)
     with dbmod.session_scope() as db:
         row = db.get(dbmod.Experiment, pair_id)
-        if row is None:
+        if row is None or row.workspace_id != ctx.workspace:
             raise ApiError(40400, detail="对照实验不存在")
         calls_a = _calls_of(db, row.run_a["session_id"])
         calls_b = _calls_of(db, row.run_b["session_id"])
@@ -200,12 +202,17 @@ def get_experiment(request: Request, pair_id: str):
 
 @router.get("/experiments")
 def list_experiments(request: Request, page: int = 1, page_size: int = 20):
-    get_auth(request)
+    ctx = get_auth(request)
     from ...core.response import paginate, parse_pagination, slice_page
 
     page, page_size = parse_pagination(page, page_size)
     with dbmod.session_scope() as db:
-        rows = db.query(dbmod.Experiment).order_by(dbmod.Experiment.created_at.desc()).all()
+        rows = (
+            db.query(dbmod.Experiment)
+            .filter(dbmod.Experiment.workspace_id == ctx.workspace)
+            .order_by(dbmod.Experiment.created_at.desc())
+            .all()
+        )
         items = [
             {
                 "pair_id": r.pair_id,

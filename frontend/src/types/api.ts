@@ -547,6 +547,8 @@ export interface DegradationItem {
 // ---- SSE events ----
 export type SseEventType =
   | 'agent.message'
+  | 'agent.message.start'
+  | 'agent.delta'
   | 'tool.call'
   | 'guard.judgement'
   | 'alert.created'
@@ -564,6 +566,14 @@ export interface AgentMessageEvent {
   message_id: string;
   role: string;
   content: string;
+  turn: number;
+  actor: string;
+}
+
+export interface AgentDeltaEvent {
+  message_id: string;
+  role: string;
+  delta: string;
   turn: number;
   actor: string;
 }

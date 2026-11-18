@@ -8,6 +8,7 @@ import { PageHeader } from '@/components/common/PageHeader';
 import { SectionCard } from '@/components/common/SectionCard';
 import { SimBadge } from '@/components/common/SimBadge';
 import { EmptyState } from '@/components/common/EmptyState';
+import { PresetTag } from '@/components/common/PresetTag';
 import { confirmAction } from '@/components/common/confirmAction';
 import { instanceApi, sessionApi } from '@/services/api/resources';
 import { INSTANCE_STATUS_META, PRESET_META, TOOL_META } from '@/utils/constants';
@@ -140,12 +141,12 @@ export default function InstancesPage() {
             rowKey="instance_id"
             pagination={{ pageSize: 10, showSizeChanger: false }}
             columns={[
-              { title: '名称', dataIndex: 'name', render: (v, r) => <span style={{ fontWeight: 600 }}>{v}<div className="mono" style={{ fontSize: 10, color: 'var(--fg-text-3)' }}>{r.instance_id}</div></span> },
+              { title: '名称', dataIndex: 'name', render: (v, r) => <span style={{ fontWeight: 600 }}>{v}<div className="mono" style={{ fontSize: 11, color: 'var(--fg-text-3)' }}>{r.instance_id}</div></span> },
               { title: '状态', dataIndex: 'status', render: (v) => <Tag color={STATUS_COLOR[v]}>{INSTANCE_STATUS_META[v]?.label || v}</Tag> },
-              { title: '防护', dataIndex: ['guard', 'preset'], render: (v) => <Tag>{PRESET_META[v]?.label || v}</Tag> },
-              { title: '工具', dataIndex: 'enabled_tools', render: (v: string[]) => <span className="mono" style={{ fontSize: 11 }}>{v.length} 个</span> },
+              { title: '防护', dataIndex: ['guard', 'preset'], render: (v) => <PresetTag preset={v} /> },
+              { title: '工具', dataIndex: 'enabled_tools', render: (v: string[]) => <span className="mono" style={{ fontSize: 12 }}>{v.length} 个</span> },
               { title: '调用', dataIndex: ['stats', 'call_count'], render: (v) => <span className="mono">{v || 0}</span> },
-              { title: '过期', dataIndex: 'expires_at', render: (v) => <span style={{ fontSize: 12 }}>{formatShort(v)}</span> },
+              { title: '过期', dataIndex: 'expires_at', render: (v) => <span style={{ fontSize: 13 }}>{formatShort(v)}</span> },
               {
                 title: '操作', key: 'action', width: 200,
                 render: (_, r) => (
@@ -170,7 +171,7 @@ export default function InstancesPage() {
 function StatCard({ label, value, accent }: { label: string; value: number; accent?: string }) {
   return (
     <div className="fg-card" style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 6 }}>
-      <span style={{ fontSize: 12, color: 'var(--fg-text-3)' }}>{label}</span>
+      <span style={{ fontSize: 13, color: 'var(--fg-text-3)' }}>{label}</span>
       <span className="mono" style={{ fontSize: 28, fontWeight: 600, color: accent ?? 'var(--fg-text-1)', lineHeight: 1 }}>{value}</span>
     </div>
   );
@@ -190,31 +191,31 @@ function InstanceCard({ instance, onEnter, entering, onClone, onPolicies, onRene
     <div className="fg-card" style={{ padding: 18, opacity: destroyed ? 0.6 : 1, display: 'flex', flexDirection: 'column', gap: 14 }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
         <div style={{ minWidth: 0 }}>
-          <div style={{ fontSize: 15.5, fontWeight: 600, color: 'var(--fg-text-1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{instance.name}</div>
-          <div className="mono" style={{ fontSize: 10.5, color: 'var(--fg-text-3)', marginTop: 2 }}>{instance.instance_id}</div>
+          <div style={{ fontSize: 16.5, fontWeight: 600, color: 'var(--fg-text-1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{instance.name}</div>
+          <div className="mono" style={{ fontSize: 11.5, color: 'var(--fg-text-3)', marginTop: 2 }}>{instance.instance_id}</div>
         </div>
         <Tag color={STATUS_COLOR[instance.status]} style={{ margin: 0 }}>{INSTANCE_STATUS_META[instance.status]?.label}</Tag>
       </div>
 
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-        <span className="mono" style={{ fontSize: 10.5, padding: '1px 8px', borderRadius: 4, border: '1px solid var(--fg-border)', color: 'var(--fg-text-2)' }}>{PRESET_META[instance.guard.preset]?.label || instance.guard.preset}</span>
+        <PresetTag preset={instance.guard.preset} size="sm" />
         <SimBadge compact />
-        {instance.clone_source_id && <span style={{ fontSize: 10.5, padding: '1px 8px', borderRadius: 4, border: '1px solid var(--fg-border)', color: 'var(--fg-text-2)' }}>克隆体</span>}
+        {instance.clone_source_id && <span style={{ fontSize: 11.5, padding: '1px 8px', borderRadius: 4, border: '1px solid var(--fg-border)', color: 'var(--fg-text-2)' }}>克隆体</span>}
       </div>
 
       <div>
-        <div style={{ fontSize: 11, color: 'var(--fg-text-3)', marginBottom: 6 }}>启用工具</div>
+        <div style={{ fontSize: 12, color: 'var(--fg-text-3)', marginBottom: 6 }}>启用工具</div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
-          {instance.enabled_tools.length === 0 && <span style={{ fontSize: 12, color: 'var(--fg-text-3)' }}>无</span>}
+          {instance.enabled_tools.length === 0 && <span style={{ fontSize: 13, color: 'var(--fg-text-3)' }}>无</span>}
           {instance.enabled_tools.map((t) => (
             <Tooltip key={t} title={TOOL_META[t]?.desc}>
-              <span className="mono" style={{ fontSize: 10.5, padding: '2px 8px', borderRadius: 6, background: 'var(--fg-bg-subtle)', border: '1px solid var(--fg-border)', color: 'var(--fg-text-2)' }}>{t}</span>
+              <span className="mono" style={{ fontSize: 11.5, padding: '2px 8px', borderRadius: 6, background: 'var(--fg-bg-subtle)', border: '1px solid var(--fg-border)', color: 'var(--fg-text-2)' }}>{t}</span>
             </Tooltip>
           ))}
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: 18, fontSize: 12, color: 'var(--fg-text-2)' }}>
+      <div style={{ display: 'flex', gap: 18, fontSize: 13, color: 'var(--fg-text-2)' }}>
         <span>调用 <b className="mono" style={{ color: 'var(--fg-text-1)' }}>{instance.stats?.call_count || 0}</b></span>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Clock size={12} /> {fromNow(instance.expires_at)}过期</span>
       </div>
@@ -268,22 +269,22 @@ function CloneModal({ instance, onClose, onDone }: { instance: Instance | null; 
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: '8px 0' }}>
         <div>
-          <div style={{ fontSize: 12.5, fontWeight: 600, marginBottom: 8 }}>克隆模式</div>
+          <div style={{ fontSize: 13.5, fontWeight: 600, marginBottom: 8 }}>克隆模式</div>
           <Radio.Group value={mode} onChange={(e) => setMode(e.target.value)}>
             <Radio.Button value="verbatim">原样克隆</Radio.Button>
             <Radio.Button value="modified">修改克隆</Radio.Button>
           </Radio.Group>
-          <div style={{ fontSize: 11.5, color: 'var(--fg-text-3)', marginTop: 8, lineHeight: 1.5 }}>
+          <div style={{ fontSize: 12.5, color: 'var(--fg-text-3)', marginTop: 8, lineHeight: 1.5 }}>
             {mode === 'verbatim' ? '完整复制源实例配置，用于复现与回归。' : '在源配置基础上调整防护档位，用于对照实验。'}
           </div>
         </div>
         <div>
-          <div style={{ fontSize: 12.5, fontWeight: 600, marginBottom: 8 }}>克隆名称（可选）</div>
+          <div style={{ fontSize: 13.5, fontWeight: 600, marginBottom: 8 }}>克隆名称（可选）</div>
           <Input value={name} onChange={(e) => setName(e.target.value)} placeholder={`${instance?.name ?? ''}-克隆`} />
         </div>
         {mode === 'modified' && (
           <div>
-            <div style={{ fontSize: 12.5, fontWeight: 600, marginBottom: 8 }}>调整防护档位</div>
+            <div style={{ fontSize: 13.5, fontWeight: 600, marginBottom: 8 }}>调整防护档位</div>
             <Radio.Group value={guardPreset} onChange={(e) => setGuardPreset(e.target.value)}>
               {['loose', 'standard', 'strict'].map((p) => (
                 <Radio.Button key={p} value={p}>{PRESET_META[p].label}</Radio.Button>

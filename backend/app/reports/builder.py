@@ -259,6 +259,7 @@ def build_report(session_id):
         db.add(
             dbmod.Report(
                 report_id=report_id,
+                workspace_id=session_row.workspace_id,
                 session_id=session_id,
                 policy_snapshot_id=session_row.policy_snapshot_id,
                 config_version=str(config.get("version", "1.0")),

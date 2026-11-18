@@ -33,10 +33,10 @@ def _cached_asset(request: Request, content: bytes, media_type: str, version: st
     return Response(content=content, media_type=media_type, headers=headers)
 
 
-def _report_row(report_id):
+def _report_row(report_id, workspace="default"):
     with dbmod.session_scope() as db:
         row = db.get(dbmod.Report, report_id)
-        if row is None:
+        if row is None or row.workspace_id != workspace:
             raise ApiError(40400, detail="报告不存在")
         return row
 
@@ -59,7 +59,11 @@ def _report_view(row, with_content=True):
 
 @router.post("/sessions/{session_id}/report")
 def generate_report(request: Request, session_id: str):
-    get_auth(request)
+    ctx = get_auth(request)
+    with dbmod.session_scope() as db:
+        session = db.get(dbmod.Session, session_id)
+    if session is None or session.workspace_id != ctx.workspace:
+        raise ApiError(40400, detail="会话不存在")
     idem_key = request.headers.get("X-Idempotency-Key")
     cached = get_cached(idem_key, f"report:{session_id}")
     if cached is not None:
@@ -74,10 +78,10 @@ def generate_report(request: Request, session_id: str):
 
 @router.get("/reports")
 def list_reports(request: Request, session_id: str | None = None, page: int = 1, page_size: int = 20):
-    get_auth(request)
+    ctx = get_auth(request)
     page, page_size = parse_pagination(page, page_size)
     with dbmod.session_scope() as db:
-        query = db.query(dbmod.Report)
+        query = db.query(dbmod.Report).filter(dbmod.Report.workspace_id == ctx.workspace)
         if session_id:
             query = query.filter(dbmod.Report.session_id == session_id)
         rows = query.order_by(dbmod.Report.created_at.desc()).all()
@@ -91,15 +95,15 @@ def list_reports(request: Request, session_id: str | None = None, page: int = 1,
 
 @router.get("/reports/{report_id}")
 def get_report(request: Request, report_id: str):
-    get_auth(request)
-    row = _report_row(report_id)
+    ctx = get_auth(request)
+    row = _report_row(report_id, ctx.workspace)
     return {"code": 0, "message": "ok", "data": _report_view(row)}
 
 
 @router.post("/reports/{report_id}/share-link")
 def share_link(request: Request, report_id: str, payload: dict = Body(default={})):
-    get_auth(request)
-    _report_row(report_id)
+    ctx = get_auth(request)
+    _report_row(report_id, ctx.workspace)
     token = secrets.token_urlsafe(24)
     hours = int(payload.get("ttl_hours", SHARE_TTL_HOURS))
     expires = iso(utcnow() + timedelta(hours=max(1, min(hours, 24 * 30))))
@@ -149,16 +153,16 @@ def shared_report(share_token: str, request: Request):
 
 @router.get("/reports/{report_id}/view")
 def report_view(request: Request, report_id: str):
-    get_auth(request)
-    row = _report_row(report_id)
+    ctx = get_auth(request)
+    row = _report_row(report_id, ctx.workspace)
     html = render_html({"report_id": row.report_id, "created_at": row.created_at, "content": row.content})
     return _cached_asset(request, html.encode("utf-8"), "text/html; charset=utf-8", f"{row.report_id}:{row.created_at}")
 
 
 @router.get("/reports/{report_id}/export.pdf")
 def export_pdf(request: Request, report_id: str):
-    get_auth(request)
-    row = _report_row(report_id)
+    ctx = get_auth(request)
+    row = _report_row(report_id, ctx.workspace)
     pdf_bytes = render_pdf(
         {"report_id": row.report_id, "created_at": row.created_at, "content": row.content}
     )

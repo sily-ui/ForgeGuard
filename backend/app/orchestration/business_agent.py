@@ -1,5 +1,6 @@
 """业务 Agent：LangGraph 状态机，工具节点前插入镜像钩子，判定与业务并行。"""
 
+import asyncio
 import json
 import re
 from typing import TypedDict
@@ -95,40 +96,120 @@ class AgentState(TypedDict, total=False):
     tool_index: int
 
 
+class ReplyDeltaExtractor:
+    """从模型流式输出的 JSON 前缀里提取 reply 字段的可见增量。
+
+    业务模型被要求输出 {"reply": ..., "tool_calls": [...]}，流式到达的是 JSON
+    前缀；本类只在 reply 字符串内部推进游标，忽略其余字段。
+    """
+
+    def __init__(self):
+        self.buf = ""
+        self.emitted = 0
+
+    def feed(self, chunk):
+        self.buf += chunk
+        current = self._current_reply()
+        if current is None or len(current) <= self.emitted:
+            return ""
+        fresh = current[self.emitted :]
+        self.emitted = len(current)
+        return fresh
+
+    def _current_reply(self):
+        match = re.search(r'"reply"\s*:\s*"', self.buf)
+        if not match:
+            return None
+        i = match.end()
+        out = []
+        while i < len(self.buf):
+            ch = self.buf[i]
+            if ch == '"':
+                break
+            if ch != "\\":
+                out.append(ch)
+                i += 1
+                continue
+            if i + 1 >= len(self.buf):
+                break  # 转义序列未完整，等待后续增量
+            nxt = self.buf[i + 1]
+            if nxt == "u":
+                if i + 6 > len(self.buf):
+                    break  # \uXXXX 未完整
+                hexpart = self.buf[i + 2 : i + 6]
+                try:
+                    out.append(json.loads(f'"\\u{hexpart}"'))
+                except ValueError:
+                    break
+                i += 6
+                continue
+            mapping = {'"': '"', "\\": "\\", "/": "/", "n": "\n", "t": "\t", "r": "\r"}
+            out.append(mapping.get(nxt, nxt))
+            i += 2
+        return "".join(out)
+
+
 class ReasonContext:
     """由会话运行器注入的回调与预算约束。"""
 
-    def __init__(self, session_id, system_prompt, max_calls, execute_tool, tools=None):
+    def __init__(self, session_id, system_prompt, max_calls, execute_tool, tools=None, on_delta=None):
         self.session_id = session_id
         self.system_prompt = build_system_prompt(system_prompt, tools)
         self.max_calls = max_calls
         self.execute_tool = execute_tool
+        self.on_delta = on_delta
         self.simulated_fallback = False
 
     async def reason(self, messages):
         full_messages = [{"role": "system", "content": self.system_prompt}] + messages
+        content = None
         try:
-            result = await llm_proxy.chat(
+            extractor = ReplyDeltaExtractor()
+            async for kind, payload in llm_proxy.chat_stream(
                 "business",
                 full_messages,
                 session_id=self.session_id,
                 response_format={"type": "json_object"},
-            )
-            content = result["content"]
+            ):
+                if kind == "delta":
+                    cycle = extractor.feed(payload)
+                    if cycle and self.on_delta:
+                        await self.on_delta(cycle)
+                else:
+                    content = payload["content"]
         except ModelUnavailable:
-            runtime.note_degradation(
-                self.session_id, "业务模型接口不可达，本轮使用离线仿真推理（降级留痕）"
-            )
-            self.simulated_fallback = True
-            content = simulated.chat("business", full_messages)
-        parsed = parse_business_json(content)
+            # 流式不可用（上游不支持/断流）时退回一次性调用，仍不行才降级为仿真。
+            try:
+                result = await llm_proxy.chat(
+                    "business",
+                    full_messages,
+                    session_id=self.session_id,
+                    response_format={"type": "json_object"},
+                )
+                content = result["content"]
+            except ModelUnavailable:
+                runtime.note_degradation(
+                    self.session_id, "业务模型接口不可达，本轮使用离线仿真推理（降级留痕）"
+                )
+                self.simulated_fallback = True
+                content = simulated.chat("business", full_messages)
+                # 仿真内容同样按小段吐出，保持流式观感
+                if self.on_delta:
+                    extractor = ReplyDeltaExtractor()
+                    step = max(8, len(content) // 20)
+                    for i in range(0, len(content), step):
+                        cycle = extractor.feed(content[i : i + step])
+                        if cycle:
+                            await self.on_delta(cycle)
+                        await asyncio.sleep(0.02)
+        parsed = parse_business_json(content or "")
         if parsed is not None:
             reply = str(parsed.get("reply", ""))
             calls = parsed.get("tool_calls") or []
             if not isinstance(calls, list):
                 calls = []
         else:
-            reply, calls = content, []
+            reply, calls = content or "", []
         calls = [
             c for c in calls if isinstance(c, dict) and c.get("tool")
         ]

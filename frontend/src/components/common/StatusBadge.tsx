@@ -1,7 +1,6 @@
 import { Check, HelpCircle, Minus } from 'lucide-react';
 import type { CSSProperties } from 'react';
 import { ACTION_META } from '@/utils/constants';
-import { useUiStore } from '@/stores/uiStore';
 import { status, type StatusKind } from '@/theme/tokens';
 import { BlockIcon } from '@/components/icons/SecurityIcons';
 
@@ -23,9 +22,8 @@ interface Props {
 
 // 判定结果：常规动作用「状态点 + 文字」，仅阻断类使用强色底强调。
 export function StatusBadge({ action, size = 'md', showText = true, style }: Props) {
-  const space = useUiStore((s) => s.space);
   const kind = KIND[action] || 'disabled';
-  const c = status(kind, space);
+  const c = status(kind);
   const meta = ACTION_META[action] || ACTION_META.unknown;
   const strong = kind === 'block';
   const dim = size === 'sm' ? 18 : 22;
@@ -53,7 +51,7 @@ export function StatusBadge({ action, size = 'md', showText = true, style }: Pro
         borderRadius: 4,
         background: strong ? c.bg : 'transparent',
         color: c.text,
-        fontSize: size === 'sm' ? 11 : 12,
+        fontSize: size === 'sm' ? 12 : 13,
         fontWeight: strong ? 600 : 500,
         lineHeight: 1,
         whiteSpace: 'nowrap',

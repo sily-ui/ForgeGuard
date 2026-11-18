@@ -6,8 +6,10 @@ from ...core.errors import ApiError
 from ...core.security import (
     AUTH_LIMIT,
     issue_token,
+    iso,
     rate_limiter,
     revoke_token,
+    utcnow,
     verify_passcode,
 )
 from ...models import db as dbmod
@@ -63,3 +65,37 @@ def logout(request: Request):
 def get_quota(request: Request, session_id: str | None = None):
     get_auth(request)
     return {"code": 0, "message": "ok", "data": quota.status(session_id)}
+
+
+@router.get("/auth/workspace")
+def workspace_info(request: Request):
+    ctx = get_auth(request)
+    workspace_id = ctx.workspace
+    alive_statuses = ("creating", "pending", "ready", "frozen")
+    with dbmod.session_scope() as db:
+        row = db.get(dbmod.Workspace, workspace_id)
+        alive_instances = (
+            db.query(dbmod.Instance)
+            .filter(
+                dbmod.Instance.workspace_id == workspace_id,
+                dbmod.Instance.status.in_(alive_statuses),
+            )
+            .count()
+        )
+        configs = (
+            db.query(dbmod.Config)
+            .filter(dbmod.Config.workspace_id == workspace_id, dbmod.Config.deleted.is_(False))
+            .count()
+        )
+    return {
+        "code": 0,
+        "message": "ok",
+        "data": {
+            "workspace_id": workspace_id,
+            "is_default": workspace_id == "default",
+            "created_at": row.created_at if row else None,
+            "alive_instances": alive_instances,
+            "configs": configs,
+            "server_time": iso(utcnow()),
+        },
+    }

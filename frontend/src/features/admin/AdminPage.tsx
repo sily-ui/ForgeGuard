@@ -84,11 +84,11 @@ export default function AdminPage() {
                 <div style={{ display: 'flex', gap: 12 }}>
                   <div style={markBoxStyle}>
                     <div className="mono" style={{ fontSize: 20, fontWeight: 600, color: 'var(--fg-block-text)' }}>{metrics.false_positive_marks}</div>
-                    <div style={{ fontSize: 11, color: 'var(--fg-text-3)' }}>误报标注</div>
+                    <div style={{ fontSize: 12, color: 'var(--fg-text-3)' }}>误报标注</div>
                   </div>
                   <div style={markBoxStyle}>
                     <div className="mono" style={{ fontSize: 20, fontWeight: 600, color: 'var(--fg-observe-text)' }}>{metrics.false_negative_marks}</div>
-                    <div style={{ fontSize: 11, color: 'var(--fg-text-3)' }}>漏报标注</div>
+                    <div style={{ fontSize: 12, color: 'var(--fg-text-3)' }}>漏报标注</div>
                   </div>
                 </div>
               </div>
@@ -126,10 +126,10 @@ export default function AdminPage() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 280, overflowY: 'auto' }}>
                   {degradationsQuery.data!.items.map((d) => (
                     <div key={d.session_id} style={degRowStyle}>
-                      <span className="mono" style={{ fontSize: 10.5, color: 'var(--fg-text-3)' }}>{d.session_id}</span>
+                      <span className="mono" style={{ fontSize: 11.5, color: 'var(--fg-text-3)' }}>{d.session_id}</span>
                       <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginTop: 4 }}>
                         {d.degradations.map((x, i) => (
-                          <Tag key={i} color="warning" style={{ margin: 0, fontSize: 10, whiteSpace: 'normal', wordBreak: 'break-word', height: 'auto', lineHeight: 1.5, padding: '2px 8px', maxWidth: '100%' }}>{x}</Tag>
+                          <Tag key={i} color="warning" style={{ margin: 0, fontSize: 11, whiteSpace: 'normal', wordBreak: 'break-word', height: 'auto', lineHeight: 1.5, padding: '2px 8px', maxWidth: '100%' }}>{x}</Tag>
                         ))}
                       </div>
                     </div>
@@ -261,11 +261,11 @@ function SnapshotCard({ snapshots, loading, onChanged, onError }: { snapshots: S
         locale={{ emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无录制快照" /> }}
         columns={[
           { title: '快照名', dataIndex: 'name', render: (v: string) => <span style={{ fontWeight: 600 }}>{v}</span> },
-          { title: '快照 ID', dataIndex: 'snapshot_id', render: (v: string) => <span className="mono" style={{ fontSize: 11, color: 'var(--fg-text-3)' }}>{v}</span> },
-          { title: '会话', dataIndex: 'session_id', render: (v: string) => <span className="mono" style={{ fontSize: 11 }}>{v}</span> },
+          { title: '快照 ID', dataIndex: 'snapshot_id', render: (v: string) => <span className="mono" style={{ fontSize: 12, color: 'var(--fg-text-3)' }}>{v}</span> },
+          { title: '会话', dataIndex: 'session_id', render: (v: string) => <span className="mono" style={{ fontSize: 12 }}>{v}</span> },
           { title: '事件', dataIndex: 'event_count', width: 70, render: (v: number) => <span className="mono">{v}</span> },
           { title: '调用', dataIndex: 'call_count', width: 70, render: (v: number) => <span className="mono">{v}</span> },
-          { title: '录制时间', dataIndex: 'created_at', width: 130, render: (v: string) => <span style={{ fontSize: 11.5, color: 'var(--fg-text-3)' }}>{formatShort(v)}</span> },
+          { title: '录制时间', dataIndex: 'created_at', width: 130, render: (v: string) => <span style={{ fontSize: 12.5, color: 'var(--fg-text-3)' }}>{formatShort(v)}</span> },
         ]}
       />
     </SectionCard>
@@ -333,8 +333,8 @@ function DangerRow({ icon, title, desc, action }: { icon: React.ReactNode; title
     <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', background: 'var(--fg-bg-subtle)', border: '1px solid var(--fg-border)', borderRadius: 10 }}>
       <span style={{ color: 'var(--fg-block-text)', flexShrink: 0 }}>{icon}</span>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--fg-text-1)' }}>{title}</div>
-        <div style={{ fontSize: 11, color: 'var(--fg-text-3)', marginTop: 1 }}>{desc}</div>
+        <div style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--fg-text-1)' }}>{title}</div>
+        <div style={{ fontSize: 12, color: 'var(--fg-text-3)', marginTop: 1 }}>{desc}</div>
       </div>
       {action}
     </div>
@@ -349,16 +349,16 @@ function DistBars({ data, labelMap, semantic }: { data: Record<string, number>; 
     const s = actionToStatus(k);
     return s === 'allow' ? 'var(--fg-allow)' : s === 'block' ? 'var(--fg-block)' : s === 'observe' ? 'var(--fg-observe)' : 'var(--fg-disabled)';
   };
-  if (entries.length === 0) return <div style={{ fontSize: 11.5, color: 'var(--fg-text-3)' }}>暂无数据</div>;
+  if (entries.length === 0) return <div style={{ fontSize: 12.5, color: 'var(--fg-text-3)' }}>暂无数据</div>;
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 6 }}>
       {entries.map(([k, n]) => (
         <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ width: 70, fontSize: 11.5, color: 'var(--fg-text-2)', flexShrink: 0 }}>{labelMap ? labelMap(k) : k}</span>
+          <span style={{ width: 70, fontSize: 12.5, color: 'var(--fg-text-2)', flexShrink: 0 }}>{labelMap ? labelMap(k) : k}</span>
           <div style={{ flex: 1, height: 8, borderRadius: 5, background: 'var(--fg-bg-subtle)', overflow: 'hidden' }}>
             <div style={{ width: `${(n / max) * 100}%`, height: '100%', background: colorFor(k), borderRadius: 5 }} />
           </div>
-          <span className="mono" style={{ width: 28, textAlign: 'right', fontSize: 11.5, fontWeight: 600, color: 'var(--fg-text-1)' }}>{n}</span>
+          <span className="mono" style={{ width: 28, textAlign: 'right', fontSize: 12.5, fontWeight: 600, color: 'var(--fg-text-1)' }}>{n}</span>
         </div>
       ))}
     </div>
@@ -369,7 +369,7 @@ function QuotaBar({ label, used, max, pct }: { label: string; used: number; max:
   const color = pct > 85 ? 'var(--fg-block)' : pct > 60 ? 'var(--fg-observe)' : 'var(--fg-brand-primary)';
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11.5, marginBottom: 4 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12.5, marginBottom: 4 }}>
         <span style={{ color: 'var(--fg-text-2)' }}>{label}</span>
         <span className="mono" style={{ color: 'var(--fg-text-3)' }}>{used} / {max} · {pct}%</span>
       </div>
@@ -383,13 +383,13 @@ function QuotaBar({ label, used, max, pct }: { label: string; used: number; max:
 function MetricCard({ label, value, color }: { label: string; value: number; color?: string }) {
   return (
     <div className="fg-card" style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 6 }}>
-      <span style={{ fontSize: 11.5, color: 'var(--fg-text-3)' }}>{label}</span>
+      <span style={{ fontSize: 12.5, color: 'var(--fg-text-3)' }}>{label}</span>
       <span className="mono" style={{ fontSize: 24, fontWeight: 600, color: color ?? 'var(--fg-text-1)', lineHeight: 1.1 }}>{value}</span>
     </div>
   );
 }
 
-const microLabelStyle: React.CSSProperties = { fontSize: 10.5, fontWeight: 500, color: 'var(--fg-text-3)' };
-const fieldLabelStyle: React.CSSProperties = { fontSize: 11, fontWeight: 500, color: 'var(--fg-text-3)', marginBottom: 5 };
+const microLabelStyle: React.CSSProperties = { fontSize: 11.5, fontWeight: 500, color: 'var(--fg-text-3)' };
+const fieldLabelStyle: React.CSSProperties = { fontSize: 12, fontWeight: 500, color: 'var(--fg-text-3)', marginBottom: 5 };
 const markBoxStyle: React.CSSProperties = { flex: 1, textAlign: 'center', padding: '10px 6px', background: 'var(--fg-bg-subtle)', border: '1px solid var(--fg-border)', borderRadius: 9 };
 const degRowStyle: React.CSSProperties = { padding: '9px 12px', background: 'var(--fg-bg-subtle)', border: '1px solid var(--fg-border)', borderRadius: 9 };

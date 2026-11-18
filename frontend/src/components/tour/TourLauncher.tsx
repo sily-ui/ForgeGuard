@@ -5,7 +5,6 @@ import { Compass, LifeBuoy, Check, Play, RotateCcw } from 'lucide-react';
 import { useTourStore, type TourId } from './tourStore';
 import { TOUR_META, tourForPath } from './definitions';
 import { useAuthStore } from '@/stores/authStore';
-import { useUiStore } from '@/stores/uiStore';
 
 // 右下角引导悬浮按钮：重播本页引导 / 跳转播放其他页面引导 / 重置自动播放。
 export function TourLauncher() {
@@ -14,7 +13,6 @@ export function TourLauncher() {
   const { message } = App.useApp();
   const status = useAuthStore((s) => s.status);
   const role = useAuthStore((s) => s.role);
-  const space = useUiStore((s) => s.space);
   const activeTour = useTourStore((s) => s.activeTour);
   const seen = useTourStore((s) => s.seen);
   const pending = useTourStore((s) => s.pending);
@@ -25,7 +23,6 @@ export function TourLauncher() {
   const tourId = tourForPath(location.pathname);
 
   if (status !== 'authenticated' || !tourId || activeTour) return null;
-  const lab = space === 'lab';
 
   const play = (id: TourId) => {
     setOpen(false);
@@ -106,7 +103,7 @@ export function TourLauncher() {
         type="button"
         aria-label="打开新手引导"
         className="fg-tour-fab"
-        style={{ bottom: lab ? 70 : 24 }}
+        style={{ bottom: 24 }}
       >
         <Compass size={20} strokeWidth={1.5} />
         {pending && <span className="fg-tour-fab-dot" />}

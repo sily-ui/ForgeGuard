@@ -42,7 +42,7 @@ export function EmptyState({ icon, title, description, actionLabel, onAction, co
         </div>
       )}
       <div style={{ fontSize: compact ? 13 : 15, fontWeight: 600, color: 'var(--fg-text-2)' }}>{title}</div>
-      {description && <div style={{ fontSize: 12.5, maxWidth: 360, lineHeight: 1.6 }}>{description}</div>}
+      {description && <div style={{ fontSize: 13.5, maxWidth: 360, lineHeight: 1.6 }}>{description}</div>}
       {actionLabel && onAction && (
         <Button type="primary" size={compact ? 'small' : 'middle'} onClick={onAction} style={{ marginTop: 4 }}>
           {actionLabel}

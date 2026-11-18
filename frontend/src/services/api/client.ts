@@ -1,5 +1,6 @@
 import axios, { AxiosError, type AxiosRequestConfig } from 'axios';
 import type { Envelope, FieldError } from '@/types/api';
+import { getWorkspaceId } from '@/utils/workspace';
 
 // 所有请求经 Vite 代理转发到本地后端 127.0.0.1:8000，前端不持有模型密钥、不直连外部模型。
 export const API_BASE = '/api/v1';
@@ -48,8 +49,9 @@ const http = axios.create({
 });
 
 http.interceptors.request.use((config) => {
+  config.headers = config.headers ?? {};
+  (config.headers as Record<string, string>)['X-Workspace-Id'] = getWorkspaceId();
   if (authToken) {
-    config.headers = config.headers ?? {};
     (config.headers as Record<string, string>).Authorization = `Bearer ${authToken}`;
   }
   return config;

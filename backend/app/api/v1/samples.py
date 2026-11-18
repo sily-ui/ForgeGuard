@@ -19,13 +19,13 @@ def list_samples(
     page: int = 1,
     page_size: int = 20,
 ):
-    get_auth(request)
+    ctx = get_auth(request)
     page, page_size = parse_pagination(page, page_size)
     tools = []
     if instance_id:
         with dbmod.session_scope() as db:
             instance = db.get(dbmod.Instance, instance_id)
-            if instance is None:
+            if instance is None or instance.workspace_id != ctx.workspace:
                 raise ApiError(40400, detail="实例不存在")
             tools = enabled_tools(instance.config_payload)
     items = []
@@ -47,13 +47,13 @@ def list_samples(
 
 @router.post("/sessions/{session_id}/samples/{sample_id}/load")
 async def load_sample(request: Request, session_id: str, sample_id: str, payload: dict = Body(default={})):
-    get_auth(request)
+    ctx = get_auth(request)
     sample = get_sample(sample_id)
     if sample is None:
         raise ApiError(40400, detail="样本不存在")
     with dbmod.session_scope() as db:
         session = db.get(dbmod.Session, session_id)
-        if session is None:
+        if session is None or session.workspace_id != ctx.workspace:
             raise ApiError(40400, detail="会话不存在")
         instance = db.get(dbmod.Instance, session.instance_id)
     if instance is None:

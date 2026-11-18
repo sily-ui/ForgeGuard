@@ -69,8 +69,8 @@ function JudgeDetail({ live, full }: { live: ReturnType<typeof useSessionStore.g
     return (
       <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--fg-text-3)' }}>
         <GuardIcon size={28} strokeWidth={1.4} style={{ opacity: 0.5, marginBottom: 10 }} />
-        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg-text-2)' }}>三级判定取证</div>
-        <div style={{ fontSize: 11.5, lineHeight: 1.7, marginTop: 6 }}>
+        <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--fg-text-2)' }}>三级判定取证</div>
+        <div style={{ fontSize: 12.5, lineHeight: 1.7, marginTop: 6 }}>
           在中间「调用链」选择一次调用，
           <br />
           查看 L1 规则 / L2 注入分类 / L3 语义判定的完整证据。
@@ -93,8 +93,8 @@ function JudgeDetail({ live, full }: { live: ReturnType<typeof useSessionStore.g
       {/* 结论 */}
       <div style={verdictCardStyle}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-          <span className="mono" style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg-text-1)' }}>{tool}</span>
-          <span style={{ fontSize: 11, color: 'var(--fg-text-3)' }}>{TOOL_META[tool]?.label}</span>
+          <span className="mono" style={{ fontSize: 14, fontWeight: 600, color: 'var(--fg-text-1)' }}>{tool}</span>
+          <span style={{ fontSize: 12, color: 'var(--fg-text-3)' }}>{TOOL_META[tool]?.label}</span>
           <span style={{ marginLeft: 'auto' }}>
             <StatusBadge action={action} size="sm" />
           </span>
@@ -108,15 +108,15 @@ function JudgeDetail({ live, full }: { live: ReturnType<typeof useSessionStore.g
           {judgement?.is_violation && <Tag color="error" style={{ margin: 0 }}>越权</Tag>}
           {judgement?.guard_unavailable && <Tag color="warning" style={{ margin: 0 }}>监护降级</Tag>}
         </div>
-        <div style={{ fontSize: 12, color: 'var(--fg-text-2)', lineHeight: 1.65 }}>
+        <div style={{ fontSize: 13, color: 'var(--fg-text-2)', lineHeight: 1.65 }}>
           {judgement?.reason || live?.challenge_pending ? judgement?.reason || '等待人工裁决…' : '暂无判定理由'}
         </div>
         {judgement?.hit_policies && judgement.hit_policies.length > 0 && (
           <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 4 }}>
             <div style={microLabelStyle}>命中策略</div>
             {judgement.hit_policies.map((h) => (
-              <div key={h.policy_id} className="mono" style={{ fontSize: 10.5, color: 'var(--fg-text-2)', display: 'flex', gap: 6 }}>
-                <span style={{ color: 'var(--fg-lab-accent)' }}>{h.policy_id}</span>
+              <div key={h.policy_id} className="mono" style={{ fontSize: 11.5, color: 'var(--fg-text-2)', display: 'flex', gap: 6 }}>
+                <span style={{ color: 'var(--fg-brand-primary)' }}>{h.policy_id}</span>
                 <span style={{ color: 'var(--fg-text-3)' }}>{h.source}</span>
               </div>
             ))}
@@ -173,7 +173,7 @@ function JudgeDetail({ live, full }: { live: ReturnType<typeof useSessionStore.g
                   {layers.layers.l2.highlight && layers.layers.l2.highlight.length > 0 && (
                     <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                       {layers.layers.l2.highlight.map((h, i) => (
-                        <Tag key={i} color="warning" style={{ margin: 0, fontSize: 10 }}>{h}</Tag>
+                        <Tag key={i} color="warning" style={{ margin: 0, fontSize: 11 }}>{h}</Tag>
                       ))}
                     </div>
                   )}
@@ -226,7 +226,7 @@ function JudgeDetail({ live, full }: { live: ReturnType<typeof useSessionStore.g
         </div>
       )}
       {timings && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 10.5, color: 'var(--fg-text-3)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11.5, color: 'var(--fg-text-3)' }}>
           <Timer size={12} />
           总耗时 <span className="mono" style={{ color: 'var(--fg-text-2)' }}>{formatDuration(full?.duration_ms)}</span>
         </div>
@@ -240,8 +240,8 @@ function AlertsList({ alerts, onFeedback }: { alerts: Alert[]; onFeedback: Props
     return (
       <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--fg-text-3)' }}>
         <BellRing size={26} strokeWidth={1.4} style={{ opacity: 0.5, marginBottom: 10 }} />
-        <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--fg-text-2)' }}>暂无风险告警</div>
-        <div style={{ fontSize: 11.5, lineHeight: 1.7, marginTop: 6 }}>越权与可疑调用将在此聚合，可标注误报 / 漏报。</div>
+        <div style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--fg-text-2)' }}>暂无风险告警</div>
+        <div style={{ fontSize: 12.5, lineHeight: 1.7, marginTop: 6 }}>越权与可疑调用将在此聚合，可标注误报 / 漏报。</div>
       </div>
     );
   }
@@ -263,18 +263,18 @@ function AlertCard({ alert, onFeedback }: { alert: Alert; onFeedback: Props['onF
     <div style={{ ...alertCardStyle, borderLeft: `3px solid ${levelColor}` }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 6 }}>
         <AlertTriangle size={13} style={{ color: levelColor }} />
-        <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--fg-text-1)' }}>{alert.label}</span>
-        <Tag style={{ margin: 0, fontSize: 9.5, lineHeight: '15px', padding: '0 5px' }} color={alert.level === 'high' ? 'error' : alert.level === 'medium' ? 'warning' : 'default'}>
+        <span style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--fg-text-1)' }}>{alert.label}</span>
+        <Tag style={{ margin: 0, fontSize: 10.5, lineHeight: '15px', padding: '0 5px' }} color={alert.level === 'high' ? 'error' : alert.level === 'medium' ? 'warning' : 'default'}>
           {RISK_META[alert.level]?.label ?? alert.level}
         </Tag>
         {alert.session_level && <span style={miniTagStyle}>会话级</span>}
-        <span className="mono" style={{ marginLeft: 'auto', fontSize: 9.5, color: 'var(--fg-text-3)' }}>T{alert.turn}</span>
+        <span className="mono" style={{ marginLeft: 'auto', fontSize: 10.5, color: 'var(--fg-text-3)' }}>T{alert.turn}</span>
       </div>
-      <div style={{ fontSize: 11.5, color: 'var(--fg-text-2)', lineHeight: 1.6, marginBottom: 6 }}>{alert.reason}</div>
+      <div style={{ fontSize: 12.5, color: 'var(--fg-text-2)', lineHeight: 1.6, marginBottom: 6 }}>{alert.reason}</div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
         <StatusBadge action={alert.action} size="sm" />
         {alert.boundary && <span style={miniTagStyle}>{BOUNDARY_META[alert.boundary]}</span>}
-        <span style={{ fontSize: 9.5, color: 'var(--fg-text-3)', alignSelf: 'center' }}>{formatShort(alert.created_at)}</span>
+        <span style={{ fontSize: 10.5, color: 'var(--fg-text-3)', alignSelf: 'center' }}>{formatShort(alert.created_at)}</span>
       </div>
       <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
         <Button
@@ -306,7 +306,7 @@ function AlertCard({ alert, onFeedback }: { alert: Alert; onFeedback: Props['onF
           </Button>
         </div>
       )}
-      {!showNote && alert.note && <div style={{ marginTop: 6, fontSize: 10.5, color: 'var(--fg-text-3)' }}>备注：{alert.note}</div>}
+      {!showNote && alert.note && <div style={{ marginTop: 6, fontSize: 11.5, color: 'var(--fg-text-3)' }}>备注：{alert.note}</div>}
     </div>
   );
 }
@@ -316,8 +316,8 @@ function ChallengeList({ challenges, onResolve }: { challenges: GuardJudgementEv
     return (
       <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--fg-text-3)' }}>
         <HelpCircle size={26} strokeWidth={1.4} style={{ opacity: 0.5, marginBottom: 10 }} />
-        <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--fg-text-2)' }}>无待裁决质询</div>
-        <div style={{ fontSize: 11.5, lineHeight: 1.7, marginTop: 6 }}>灰区调用会暂停等待人工批准或拒绝，超时将保守阻断。</div>
+        <div style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--fg-text-2)' }}>无待裁决质询</div>
+        <div style={{ fontSize: 12.5, lineHeight: 1.7, marginTop: 6 }}>灰区调用会暂停等待人工批准或拒绝，超时将保守阻断。</div>
       </div>
     );
   }
@@ -327,11 +327,11 @@ function ChallengeList({ challenges, onResolve }: { challenges: GuardJudgementEv
         <div key={c.call_id} style={challengeCardStyle}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 6 }}>
             <HelpCircle size={14} style={{ color: 'var(--fg-observe)' }} />
-            <span className="mono" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--fg-text-1)' }}>{c.tool}</span>
-            <Tag color="warning" style={{ margin: 0, fontSize: 9.5 }}>待裁决</Tag>
-            {c.risk && <Tag style={{ margin: 0, fontSize: 9.5 }}>{RISK_META[c.risk]?.label ?? c.risk}</Tag>}
+            <span className="mono" style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--fg-text-1)' }}>{c.tool}</span>
+            <Tag color="warning" style={{ margin: 0, fontSize: 10.5 }}>待裁决</Tag>
+            {c.risk && <Tag style={{ margin: 0, fontSize: 10.5 }}>{RISK_META[c.risk]?.label ?? c.risk}</Tag>}
           </div>
-          <div style={{ fontSize: 11.5, color: 'var(--fg-text-2)', lineHeight: 1.6, marginBottom: 10 }}>{c.reason}</div>
+          <div style={{ fontSize: 12.5, color: 'var(--fg-text-2)', lineHeight: 1.6, marginBottom: 10 }}>{c.reason}</div>
           <div style={{ display: 'flex', gap: 8 }}>
             <Button type="primary" size="small" icon={<Check size={13} />} onClick={() => onResolve({ callId: c.call_id, approved: true })} style={{ flex: 1 }}>
               批准放行
@@ -352,14 +352,14 @@ function LayerCard({ tag, name, skipped, available, timing, children }: { tag: s
   return (
     <div style={{ border: '1px solid var(--fg-border)', borderRadius: 10, overflow: 'hidden', opacity: dim ? 0.7 : 1 }}>
       <button onClick={() => setOpen((o) => !o)} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 11px', background: 'var(--fg-bg-subtle)', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
-        <span className="mono" style={{ width: 20, height: 20, borderRadius: 4, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 600, color: 'var(--fg-text-2)', background: 'var(--fg-bg-card)', border: '1px solid var(--fg-border)' }}>
+        <span className="mono" style={{ width: 20, height: 20, borderRadius: 4, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 600, color: 'var(--fg-text-2)', background: 'var(--fg-bg-card)', border: '1px solid var(--fg-border)' }}>
           {tag}
         </span>
-        <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--fg-text-1)' }}>{name}</span>
+        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg-text-1)' }}>{name}</span>
         {skipped && <span style={miniTagStyle}>跳过</span>}
-        {!skipped && available === false && <Tag color="warning" style={{ margin: 0, fontSize: 9, lineHeight: '14px', padding: '0 4px' }}>降级</Tag>}
+        {!skipped && available === false && <Tag color="warning" style={{ margin: 0, fontSize: 10, lineHeight: '14px', padding: '0 4px' }}>降级</Tag>}
         <span style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-          {timing != null && <span className="mono" style={{ fontSize: 9.5, color: 'var(--fg-text-3)' }}>{formatDuration(timing)}</span>}
+          {timing != null && <span className="mono" style={{ fontSize: 10.5, color: 'var(--fg-text-3)' }}>{formatDuration(timing)}</span>}
           {open ? <ChevronDown size={13} style={{ color: 'var(--fg-text-3)' }} /> : <ChevronRight size={13} style={{ color: 'var(--fg-text-3)' }} />}
         </span>
       </button>
@@ -380,7 +380,7 @@ function ProbBar({ value }: { value: number }) {
 
 function Row({ k, v, highlight }: { k: string; v: string; highlight?: boolean }) {
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, fontSize: 11.5 }}>
+    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, fontSize: 12.5 }}>
       <span style={{ color: 'var(--fg-text-3)' }}>{k}</span>
       <span className="mono" style={{ color: highlight ? 'var(--fg-observe-text)' : 'var(--fg-text-1)', fontWeight: highlight ? 600 : 500, textAlign: 'right' }}>{v}</span>
     </div>
@@ -388,16 +388,16 @@ function Row({ k, v, highlight }: { k: string; v: string; highlight?: boolean })
 }
 
 function Muted({ children }: { children: React.ReactNode }) {
-  return <div style={{ fontSize: 11, color: 'var(--fg-text-3)', lineHeight: 1.6 }}>{children}</div>;
+  return <div style={{ fontSize: 12, color: 'var(--fg-text-3)', lineHeight: 1.6 }}>{children}</div>;
 }
 
 function TabBtn({ active, onClick, icon, label, count, highlight }: { active: boolean; onClick: () => void; icon: React.ReactNode; label: string; count?: number; highlight?: boolean }) {
   return (
-    <button onClick={onClick} style={{ ...tabBtnStyle, color: active ? 'var(--fg-lab-accent)' : 'var(--fg-text-2)', borderBottomColor: active ? 'var(--fg-lab-accent)' : 'transparent' }}>
+    <button onClick={onClick} style={{ ...tabBtnStyle, color: active ? 'var(--fg-brand-primary)' : 'var(--fg-text-2)', borderBottomColor: active ? 'var(--fg-brand-primary)' : 'transparent' }}>
       {icon}
       {label}
       {count != null && count > 0 && (
-        <span className="mono" style={{ fontSize: 10, fontWeight: 600, color: highlight ? 'var(--fg-observe-text)' : 'var(--fg-text-3)', minWidth: 14, textAlign: 'center' }}>
+        <span className="mono" style={{ fontSize: 11, fontWeight: 600, color: highlight ? 'var(--fg-observe-text)' : 'var(--fg-text-3)', minWidth: 14, textAlign: 'center' }}>
           {count}
         </span>
       )}
@@ -407,10 +407,10 @@ function TabBtn({ active, onClick, icon, label, count, highlight }: { active: bo
 
 const colStyle: React.CSSProperties = { display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, background: 'var(--fg-bg-card)', border: '1px solid var(--fg-border)', borderRadius: 14, overflow: 'hidden' };
 const tabStripStyle: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 2, padding: '0 8px', borderBottom: '1px solid var(--fg-border)', background: 'var(--fg-bg-subtle)', flexShrink: 0 };
-const tabBtnStyle: React.CSSProperties = { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '11px 11px', background: 'none', border: 'none', borderBottom: '2px solid transparent', cursor: 'pointer', fontSize: 12.5, fontWeight: 600, transition: 'color 140ms ease, border-color 140ms ease' };
+const tabBtnStyle: React.CSSProperties = { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '11px 11px', background: 'none', border: 'none', borderBottom: '2px solid transparent', cursor: 'pointer', fontSize: 13.5, fontWeight: 600, transition: 'color 140ms ease, border-color 140ms ease' };
 const verdictCardStyle: React.CSSProperties = { padding: 13, background: 'var(--fg-bg-subtle)', border: '1px solid var(--fg-border)', borderRadius: 11 };
-const microLabelStyle: React.CSSProperties = { fontSize: 10.5, fontWeight: 500, color: 'var(--fg-text-3)' };
+const microLabelStyle: React.CSSProperties = { fontSize: 11.5, fontWeight: 500, color: 'var(--fg-text-3)' };
 const alertCardStyle: React.CSSProperties = { padding: 12, background: 'var(--fg-bg-subtle)', border: '1px solid var(--fg-border)', borderRadius: 10 };
 const challengeCardStyle: React.CSSProperties = { padding: 13, background: 'var(--fg-observe-bg)', border: '1px solid var(--fg-border)', borderRadius: 11 };
-const noteToggleStyle: React.CSSProperties = { display: 'inline-flex', alignItems: 'center', gap: 3, background: 'none', border: 'none', cursor: 'pointer', fontSize: 10.5, color: 'var(--fg-text-3)', padding: 0 };
-const miniTagStyle: React.CSSProperties = { fontSize: 10, fontWeight: 500, color: 'var(--fg-text-2)', border: '1px solid var(--fg-border)', borderRadius: 4, padding: '0 5px', lineHeight: '16px', background: 'var(--fg-bg-card)', whiteSpace: 'nowrap' };
+const noteToggleStyle: React.CSSProperties = { display: 'inline-flex', alignItems: 'center', gap: 3, background: 'none', border: 'none', cursor: 'pointer', fontSize: 11.5, color: 'var(--fg-text-3)', padding: 0 };
+const miniTagStyle: React.CSSProperties = { fontSize: 11, fontWeight: 500, color: 'var(--fg-text-2)', border: '1px solid var(--fg-border)', borderRadius: 4, padding: '0 5px', lineHeight: '16px', background: 'var(--fg-bg-card)', whiteSpace: 'nowrap' };

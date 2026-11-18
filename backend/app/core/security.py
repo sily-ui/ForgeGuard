@@ -28,6 +28,7 @@ class AuthContext:
         self.token = token
         self.role = role
         self.client_id = client_id
+        self.workspace = "default"
 
     def require(self, min_role):
         if ROLE_LEVELS.get(self.role, 0) < ROLE_LEVELS[min_role]:

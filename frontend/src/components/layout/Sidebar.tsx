@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutGrid, Boxes, FileBarChart, SlidersHorizontal, LogOut } from 'lucide-react';
+import { LayoutGrid, Boxes, FileBarChart, SlidersHorizontal, LogOut, Copy, RotateCcw } from 'lucide-react';
 import { Logo } from '@/components/common/Logo';
 import { AttackIcon } from '@/components/icons/SecurityIcons';
 import { useAuthStore } from '@/stores/authStore';
 import { SimBadge } from '@/components/common/SimBadge';
+import { getWorkspaceId, regenerateWorkspace, workspaceShort } from '@/utils/workspace';
 
 const NAV = [
   { to: '/orchestration', label: '编排中心', icon: LayoutGrid },
@@ -28,6 +30,25 @@ export function Sidebar() {
   const navigate = useNavigate();
   const role = useAuthStore((s) => s.role);
   const logout = useAuthStore((s) => s.logout);
+  const [wsId] = useState(getWorkspaceId);
+  const [copied, setCopied] = useState(false);
+
+  const copyWorkspace = async () => {
+    try {
+      await navigator.clipboard.writeText(wsId);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // 剪贴板不可用时静默失败，标识仍可通过开发者工具查看。
+    }
+  };
+
+  const switchWorkspace = () => {
+    const ok = window.confirm('切换后将进入一个全新的空白工作区，当前工作区的数据不会随之迁移。确认切换？');
+    if (!ok) return;
+    regenerateWorkspace();
+    window.location.reload();
+  };
 
   return (
     <aside
@@ -62,36 +83,81 @@ export function Sidebar() {
       </button>
 
       <nav className="fg-sider-nav" style={{ flex: 1, padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: 2, overflowY: 'auto' }}>
-        <div className="fg-sider-label" style={{ fontSize: 11, fontWeight: 500, color: 'var(--fg-text-3)', padding: '8px 12px 6px' }}>
+        <div className="fg-sider-label" style={{ fontSize: 12, fontWeight: 500, color: 'var(--fg-text-3)', padding: '8px 12px 6px' }}>
           科研工作区
         </div>
         {NAV.map((item) => (
           <NavLink key={item.to} to={item.to} style={({ isActive }) => rowStyle(isActive)}>
             <item.icon size={16} strokeWidth={1.5} style={{ flexShrink: 0 }} />
-            <span style={{ fontSize: 13, fontWeight: 500 }}>{item.label}</span>
+            <span style={{ fontSize: 14, fontWeight: 500 }}>{item.label}</span>
           </NavLink>
         ))}
 
-        <div className="fg-sider-label" style={{ fontSize: 11, fontWeight: 500, color: 'var(--fg-text-3)', padding: '20px 12px 6px' }}>
+        <div className="fg-sider-label" style={{ fontSize: 12, fontWeight: 500, color: 'var(--fg-text-3)', padding: '20px 12px 6px' }}>
           攻防实验舱
         </div>
         <button onClick={() => navigate('/workspace')} style={{ ...rowStyle(false), border: 'none', cursor: 'pointer', textAlign: 'left', width: '100%' }}>
           <AttackIcon size={16} strokeWidth={1.5} style={{ flexShrink: 0 }} />
-          <span style={{ fontSize: 13, fontWeight: 500 }}>实时控制台</span>
+          <span style={{ fontSize: 14, fontWeight: 500 }}>实时控制台</span>
         </button>
 
         {role === 'admin' && (
           <NavLink to="/admin" style={({ isActive }) => ({ ...rowStyle(isActive), marginTop: 2 })}>
             <SlidersHorizontal size={16} strokeWidth={1.5} style={{ flexShrink: 0 }} />
-            <span style={{ fontSize: 13, fontWeight: 500 }}>平台管理</span>
+            <span style={{ fontSize: 14, fontWeight: 500 }}>平台管理</span>
           </NavLink>
         )}
       </nav>
 
       <div style={{ padding: 12, borderTop: '1px solid var(--fg-border)', display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div style={{ padding: '0 4px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 20 }}>
+            <span style={{ fontSize: 12, color: 'var(--fg-text-3)' }}>工作区</span>
+            <button
+              onClick={copyWorkspace}
+              title={`点击复制完整标识 ${wsId}`}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 4,
+                padding: '0 4px',
+                height: 20,
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                borderRadius: 4,
+                color: copied ? 'var(--fg-brand-primary)' : 'var(--fg-text-2)',
+              }}
+            >
+              <span className="mono" style={{ fontSize: 12 }}>{copied ? '已复制' : workspaceShort(wsId)}</span>
+              <Copy size={11} strokeWidth={1.5} />
+            </button>
+          </div>
+          <button
+            onClick={switchWorkspace}
+            title="换一个全新的空白工作区"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              alignSelf: 'flex-start',
+              padding: '0 4px',
+              height: 20,
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              borderRadius: 4,
+              color: 'var(--fg-text-3)',
+              fontSize: 12,
+            }}
+          >
+            <RotateCcw size={11} strokeWidth={1.5} />
+            切换到新工作区
+          </button>
+        </div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 4px' }}>
           <SimBadge compact />
-          <span className="mono" style={{ fontSize: 11, color: 'var(--fg-text-3)' }}>
+          <span className="mono" style={{ fontSize: 12, color: 'var(--fg-text-3)' }}>
             {role || 'guest'}
           </span>
         </div>
@@ -111,7 +177,7 @@ export function Sidebar() {
             background: 'transparent',
             cursor: 'pointer',
             color: 'var(--fg-text-2)',
-            fontSize: 12.5,
+            fontSize: 13.5,
             transition: 'background-color 150ms ease, color 150ms ease',
           }}
         >
