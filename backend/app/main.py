@@ -140,7 +140,7 @@ def health():
             "model_configured": settings.model_configured,
             "state_backend": runtime.state_backend,
             "simulation": True,
-            "insecure_demo_mode": settings.uses_default_passcodes,
+            "guest_daily_quota": settings.quota_guest_daily,
         },
     }
 

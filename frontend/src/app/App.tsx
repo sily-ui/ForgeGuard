@@ -8,7 +8,7 @@ import { Logo } from '@/components/common/Logo';
 import { AppTour } from '@/components/tour/AppTour';
 import { TourLauncher } from '@/components/tour/TourLauncher';
 
-const AccessPage = lazy(() => import('@/features/auth/AccessPage'));
+const PortalPage = lazy(() => import('@/features/portal/PortalPage'));
 const WorkspacePage = lazy(() => import('@/features/workspace/WorkspacePage'));
 const OrchestrationPage = lazy(() => import('@/features/orchestration/OrchestrationPage'));
 const InstancesPage = lazy(() => import('@/features/instances/InstancesPage'));
@@ -17,7 +17,6 @@ const ConsolePage = lazy(() => import('@/features/console/ConsolePage'));
 const ExperimentPage = lazy(() => import('@/features/experiments/ExperimentPage'));
 const ReportsPage = lazy(() => import('@/features/reports/ReportsPage'));
 const ReportDetailPage = lazy(() => import('@/features/reports/ReportDetailPage'));
-const AdminPage = lazy(() => import('@/features/admin/AdminPage'));
 
 function PageLoader() {
   return (
@@ -32,14 +31,8 @@ function RequireAuth({ children }: { children: ReactNode }) {
   const status = useAuthStore((s) => s.status);
   const location = useLocation();
   if (status !== 'authenticated') {
-    return <Navigate to="/access" replace state={{ from: location.pathname }} />;
+    return <Navigate to="/portal" replace state={{ from: location.pathname }} />;
   }
-  return <>{children}</>;
-}
-
-function RequireAdmin({ children }: { children: ReactNode }) {
-  const role = useAuthStore((s) => s.role);
-  if (role !== 'admin') return <Navigate to="/workspace" replace />;
   return <>{children}</>;
 }
 
@@ -48,7 +41,7 @@ export function App() {
     <>
       <Suspense fallback={<PageLoader />}>
         <Routes>
-        <Route path="/access" element={<AccessPage />} />
+        <Route path="/portal" element={<PortalPage />} />
         <Route
           element={
             <RequireAuth>
@@ -62,14 +55,6 @@ export function App() {
           <Route path="/policies/:instanceId" element={<PoliciesPage />} />
           <Route path="/reports" element={<ReportsPage />} />
           <Route path="/reports/:reportId" element={<ReportDetailPage />} />
-          <Route
-            path="/admin"
-            element={
-              <RequireAdmin>
-                <AdminPage />
-              </RequireAdmin>
-            }
-          />
         </Route>
         <Route
           element={

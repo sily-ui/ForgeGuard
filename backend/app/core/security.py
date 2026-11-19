@@ -1,12 +1,13 @@
 import secrets
 import time
 from collections import defaultdict, deque
+from contextvars import ContextVar
 from datetime import datetime, timezone
 
 from .config import settings
 from .errors import ApiError
 
-ROLE_LEVELS = {"judge": 1, "demo": 2, "admin": 3}
+ROLE_LEVELS = {"guest": 0, "judge": 1, "demo": 2, "admin": 3}
 
 
 def utcnow():
@@ -24,10 +25,11 @@ def parse_iso(value):
 
 
 class AuthContext:
-    def __init__(self, token, role, client_id):
+    def __init__(self, token, role, client_id, ip=""):
         self.token = token
         self.role = role
         self.client_id = client_id
+        self.ip = ip
         self.workspace = "default"
 
     def require(self, min_role):
@@ -35,27 +37,17 @@ class AuthContext:
             raise ApiError(40300, detail=f"该操作需要 {min_role} 角色")
 
 
-class PasscodeError(ApiError):
-    def __init__(self, detail=None):
-        super().__init__(40101, detail=detail or "访问口令错误或已过期")
+# 请求级身份：模型代理在调用链深处消费配额，需要据此区分游客并定位工作区/IP。
+# 异步端点与其中创建的后台任务共享同一 context，故无需逐层透传参数。
+_current_auth: ContextVar = ContextVar("forgeguard_auth", default=None)
 
 
-def verify_passcode(passcode, consume_hook=None):
-    now = utcnow()
-    for entry in settings.passcodes:
-        if entry.get("passcode") != passcode:
-            continue
-        expires_at = parse_iso(entry.get("expires_at"))
-        if expires_at and expires_at < now:
-            raise PasscodeError("口令已过期")
-        role = entry.get("role", "judge")
-        if role not in ROLE_LEVELS:
-            role = "judge"
-        if entry.get("one_time"):
-            if consume_hook is None or not consume_hook(passcode):
-                raise PasscodeError("一次性口令已被使用")
-        return role
-    raise PasscodeError()
+def bind_auth(ctx):
+    _current_auth.set(ctx)
+
+
+def current_auth():
+    return _current_auth.get()
 
 
 def issue_token(role, client_id):
@@ -151,3 +143,6 @@ rate_limiter = RateLimiter()
 GENERAL_LIMIT = 240
 HEAVY_LIMIT = 12
 AUTH_LIMIT = 12
+# 游客匿名放行，阈值收紧：每 IP 每分钟请求数、每 IP/每工作区每分钟模型调用数。
+GUEST_GENERAL_LIMIT = 60
+GUEST_CALL_LIMIT = 6

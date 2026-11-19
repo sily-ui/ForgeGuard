@@ -32,7 +32,7 @@ export class ApiClientError extends Error {
     this.fieldErrors = fieldErrors;
   }
   get isAuth() {
-    return this.code === 40100 || this.code === 40101;
+    return this.code === 40100;
   }
   get isQuota() {
     return this.code === 42901;

@@ -174,11 +174,11 @@ a {
     padding: 8px 14px !important;
   }
 
-  /* 准入页：双栏改单列，Hero 收敛 */
-  .fg-access { flex-direction: column !important; }
-  .fg-access-hero { flex: 0 0 auto !important; padding: 36px 24px 28px !important; }
-  .fg-access-hero h1 { font-size: 27px !important; line-height: 1.25 !important; }
-  .fg-access-panel { flex: 1 1 auto !important; padding: 28px 20px 40px !important; }
+  /* 门户页：双栏改单列，Hero 收敛 */
+  .fg-portal { flex-direction: column !important; }
+  .fg-portal-hero { flex: 0 0 auto !important; padding: 36px 24px 28px !important; gap: 28px !important; }
+  .fg-portal-hero h1 { font-size: 27px !important; line-height: 1.25 !important; }
+  .fg-portal-panel { flex: 1 1 auto !important; padding: 28px 20px 40px !important; }
 
   /* 常规内容区收紧留白 */
   .fg-shell > main { padding: 16px !important; }

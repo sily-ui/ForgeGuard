@@ -11,11 +11,10 @@ interface AuthState {
   expiresAt: number | null;
   status: 'idle' | 'loading' | 'authenticated' | 'error';
   error: string | null;
-  login: (passcode: string) => Promise<boolean>;
+  enter: () => Promise<boolean>;
   logout: () => Promise<void>;
   clear: () => void;
   setMode: (mode: Mode) => void;
-  hasRole: (role: Role) => boolean;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -25,10 +24,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   expiresAt: null,
   status: 'idle',
   error: null,
-  login: async (passcode) => {
+  enter: async () => {
     set({ status: 'loading', error: null });
     try {
-      const data = await authApi.token(passcode, clientId());
+      const data = await authApi.guest(clientId());
       setAuthToken(data.token);
       set({
         token: data.token,
@@ -40,7 +39,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       });
       return true;
     } catch (err) {
-      const message = err instanceof Error ? err.message : '口令验证失败';
+      const message = err instanceof Error ? err.message : '游客准入失败';
       setAuthToken(null);
       set({ status: 'error', error: message, token: null, role: null });
       return false;
@@ -59,15 +58,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ token: null, role: null, expiresAt: null, status: 'idle', error: null });
   },
   setMode: (mode) => set({ mode }),
-  hasRole: (role) => {
-    const current = get().role;
-    if (current === 'admin') return true;
-    return current === role;
-  },
 }));
 
 setUnauthorizedHandler(() => {
   useAuthStore.getState().clear();
 });
-
-export const isAuthenticated = () => useAuthStore.getState().status === 'authenticated';

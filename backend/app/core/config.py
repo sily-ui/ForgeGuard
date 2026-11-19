@@ -1,4 +1,3 @@
-import json
 import logging
 import os
 from pathlib import Path
@@ -28,12 +27,6 @@ def _load_env_file():
 
 _load_env_file()
 
-DEFAULT_PASSCODES = [
-    {"passcode": "demo-2026", "role": "judge", "one_time": False, "expires_at": None},
-    {"passcode": "demo-reset-2026", "role": "demo", "one_time": False, "expires_at": None},
-    {"passcode": "admin-2026", "role": "admin", "one_time": False, "expires_at": None},
-]
-
 
 class Settings:
     def __init__(self) -> None:
@@ -51,6 +44,10 @@ class Settings:
         )
         self.quota_global_daily = int(os.environ.get("QUOTA_GLOBAL_DAILY", "1000"))
         self.quota_session_max = int(os.environ.get("QUOTA_SESSION_MAX", "60"))
+        # 游客匿名放行：每工作区每日模型调用上限，以及同一 IP 的每日总量上限
+        # （后者防止不断切换工作区绕过配额）。
+        self.quota_guest_daily = int(os.environ.get("QUOTA_GUEST_DAILY", "20"))
+        self.quota_guest_ip_daily = int(os.environ.get("QUOTA_GUEST_IP_DAILY", "60"))
         self.instance_max = int(os.environ.get("INSTANCE_MAX", "8"))
         self.session_ttl = int(os.environ.get("SESSION_TTL", "14400"))
         self.snapshot_mode = os.environ.get("SNAPSHOT_MODE", "auto")
@@ -63,31 +60,10 @@ class Settings:
             ).split(",")
             if o.strip()
         ]
-        self.passcodes = self._load_passcodes()
-
-    def _load_passcodes(self):
-        raw = os.environ.get("ACCESS_PASSCODES", "")
-        if not raw:
-            return [dict(p) for p in DEFAULT_PASSCODES]
-        try:
-            items = json.loads(raw)
-        except (ValueError, TypeError) as exc:
-            logger.warning("ACCESS_PASSCODES 解析失败（%s），已回退到内置默认口令", exc)
-            return [dict(p) for p in DEFAULT_PASSCODES]
-        if not isinstance(items, list) or not items:
-            logger.warning("ACCESS_PASSCODES 应为非空 JSON 数组，已回退到内置默认口令")
-            return [dict(p) for p in DEFAULT_PASSCODES]
-        return items
 
     @property
     def model_configured(self) -> bool:
         return bool(self.model_base_url and self.model_api_key and self.model_name)
-
-    @property
-    def uses_default_passcodes(self) -> bool:
-        """是否仍在使用内置默认口令（生产环境应通过 ACCESS_PASSCODES 覆盖）。"""
-        active = {p.get("passcode") for p in self.passcodes}
-        return any(p["passcode"] in active for p in DEFAULT_PASSCODES)
 
 
 settings = Settings()

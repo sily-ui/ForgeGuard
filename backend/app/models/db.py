@@ -51,12 +51,6 @@ class IdempotencyKey(Base):
     created_ts = Column(Float, nullable=False)
 
 
-class PasscodeUse(Base):
-    __tablename__ = "passcode_uses"
-    passcode = Column(String, primary_key=True)
-    used_count = Column(Integer, default=0)
-
-
 class Workspace(Base):
     """匿名工作区：无登录场景下，每个浏览器实例凭 workspace_id 隔离各自的数据。"""
 

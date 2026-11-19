@@ -1,6 +1,6 @@
 // 与后端 /api/v1 契约一一对应的类型定义。
 
-export type Role = 'judge' | 'demo' | 'admin';
+export type Role = 'guest' | 'judge' | 'demo' | 'admin';
 export type Mode = 'live' | 'replay';
 export type GuardPreset = 'loose' | 'standard' | 'strict' | 'custom';
 export type Action = 'allow' | 'block' | 'challenge' | 'degrade';
@@ -42,6 +42,8 @@ export interface AuthToken {
   expires_in: number;
   mode: Mode;
   role: Role;
+  workspace_id: string;
+  daily_max_calls: number;
 }
 
 export interface QuotaStatus {
@@ -50,6 +52,11 @@ export interface QuotaStatus {
   global_used_calls: number;
   global_max_calls: number;
   mode: Mode;
+  // 仅游客令牌返回：每工作区与每 IP 的当日模型调用额度
+  guest_used_calls?: number;
+  guest_max_calls?: number;
+  guest_ip_used_calls?: number;
+  guest_ip_max_calls?: number;
 }
 
 // ---- Config ----
@@ -512,36 +519,6 @@ export interface Template {
   suggested_guard: GuardPreset;
   risk_note: string;
   config: AgentConfig;
-}
-
-// ---- Admin ----
-export interface AdminMetrics {
-  total_calls: number;
-  total_alerts: number;
-  false_positive_marks: number;
-  false_negative_marks: number;
-  action_distribution: Record<string, number>;
-  judged_by_distribution: Record<string, number>;
-  instances_alive: number;
-  sessions_active: number;
-  reports: number;
-  quota: QuotaStatus;
-  state_backend: string;
-  rate_limit_hits: number;
-}
-
-export interface SnapshotRecording {
-  snapshot_id: string;
-  name: string;
-  session_id: string;
-  event_count: number;
-  call_count: number;
-  created_at: string;
-}
-
-export interface DegradationItem {
-  session_id: string;
-  degradations: string[];
 }
 
 // ---- SSE events ----

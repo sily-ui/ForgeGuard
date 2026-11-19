@@ -25,7 +25,6 @@ export default function WorkspacePage() {
   const navigate = useNavigate();
   const { message } = App.useApp();
   const queryClient = useQueryClient();
-  const role = useAuthStore((s) => s.role);
   const mode = useAuthStore((s) => s.mode);
   const quota = useQuotaStore((s) => s.quota);
   const [demoStep, setDemoStep] = useState<string | null>(null);
@@ -246,10 +245,15 @@ export default function WorkspacePage() {
         </div>
       </div>
 
-      {role === 'admin' && quota && (
-        <div className="mono" style={{ marginTop: 16, fontSize: 12.5, color: 'var(--fg-text-3)', display: 'flex', gap: 16 }}>
-          <span>全局配额今日 {quota.global_used_calls}/{quota.global_max_calls}</span>
+      {quota && (
+        <div className="mono" style={{ marginTop: 16, fontSize: 12.5, color: 'var(--fg-text-3)', display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+          <span>
+            今日模型调用 {quota.guest_used_calls ?? quota.global_used_calls}/{quota.guest_max_calls ?? quota.global_max_calls}
+          </span>
           <span>存活实例 {instances.filter((i) => i.status !== 'destroyed').length}</span>
+          {(quota.guest_max_calls ?? 0) > 0 && (quota.guest_used_calls ?? 0) >= (quota.guest_max_calls ?? 0) && (
+            <span style={{ color: 'var(--fg-block-text)' }}>今日额度已用尽，明日恢复</span>
+          )}
         </div>
       )}
     </div>

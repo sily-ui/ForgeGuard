@@ -95,11 +95,11 @@ SUCCESS_ENVELOPE = _obj(
 
 ERROR_ENVELOPE = _obj(
     {"code": _int("机器可读错误码（非 HTTP 状态码）", example=40000,
-                  enum=[40000, 40001, 40100, 40101, 40300, 40400, 40900, 42200,
+                  enum=[40000, 40001, 40100, 40300, 40400, 40900, 42200,
                         42900, 42901, 42902, 50000, 50300, 50301]),
      "message": _str("人类可读错误消息", example="参数校验失败"),
      "data": {"nullable": True, "description": "错误时恒为 null"},
-     "detail": _str("错误详情（可选）", example="passcode 不能为空"),
+     "detail": _str("错误详情（可选）", example="缺少工作区标识"),
      "field_errors": _arr({"$ref": "#/components/schemas/FieldError"}, "字段级校验错误（可选）")},
     required=["code", "message", "data"],
     description="统一错误响应包络；code 为机器可读错误码，可据此自愈重试",
@@ -165,10 +165,9 @@ AGENT_CONFIG = _obj(
 )
 
 REQUEST_SCHEMAS = {
-    "AuthTokenRequest": _obj(
-        {"passcode": _str("角色口令", example="demo-2026"),
-         "client_id": _str("客户端标识（可选，用于令牌追踪）", example="web-console")},
-        required=["passcode"], description="换取 Bearer 令牌"),
+    "GuestTokenRequest": _obj(
+        {"client_id": _str("客户端标识（可选，用于令牌追踪）", example="web-console")},
+        description="匿名游客换取 Bearer 令牌；须携带 X-Workspace-Id 头"),
     "AgentConfig": AGENT_CONFIG,
     "ConfigImportRequest": _obj(
         {"config": {"$ref": "#/components/schemas/AgentConfig"},
@@ -268,7 +267,7 @@ REQUEST_SCHEMAS = {
 # resp: json(默认) | list(分页) | sse | pdf | html
 # flags: public(无需鉴权) idem(幂等键) heavy(重限流) admin(管理员)
 META = {
-    "POST /api/v1/auth/token": ("认证", "换取令牌", "用角色口令换取 Bearer 令牌；口令一次性消费。受 AUTH 限流（12 次/分钟）。", "AuthTokenRequest", {"passcode": "demo-2026", "client_id": "web"}, "json", {"public", "heavy"}),
+    "POST /api/v1/auth/guest": ("认证", "游客准入", "匿名签发 guest 令牌，须携带 X-Workspace-Id 头。受 AUTH 限流（12 次/分钟）；游客每工作区 20 次模型调用/天，同一 IP 60 次/天。", "GuestTokenRequest", {"client_id": "web"}, "json", {"public", "heavy"}),
     "POST /api/v1/auth/logout": ("认证", "注销令牌", "吊销当前 Bearer 令牌。", None, None, "json", set()),
     "GET /api/v1/quota": ("配额", "查询配额", "查询全局/会话模型配额与当前运行模式。", None, None, "json", set()),
     "GET /api/v1/templates": ("模板", "场景模板列表", "列出预置场景模板，选择后仍可逐项修改。分页返回。", None, None, "list", set()),
@@ -365,15 +364,21 @@ _INFO_DESCRIPTION = """面向可编排 Agent 的自适应红队测评与动态�
 列表接口的 `data` 为统一分页结构 `{items, total, page, page_size}`。
 
 ## 鉴权
-除健康检查、换取令牌与公开分享页外，均需 `Authorization: Bearer <token>` 头。
-令牌通过 `POST /api/v1/auth/token` 用角色口令换取（角色：judge/demo/admin）。
+除健康检查、游客准入与公开分享页外，均需 `Authorization: Bearer <token>` 头。
+令牌通过 `POST /api/v1/auth/guest` 匿名签发（角色 guest），须携带 `X-Workspace-Id` 头标识工作区。
 SSE 事件流因 EventSource 限制，额外支持查询参数 `token`。
 
 ## 限流（每分钟）
-- 通用接口：240 次/分钟（按 IP 与令牌）
+- 通用接口：240 次/分钟（按 IP 与令牌）；游客收紧为 60 次/分钟（按 IP 与工作区）
 - 重操作（创建/克隆实例、红队、对照）：12 次/分钟
-- 换取令牌：12 次/分钟
+- 游客准入：12 次/分钟
+- 游客模型调用：6 次/分钟（按 IP 与工作区）
 触发限流返回 HTTP 429 与错误码 42900，并携带 `Retry-After` 头；所有响应携带 `X-RateLimit-Limit/Remaining/Reset` 头。
+
+## 游客配额
+- 每工作区每日 20 次模型调用（`QUOTA_GUEST_DAILY`）
+- 同一 IP 每日 60 次模型调用（`QUOTA_GUEST_IP_DAILY`），防止切换工作区绕过
+- 额度用尽返回 HTTP 429 与错误码 42901；`GET /api/v1/quota` 返回 guest_used_calls/guest_max_calls 等字段
 
 ## 约定
 - 资源 ID 均带类型前缀（cfg-/inst-/sess-/rpt-/alt-/rec-/snap-/exp-）。
@@ -389,7 +394,7 @@ def _error_responses():
     responses = {}
     for status, desc in [
         ("400", "参数校验失败（40000/40001）"),
-        ("401", "未认证或口令无效（40100/40101）"),
+        ("401", "未认证或令牌无效（40100）"),
         ("403", "权限不足（40300）"),
         ("404", "资源不存在（40400）"),
         ("409", "状态冲突（40900）"),
@@ -455,7 +460,7 @@ def custom_openapi(app):
     spec.setdefault("components", {})
     spec["components"]["securitySchemes"] = {
         "BearerAuth": {"type": "http", "scheme": "bearer", "bearerFormat": "JWT",
-                       "description": "Authorization: Bearer <token>；令牌由 /api/v1/auth/token 换取"},
+                       "description": "Authorization: Bearer <token>；令牌由 /api/v1/auth/guest 匿名签发"},
         "SSEToken": {"type": "apiKey", "in": "query", "name": "token",
                      "description": "SSE 事件流专用：EventSource 无法携带请求头时用查询参数 token"},
     }

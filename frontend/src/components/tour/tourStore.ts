@@ -8,8 +8,7 @@ export type TourId =
   | 'console'
   | 'experiment'
   | 'reports'
-  | 'reportDetail'
-  | 'admin';
+  | 'reportDetail';
 
 const SEEN_KEY = 'fg_tour_seen_v1';
 

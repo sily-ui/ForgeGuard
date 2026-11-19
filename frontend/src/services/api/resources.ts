@@ -1,7 +1,6 @@
 import { api } from './client';
 import { idempotencyKey } from '@/utils/format';
 import type {
-  AdminMetrics,
   AgentConfig,
   Alert,
   AuthToken,
@@ -10,7 +9,6 @@ import type {
   ConfigDetail,
   ConfigListItem,
   ConfigPreview,
-  DegradationItem,
   Experiment,
   ExperimentListItem,
   Instance,
@@ -28,7 +26,6 @@ import type {
   Session,
   SessionCreated,
   ShareLink,
-  SnapshotRecording,
   Template,
   ValidationResult,
 } from '@/types/api';
@@ -38,8 +35,7 @@ import type {
 const TURN_TIMEOUT_MS = 600000;
 
 export const authApi = {
-  token: (passcode: string, clientId: string) =>
-    api.post<AuthToken>('/auth/token', { passcode, client_id: clientId }),
+  guest: (clientId: string) => api.post<AuthToken>('/auth/guest', { client_id: clientId }),
   logout: () => api.post<{ revoked: boolean }>('/auth/logout'),
   quota: (sessionId?: string) => api.get<QuotaStatus>('/quota', sessionId ? { session_id: sessionId } : undefined),
 };
@@ -146,18 +142,4 @@ export const reportApi = {
   shareLink: (id: string, ttlHours = 72) => api.post<ShareLink>(`/reports/${id}/share-link`, { ttl_hours: ttlHours }),
   // 相对 API base 的路径：rawClient 已带 /api/v1 baseURL，此处不可再重复前缀。
   pdfUrl: (id: string) => `/reports/${id}/export.pdf`,
-};
-
-export const adminApi = {
-  metrics: () => api.get<AdminMetrics>('/admin/metrics'),
-  adjustQuota: (payload: { global_max?: number; session_max?: number }) => api.put<QuotaStatus>('/admin/quota', payload),
-  switchMode: (payload: { mode: 'live' | 'replay'; snapshot_id?: string; reason?: string }) =>
-    api.post<{ mode: string; reason: string; snapshot_id: string | null }>('/admin/snapshot', payload),
-  snapshots: (page = 1, pageSize = 50) => api.get<Paginated<SnapshotRecording>>('/admin/snapshots', { page, page_size: pageSize }),
-  createSnapshot: (sessionId: string, name?: string) =>
-    api.post<{ snapshot_id: string; name: string }>('/admin/snapshots', { session_id: sessionId, name }),
-  cleanup: (scope: 'daily' | 'pre_contest') =>
-    api.post<{ scope: string; counts: Record<string, number>; cleaned_at: string }>('/admin/cleanup', { confirm: true, scope }),
-  invalidateTokens: () => api.post<{ invalidated: number }>('/admin/tokens/invalidate'),
-  degradations: () => api.get<{ items: DegradationItem[]; total: number }>('/admin/degradations'),
 };

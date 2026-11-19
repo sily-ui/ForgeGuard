@@ -1,6 +1,6 @@
 from .config import settings
 from .errors import QuotaExhausted
-from .security import utcnow
+from .security import GUEST_CALL_LIMIT, current_auth, rate_limiter, utcnow
 
 MODE_LIVE = "live"
 MODE_REPLAY = "replay"
@@ -8,6 +8,11 @@ MODE_REPLAY = "replay"
 
 def _global_key():
     return "global:" + utcnow().strftime("%Y-%m-%d")
+
+
+def _guest_keys(ctx):
+    day = utcnow().strftime("%Y-%m-%d")
+    return f"guest:ws:{ctx.workspace}:{day}", f"guest:ip:{ctx.ip}:{day}"
 
 
 def get_mode():
@@ -78,6 +83,7 @@ def _consume(db, key, amount, limit):
 def status(session_id=None):
     from ..models import db as dbmod
 
+    ctx = current_auth()
     with dbmod.session_scope() as db:
         session_used = _used(db, f"session:{session_id}") if session_id else 0
         session_max = settings.quota_session_max
@@ -88,20 +94,35 @@ def status(session_id=None):
         global_used = _used(db, _global_key())
         global_row = db.get(dbmod.QuotaCounter, _global_key())
         global_max = global_row.max_calls if global_row else settings.quota_global_daily
-    return {
-        "session_used_calls": session_used,
-        "session_max_calls": session_max,
-        "global_used_calls": global_used,
-        "global_max_calls": global_max,
-        "mode": get_mode(),
-    }
+        data = {
+            "session_used_calls": session_used,
+            "session_max_calls": session_max,
+            "global_used_calls": global_used,
+            "global_max_calls": global_max,
+            "mode": get_mode(),
+        }
+        if ctx is not None and ctx.role == "guest":
+            ws_key, ip_key = _guest_keys(ctx)
+            data["guest_used_calls"] = _used(db, ws_key)
+            data["guest_max_calls"] = settings.quota_guest_daily
+            data["guest_ip_used_calls"] = _used(db, ip_key)
+            data["guest_ip_max_calls"] = settings.quota_guest_ip_daily
+    return data
 
 
 def check_and_consume(session_id, amount=1):
     from ..models import db as dbmod
 
+    ctx = current_auth()
+    guest = ctx is not None and ctx.role == "guest"
+    if guest:
+        rate_limiter.check(f"call:ip:{ctx.ip}", GUEST_CALL_LIMIT)
+        rate_limiter.check(f"call:ws:{ctx.workspace}", GUEST_CALL_LIMIT)
+
     global_ok = True
     session_ok = True
+    guest_ws_ok = True
+    guest_ip_ok = True
     try:
         with dbmod.session_scope() as db:
             global_ok = _consume(db, _global_key(), amount, settings.quota_global_daily)
@@ -109,9 +130,20 @@ def check_and_consume(session_id, amount=1):
                 session_ok = _consume(
                     db, f"session:{session_id}", amount, settings.quota_session_max
                 )
-            if not global_ok or not session_ok:
-                scope = "全局" if not global_ok else "会话"
-                # 在事务内抛出以回滚全局/会话两处自增，避免部分扣减泄漏。
+            if guest:
+                ws_key, ip_key = _guest_keys(ctx)
+                guest_ws_ok = _consume(db, ws_key, amount, settings.quota_guest_daily)
+                guest_ip_ok = _consume(db, ip_key, amount, settings.quota_guest_ip_daily)
+            if not (global_ok and session_ok and guest_ws_ok and guest_ip_ok):
+                if not guest_ws_ok:
+                    scope = f"游客今日工作区额度（{settings.quota_guest_daily} 次/天）"
+                elif not guest_ip_ok:
+                    scope = f"当前网络今日游客额度（{settings.quota_guest_ip_daily} 次/天）"
+                elif not global_ok:
+                    scope = "全局"
+                else:
+                    scope = "会话"
+                # 在事务内抛出以回滚全部自增，避免部分扣减泄漏。
                 raise QuotaExhausted(f"{scope}模型调用额度用尽")
     except QuotaExhausted:
         # 模式切换独立提交，须在写事务回滚之后执行，避免 SQLite 写锁自死锁。

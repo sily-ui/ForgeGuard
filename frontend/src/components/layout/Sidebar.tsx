@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutGrid, Boxes, FileBarChart, SlidersHorizontal, LogOut, Copy, RotateCcw } from 'lucide-react';
+import { LayoutGrid, Boxes, FileBarChart, LogOut, Copy, RotateCcw } from 'lucide-react';
 import { Logo } from '@/components/common/Logo';
 import { AttackIcon } from '@/components/icons/SecurityIcons';
 import { useAuthStore } from '@/stores/authStore';
+import { useQuotaStore } from '@/stores/quotaStore';
 import { SimBadge } from '@/components/common/SimBadge';
 import { getWorkspaceId, regenerateWorkspace, workspaceShort } from '@/utils/workspace';
 
@@ -28,10 +29,19 @@ const rowStyle = (active: boolean): React.CSSProperties => ({
 
 export function Sidebar() {
   const navigate = useNavigate();
-  const role = useAuthStore((s) => s.role);
   const logout = useAuthStore((s) => s.logout);
+  const quota = useQuotaStore((s) => s.quota);
+  const refreshQuota = useQuotaStore((s) => s.refresh);
   const [wsId] = useState(getWorkspaceId);
   const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    refreshQuota();
+  }, [refreshQuota]);
+
+  const guestUsed = quota?.guest_used_calls ?? 0;
+  const guestMax = quota?.guest_max_calls ?? 0;
+  const guestLeft = Math.max(0, guestMax - guestUsed);
 
   const copyWorkspace = async () => {
     try {
@@ -100,13 +110,6 @@ export function Sidebar() {
           <AttackIcon size={16} strokeWidth={1.5} style={{ flexShrink: 0 }} />
           <span style={{ fontSize: 14, fontWeight: 500 }}>实时控制台</span>
         </button>
-
-        {role === 'admin' && (
-          <NavLink to="/admin" style={({ isActive }) => ({ ...rowStyle(isActive), marginTop: 2 })}>
-            <SlidersHorizontal size={16} strokeWidth={1.5} style={{ flexShrink: 0 }} />
-            <span style={{ fontSize: 14, fontWeight: 500 }}>平台管理</span>
-          </NavLink>
-        )}
       </nav>
 
       <div style={{ padding: 12, borderTop: '1px solid var(--fg-border)', display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -155,16 +158,24 @@ export function Sidebar() {
             切换到新工作区
           </button>
         </div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 4px', height: 20 }}>
+          <span style={{ fontSize: 12, color: 'var(--fg-text-3)' }}>今日调用</span>
+          <span
+            className="mono"
+            title={guestMax ? `游客每工作区每日 ${guestMax} 次模型调用，剩余 ${guestLeft} 次` : '模型调用额度'}
+            style={{ fontSize: 12, color: guestMax && guestLeft === 0 ? 'var(--fg-block-text)' : 'var(--fg-text-2)' }}
+          >
+            {guestMax ? `${guestUsed}/${guestMax}` : '—'}
+          </span>
+        </div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 4px' }}>
           <SimBadge compact />
-          <span className="mono" style={{ fontSize: 12, color: 'var(--fg-text-3)' }}>
-            {role || 'guest'}
-          </span>
+          <span style={{ fontSize: 12, color: 'var(--fg-text-3)' }}>游客</span>
         </div>
         <button
           onClick={async () => {
             await logout();
-            navigate('/access');
+            navigate('/portal');
           }}
           style={{
             display: 'flex',

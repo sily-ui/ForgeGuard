@@ -7,7 +7,6 @@ import {
   GitCompare,
   FileBarChart,
   FileText,
-  SlidersHorizontal,
   Compass,
   LayoutGrid,
   Play,
@@ -20,9 +19,6 @@ import {
   Share2,
   BookOpen,
   Gauge,
-  PieChart,
-  Wallet,
-  AlertTriangle,
   ListChecks,
   FlaskConical,
   Clock,
@@ -283,7 +279,7 @@ export const TOURS: Record<TourId, { label: string; steps: TourStepProps[] }> = 
         title: <Title icon={Gauge}>控制台顶栏：靶标状态一览</Title>,
         description: (
           <>
-            左侧是靶标身份与会话 ID；中间<K tone="allow">监护开关</K>可实时启停旁路防护（用于对照演示）；右侧风险环、配额、
+            左侧是靶标身份与会话 ID；中间<K tone="allow">监护开关</K>可实时启停旁路防护（用于对照演示）；右侧风险环、今日额度、
             <K tone="info">实时 / 回放</K>模式与 SIM 仿真标识随时可见。
           </>
         ),
@@ -456,52 +452,6 @@ export const TOURS: Record<TourId, { label: string; steps: TourStepProps[] }> = 
       },
     ],
   },
-
-  admin: {
-    label: '平台管理',
-    steps: [
-      {
-        title: <Title icon={Gauge}>运行指标</Title>,
-        description: (
-          <>工具调用、风险告警、存活实例、活跃会话、报告数与限流命中——平台整体健康度一览。</>
-        ),
-        target: anchor('admin-metrics'),
-        placement: 'bottom',
-      },
-      {
-        title: <Title icon={PieChart}>判定分布与标注</Title>,
-        description: (
-          <>
-            动作分布（放行 / 阻断 / 质询 / 降级）与判定来源（L1 / L2 / L3）统计；误报 /
-            漏报标注数反映监护质量，可在控制台告警页继续标注。
-          </>
-        ),
-        target: anchor('admin-dist'),
-        placement: place('right', 900),
-      },
-      {
-        title: <Title icon={Wallet}>配额与运行模式</Title>,
-        description: (
-          <>
-            调整全局 / 单会话模型调用上限，防止测评失控消耗；<K tone="info">实时</K>模式调用模型，
-            <K tone="observe">回放</K>模式读取快照，离线也能演示。
-          </>
-        ),
-        target: anchor('admin-quota'),
-        placement: place('left', 900),
-      },
-      {
-        title: <Title icon={AlertTriangle}>危险操作区</Title>,
-        description: (
-          <>
-            每日清理、快照管理与令牌撤销等不可逆操作集中在这里，执行前都会二次确认。普通实验请在实例管理回收单个实例。
-          </>
-        ),
-        target: anchor('admin-danger'),
-        placement: place('top', 900),
-      },
-    ],
-  },
 };
 
 export interface TourMeta {
@@ -511,7 +461,6 @@ export interface TourMeta {
   icon: TourIcon;
   entry: string;
   contextual?: boolean;
-  adminOnly?: boolean;
 }
 
 export const TOUR_META: TourMeta[] = [
@@ -523,7 +472,6 @@ export const TOUR_META: TourMeta[] = [
   { id: 'experiment', label: '对照实验', desc: 'A/B 判定差异', icon: GitCompare, entry: '/instances', contextual: true },
   { id: 'reports', label: '测评报告', desc: '报告检索与筛选', icon: FileBarChart, entry: '/reports' },
   { id: 'reportDetail', label: '报告详情', desc: '六章节取证报告', icon: FileText, entry: '/reports', contextual: true },
-  { id: 'admin', label: '平台管理', desc: '指标 · 配额 · 模式', icon: SlidersHorizontal, entry: '/admin', adminOnly: true },
 ];
 
 export function tourForPath(path: string): TourId | null {
@@ -535,6 +483,5 @@ export function tourForPath(path: string): TourId | null {
   if (/^\/experiments\//.test(path)) return 'experiment';
   if (path === '/reports') return 'reports';
   if (/^\/reports\//.test(path)) return 'reportDetail';
-  if (path === '/admin') return 'admin';
   return null;
 }

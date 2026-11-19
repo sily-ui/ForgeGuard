@@ -12,7 +12,6 @@ export function TourLauncher() {
   const navigate = useNavigate();
   const { message } = App.useApp();
   const status = useAuthStore((s) => s.status);
-  const role = useAuthStore((s) => s.role);
   const activeTour = useTourStore((s) => s.activeTour);
   const seen = useTourStore((s) => s.seen);
   const pending = useTourStore((s) => s.pending);
@@ -39,8 +38,6 @@ export function TourLauncher() {
     }
   };
 
-  const list = TOUR_META.filter((m) => !m.adminOnly || role === 'admin');
-
   const menu = (
     <div className="fg-tour-menu">
       <div className="fg-tour-menu-head">
@@ -50,7 +47,7 @@ export function TourLauncher() {
         <div className="fg-tour-menu-sub">每个页面首次进入自动播放，也可随时重看</div>
       </div>
       <div className="fg-tour-menu-list">
-        {list.map((m) => {
+        {TOUR_META.map((m) => {
           const here = m.id === tourId;
           const done = !!seen[m.id];
           return (

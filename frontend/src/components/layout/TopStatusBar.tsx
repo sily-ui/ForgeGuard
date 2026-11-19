@@ -23,7 +23,12 @@ export function TopStatusBar({ preset = 'standard', onToggleGuard, guardDisabled
   const quotaError = useQuotaStore((s) => s.error);
   const refreshQuota = useQuotaStore((s) => s.refresh);
   const guardOn = session?.guard_enabled ?? true;
-  const globalPct = quota ? percent(quota.global_used_calls, quota.global_max_calls) : 0;
+  // 游客看自己的每日额度，其余角色看全局额度。
+  const guestMax = quota?.guest_max_calls ?? 0;
+  const usedCalls = guestMax ? quota?.guest_used_calls ?? 0 : quota?.global_used_calls ?? 0;
+  const maxCalls = guestMax || quota?.global_max_calls || 0;
+  const usedPct = percent(usedCalls, maxCalls);
+  const leftCalls = Math.max(0, maxCalls - usedCalls);
 
   return (
     <header
@@ -84,17 +89,25 @@ export function TopStatusBar({ preset = 'standard', onToggleGuard, guardDisabled
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
         <RiskRing score={session?.risk_score ?? 0} maxRisk={session?.max_risk ?? 'none'} size={40} stroke={4} />
-        <Tooltip title={quota ? `全局今日 ${quota.global_used_calls}/${quota.global_max_calls} 次模型调用` : '模型配额'}>
-          <div style={{ width: 92 }}>
+        <Tooltip
+          title={
+            guestMax
+              ? `游客今日已用 ${usedCalls}/${maxCalls} 次模型调用，剩余 ${leftCalls} 次（每工作区每日上限）`
+              : `全局今日 ${usedCalls}/${maxCalls} 次模型调用`
+          }
+        >
+          <div style={{ width: 104 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--fg-text-3)', marginBottom: 3 }}>
-              <span>配额</span>
-              <span className="mono">{globalPct}%</span>
+              <span>今日额度</span>
+              <span className="mono" style={{ color: maxCalls && leftCalls === 0 ? 'var(--fg-block-text)' : undefined }}>
+                {usedCalls}/{maxCalls || '—'}
+              </span>
             </div>
             <Progress
-              percent={globalPct}
+              percent={usedPct}
               size="small"
               showInfo={false}
-              strokeColor={globalPct > 85 ? 'var(--fg-block)' : globalPct > 60 ? 'var(--fg-observe)' : 'var(--fg-brand-primary)'}
+              strokeColor={usedPct > 85 ? 'var(--fg-block)' : usedPct > 60 ? 'var(--fg-observe)' : 'var(--fg-brand-primary)'}
               trailColor="#e2e5e8"
             />
           </div>

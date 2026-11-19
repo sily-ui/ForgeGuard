@@ -38,23 +38,31 @@ def _reset_rate_limiter():
     rate_limiter._hits.clear()
 
 
+@pytest.fixture(autouse=True)
+def _reset_auth_context():
+    """请求级身份存于 contextvar，用例结束后清空，避免游客身份泄漏到后续用例。"""
+    yield
+    from app.core import security
+
+    security._current_auth.set(None)
+
+
 @pytest.fixture(scope="session")
 def token(client):
-    resp = client.post(
-        "/api/v1/auth/token", json={"passcode": "demo-2026", "client_id": "pytest"}
-    )
-    assert resp.status_code == 200
-    body = resp.json()
-    assert body["code"] == 0
-    return body["data"]["token"]
+    # 平台已移除口令登录，业务用例直接签发 judge 令牌；
+    # 游客准入与配额由 test_guest.py 单独覆盖。
+    from app.core.security import issue_token
+
+    value, _ = issue_token("judge", "pytest")
+    return value
 
 
 @pytest.fixture(scope="session")
 def admin_token(client):
-    resp = client.post(
-        "/api/v1/auth/token", json={"passcode": "admin-2026", "client_id": "pytest-admin"}
-    )
-    return resp.json()["data"]["token"]
+    from app.core.security import issue_token
+
+    value, _ = issue_token("admin", "pytest-admin")
+    return value
 
 
 @pytest.fixture()
@@ -65,6 +73,25 @@ def auth(token):
 @pytest.fixture()
 def admin_auth(admin_token):
     return {"Authorization": f"Bearer {admin_token}"}
+
+
+GUEST_WORKSPACE = "pytestguest01"
+
+
+@pytest.fixture()
+def guest_auth(client):
+    resp = client.post(
+        "/api/v1/auth/guest",
+        json={"client_id": "pytest-guest"},
+        headers={"X-Workspace-Id": GUEST_WORKSPACE},
+    )
+    assert resp.status_code == 200, resp.text
+    data = resp.json()["data"]
+    assert data["role"] == "guest"
+    return {
+        "Authorization": f"Bearer {data['token']}",
+        "X-Workspace-Id": GUEST_WORKSPACE,
+    }
 
 
 def make_config(**overrides):

@@ -1,11 +1,11 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Input, Form } from 'antd';
-import { KeyRound, ArrowRight, FlaskConical } from 'lucide-react';
+import { Alert, Button } from 'antd';
+import { ArrowRight, FlaskConical, Gauge, UserRound, Boxes } from 'lucide-react';
 import { Logo } from '@/components/common/Logo';
 import { AttackIcon, GuardIcon, ForensicsIcon } from '@/components/icons/SecurityIcons';
 import { useAuthStore } from '@/stores/authStore';
 import { SimBadge } from '@/components/common/SimBadge';
+import { getWorkspaceId, workspaceShort } from '@/utils/workspace';
 
 const FEATURES = [
   { icon: AttackIcon, title: '自适应红队测评', desc: '提示注入 / 越狱 / 越权 / 链式攻击样本库，一键载入复现' },
@@ -13,44 +13,49 @@ const FEATURES = [
   { icon: ForensicsIcon, title: '根因与加固报告', desc: '六部分取证报告，配置缺陷归因与可执行加固建议' },
 ];
 
-export default function AccessPage() {
+const ENTRY_NOTES = [
+  { icon: UserRound, title: '游客身份', desc: '无需注册与口令，令牌仅存于内存' },
+  { icon: Gauge, title: '每日调用额度', desc: '模型调用按日限量，额度用尽次日恢复' },
+  { icon: Boxes, title: '工作区隔离', desc: '实验数据仅属于当前浏览器工作区' },
+];
+
+export default function PortalPage() {
   const navigate = useNavigate();
-  const login = useAuthStore((s) => s.login);
+  const enter = useAuthStore((s) => s.enter);
   const status = useAuthStore((s) => s.status);
   const error = useAuthStore((s) => s.error);
-  const [passcode, setPasscode] = useState('');
+  const wsId = getWorkspaceId();
 
   const submit = async () => {
-    if (!passcode.trim()) return;
-    const ok = await login(passcode.trim());
+    const ok = await enter();
     if (ok) navigate('/workspace', { replace: true });
   };
 
   return (
-    <div className="fg-access" style={{ minHeight: '100vh', display: 'flex', background: 'var(--fg-bg-page)' }}>
-      {/* 左侧品牌区：石墨底 + 实验链路图 */}
+    <div className="fg-portal" style={{ minHeight: '100vh', display: 'flex', background: 'var(--fg-bg-page)' }}>
+      {/* 左侧品牌区：品牌抬头 → 主张与能力 → 实验链路图 */}
       <div
-        className="fg-access-hero"
+        className="fg-portal-hero"
         style={{
           flex: '0 0 55%',
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: 'center',
-          gap: 32,
-          padding: '56px 64px',
+          justifyContent: 'space-between',
+          gap: 40,
+          padding: '48px 56px',
           background: 'var(--fg-bg-card)',
           borderRight: '1px solid var(--fg-border)',
         }}
       >
-        <div style={{ maxWidth: 520 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 36 }}>
-            <Logo size={34} />
-            <div>
-              <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--fg-text-1)' }}>Agent Security Lab</div>
-              <div style={{ fontSize: 12.5, color: 'var(--fg-text-3)', marginTop: 1 }}>智能体安全实验室 · ForgeGuard</div>
-            </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <Logo size={34} />
+          <div>
+            <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--fg-text-1)' }}>Agent Security Lab</div>
+            <div style={{ fontSize: 12.5, color: 'var(--fg-text-3)', marginTop: 1 }}>智能体安全实验室 · ForgeGuard</div>
           </div>
+        </div>
 
+        <div style={{ maxWidth: 520 }}>
           <h1 style={{ fontSize: 30, lineHeight: 1.3, fontWeight: 600, margin: '0 0 14px', color: 'var(--fg-text-1)' }}>
             为可编排 Agent 构建
             <br />
@@ -78,76 +83,62 @@ export default function AccessPage() {
         <LabDiagram />
       </div>
 
-      {/* 右侧准入区 */}
-      <div className="fg-access-panel" style={{ flex: '0 0 45%', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 40 }}>
+      {/* 右侧门户区：单一进入动作 */}
+      <div className="fg-portal-panel" style={{ flex: '0 0 45%', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 40 }}>
         <div style={{ width: '100%', maxWidth: 380 }}>
-          <div style={{ marginBottom: 28 }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--fg-text-2)', fontSize: 13.5, marginBottom: 16 }}>
-              <FlaskConical size={14} strokeWidth={1.5} style={{ color: 'var(--fg-info-text)' }} />
-              全内存仿真 · 不触及真实系统
-            </div>
-            <h2 style={{ fontSize: 20, fontWeight: 600, margin: '0 0 8px', color: 'var(--fg-text-1)' }}>进入实验室</h2>
-            <p style={{ fontSize: 14, color: 'var(--fg-text-2)', margin: 0, lineHeight: 1.6 }}>
-              输入准入口令以获取会话令牌。令牌仅存于内存，不写入地址栏。
-            </p>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--fg-text-2)', fontSize: 13.5, marginBottom: 16 }}>
+            <FlaskConical size={14} strokeWidth={1.5} style={{ color: 'var(--fg-info-text)' }} />
+            全内存仿真 · 不触及真实系统
+          </div>
+          <h2 style={{ fontSize: 22, fontWeight: 600, margin: '0 0 8px', color: 'var(--fg-text-1)' }}>进入实验室</h2>
+          <p style={{ fontSize: 14, color: 'var(--fg-text-2)', margin: '0 0 24px', lineHeight: 1.6 }}>
+            以游客身份直接开始，无需注册。平台为每个浏览器分配独立工作区，并对模型调用按日限量。
+          </p>
+
+          <Button
+            type="primary"
+            size="large"
+            block
+            loading={status === 'loading'}
+            onClick={submit}
+            style={{ height: 46, fontWeight: 600, fontSize: 15 }}
+          >
+            {error ? '重试进入' : '进入实验室'} <ArrowRight size={16} strokeWidth={1.5} />
+          </Button>
+
+          {error && (
+            <Alert
+              type="error"
+              showIcon
+              message="暂时无法进入"
+              description={error}
+              style={{ marginTop: 12 }}
+            />
+          )}
+
+          <div style={{ marginTop: 28, display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {ENTRY_NOTES.map((n) => (
+              <div key={n.title} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                <span style={{ display: 'inline-flex', color: 'var(--fg-text-3)', marginTop: 2, flexShrink: 0 }}>
+                  <n.icon size={16} strokeWidth={1.5} />
+                </span>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--fg-text-1)' }}>{n.title}</div>
+                  <div style={{ fontSize: 13, color: 'var(--fg-text-2)', lineHeight: 1.5, marginTop: 2 }}>{n.desc}</div>
+                </div>
+              </div>
+            ))}
           </div>
 
-          <Form layout="vertical" onFinish={submit}>
-            <Form.Item label={<span style={{ fontWeight: 500, fontSize: 14 }}>准入口令</span>} validateStatus={error ? 'error' : undefined} help={error || undefined}>
-              <Input.Password
-                size="large"
-                prefix={<KeyRound size={16} strokeWidth={1.5} style={{ color: 'var(--fg-text-3)' }} />}
-                placeholder="请输入准入口令"
-                value={passcode}
-                onChange={(e) => setPasscode(e.target.value)}
-                autoFocus
-                allowClear
-              />
-            </Form.Item>
-            <Button type="primary" size="large" htmlType="submit" block loading={status === 'loading'} style={{ height: 44, fontWeight: 600, fontSize: 15 }}>
-              进入实验室 <ArrowRight size={16} strokeWidth={1.5} />
-            </Button>
-          </Form>
-
-          <div style={{ marginTop: 24, padding: 16, borderRadius: 12, background: 'var(--fg-bg-subtle)', border: '1px solid var(--fg-border)' }}>
-            <div style={{ fontSize: 12.5, fontWeight: 500, color: 'var(--fg-text-3)', marginBottom: 10 }}>演示口令</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <PasscodeHint code="demo-2026" role="评委 / 演示" onPick={() => setPasscode('demo-2026')} />
-              <PasscodeHint code="admin-2026" role="平台管理员" onPick={() => setPasscode('admin-2026')} />
-            </div>
-          </div>
-
-          <div style={{ marginTop: 20, display: 'flex', justifyContent: 'center' }}>
+          <div style={{ marginTop: 28, paddingTop: 16, borderTop: '1px solid var(--fg-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
             <SimBadge />
+            <span className="mono" style={{ fontSize: 12, color: 'var(--fg-text-3)' }} title={`当前工作区 ${wsId}`}>
+              工作区 {workspaceShort(wsId)}
+            </span>
           </div>
         </div>
       </div>
     </div>
-  );
-}
-
-function PasscodeHint({ code, role, onPick }: { code: string; role: string; onPick: () => void }) {
-  return (
-    <button
-      onClick={onPick}
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '8px 12px',
-        borderRadius: 8,
-        border: '1px solid var(--fg-border)',
-        background: 'var(--fg-bg-card)',
-        cursor: 'pointer',
-        textAlign: 'left',
-        transition: 'background-color 150ms ease',
-      }}
-      onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--fg-bg-subtle)'; }}
-      onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--fg-bg-card)'; }}
-    >
-      <span className="mono" style={{ fontSize: 14, color: 'var(--fg-text-1)' }}>{code}</span>
-      <span style={{ fontSize: 12.5, color: 'var(--fg-text-3)' }}>{role}</span>
-    </button>
   );
 }
 
@@ -164,7 +155,7 @@ function LabDiagram() {
     <figure style={{ margin: 0, maxWidth: 520 }}>
       <svg viewBox="0 0 520 252" width="100%" role="img" aria-label="实验链路：红队攻击源到靶标 Agent 到仿真沙盒，旁路监护网关镜像判定并可阻断">
         <defs>
-          <pattern id="fg-access-grid" width="32" height="32" patternUnits="userSpaceOnUse">
+          <pattern id="fg-portal-grid" width="32" height="32" patternUnits="userSpaceOnUse">
             <path d="M32 0H0V32" fill="none" stroke="var(--fg-border)" strokeWidth="0.5" />
           </pattern>
           <marker id="fg-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
@@ -174,7 +165,7 @@ function LabDiagram() {
             <path d="M0 0 8 4 0 8Z" fill="var(--fg-block)" />
           </marker>
         </defs>
-        <rect width="520" height="252" fill="url(#fg-access-grid)" opacity="0.6" />
+        <rect width="520" height="252" fill="url(#fg-portal-grid)" opacity="0.6" />
 
         {/* 攻击路径 */}
         <path

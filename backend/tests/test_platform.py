@@ -18,10 +18,10 @@ def test_auth_required(client):
     assert resp.json()["code"] == 40100
 
 
-def test_bad_passcode(client):
-    resp = client.post("/api/v1/auth/token", json={"passcode": "wrong-code"})
-    assert resp.status_code == 401
-    assert resp.json()["code"] == 40101
+def test_guest_token_requires_workspace(client):
+    resp = client.post("/api/v1/auth/guest", json={})
+    assert resp.status_code == 400
+    assert resp.json()["code"] == 40000
 
 
 def test_admin_rbac(client, auth):
