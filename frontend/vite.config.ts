@@ -24,7 +24,6 @@ export default defineConfig({
           react: ['react', 'react-dom', 'react-router-dom'],
           antd: ['antd', '@ant-design/icons'],
           x6: ['@antv/x6', '@antv/x6-react-shape'],
-          charts: ['@ant-design/charts'],
           monaco: ['monaco-editor', '@monaco-editor/react'],
         },
       },

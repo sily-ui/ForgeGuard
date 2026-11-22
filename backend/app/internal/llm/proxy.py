@@ -119,6 +119,7 @@ class LLMProxy:
         max_tokens=900,
         temperature=0.2,
         timeout=None,
+        billed=False,
     ):
         reason = _force_simulated.get()
         simulated_forced = reason is not None
@@ -137,7 +138,9 @@ class LLMProxy:
                 "simulated": True,
             }
         # 仅真实模型调用消耗配额；仿真不计费。整条档位链共用一次扣减，切换不重复计费。
-        quota.consume_model_quota(session_id)
+        # billed=True：流式尝试已扣过一次配额，回退到一次性调用时不再重复扣减。
+        if not billed:
+            quota.consume_model_quota(session_id)
         effective_timeout = timeout or _DEFAULT_TIMEOUTS.get(role, 10.0)
         failures = []
         for provider in _provider_chain(role):

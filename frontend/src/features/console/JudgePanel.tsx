@@ -90,8 +90,9 @@ function JudgeDetail({ live, full }: { live: ReturnType<typeof useSessionStore.g
     );
   }
 
-  const judgement = full?.judgement ?? live?.judgement;
-  const tool = full?.tool ?? live?.tool ?? '';
+  // SSE 实时判定优先于 REST 快照，避免慢响应把新判定覆盖回旧状态。
+  const judgement = live?.judgement ?? full?.judgement;
+  const tool = live?.tool ?? full?.tool ?? '';
   const action = judgement?.action ?? live?.action ?? 'unknown';
   const risk = judgement?.risk ?? live?.risk ?? 'none';
   const boundary = judgement?.boundary ?? null;

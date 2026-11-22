@@ -40,11 +40,19 @@ def _dominant_action(actions):
 
 async def run_redteam(session_id, max_rounds=5, time_limit_s=120):
     runtime.redteam_flags[session_id] = True
+    try:
+        return await _run_redteam(session_id, max_rounds, time_limit_s)
+    finally:
+        # 异常/取消路径也必须复位标志并清理任务，否则会话永久"红队已在运行"。
+        runtime.redteam_flags[session_id] = False
+        runtime.tasks.pop(session_id, None)
+
+
+async def _run_redteam(session_id, max_rounds=5, time_limit_s=120):
     with dbmod.session_scope() as db:
         session = db.get(dbmod.Session, session_id)
         instance = db.get(dbmod.Instance, session.instance_id) if session else None
     if instance is None:
-        runtime.redteam_flags[session_id] = False
         raise ApiError(40400, detail="会话或实例不存在")
     cap = capability_summary(instance.config_payload)
     max_rounds = max(1, min(MAX_ROUNDS_CAP, int(max_rounds)))
@@ -121,7 +129,6 @@ async def run_redteam(session_id, max_rounds=5, time_limit_s=120):
         ),
     }
     await event_bus.publish(session_id, "redteam.step", conclusion)
-    runtime.redteam_flags[session_id] = False
     return conclusion
 
 

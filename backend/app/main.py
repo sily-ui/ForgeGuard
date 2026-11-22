@@ -39,8 +39,10 @@ async def lifespan(app: FastAPI):
     init_db()
     bind_main_loop()
     runtime.init_redis()
-    if runtime.state_backend == "memory":
-        logger.info("Redis 不可用，实例状态降级为单进程内存态（不支持多实例并发扩展）")
+    if not runtime.redis_reachable:
+        logger.info("Redis 不可用，实例状态为单进程内存态（不支持多实例并发扩展）")
+    else:
+        logger.info("Redis 可达，但运行态（质询/任务/事件）仍为进程内存实现，多副本部署前需落地共享存储")
     if not settings.model_configured:
         logger.info("未配置 MODEL_* 环境变量，使用离线仿真推理（可随时配置真实模型接口）")
     logger.info("ForgeGuard 后端就绪，监听 %s:%s", settings.host, settings.port)

@@ -179,12 +179,14 @@ class ReasonContext:
                     content = payload["content"]
         except ModelUnavailable:
             # 流式不可用（上游不支持/断流）时退回一次性调用，仍不行才降级为仿真。
+            # 流式尝试已扣过配额，回退调用带 billed 标记避免同一回合双计费。
             try:
                 result = await llm_proxy.chat(
                     "business",
                     full_messages,
                     session_id=self.session_id,
                     response_format={"type": "json_object"},
+                    billed=True,
                 )
                 content = result["content"]
             except ModelUnavailable:

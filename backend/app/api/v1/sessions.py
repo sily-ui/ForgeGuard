@@ -8,13 +8,13 @@ from ...core import quota
 from ...core.errors import ApiError
 from ...core.ids import new_id
 from ...core.response import paginate, parse_pagination, slice_page
-from ...core.security import iso, utcnow
+from ...core.security import iso, parse_iso, utcnow
 from ...core.state import runtime
 from ...internal.events import event_bus, publish_threadsafe
 from ...models import db as dbmod
 from ...orchestration import redteam as redteam_mod
 from ...orchestration.runner import process_message, record_session
-from ...policies.snapshot import freeze_snapshot, get_snapshot
+from ...policies.snapshot import freeze_snapshot
 from ..deps import get_auth, get_sse_auth, heavy_check
 
 router = APIRouter()
@@ -28,13 +28,15 @@ def _session_row(session_id, workspace="default"):
         return row
 
 
-def _session_view(row):
-    with dbmod.session_scope() as db:
-        instance = db.get(dbmod.Instance, row.instance_id)
+def _session_view(row, instance_name=None):
+    if instance_name is None:
+        with dbmod.session_scope() as db:
+            instance = db.get(dbmod.Instance, row.instance_id)
+        instance_name = instance.name if instance else ""
     return {
         "session_id": row.session_id,
         "instance_id": row.instance_id,
-        "instance_name": instance.name if instance else "",
+        "instance_name": instance_name,
         "status": row.status,
         "turn": row.turn,
         "call_count": row.call_count,
@@ -66,6 +68,10 @@ def create_session(request: Request, payload: dict = Body(...)):
         raise ApiError(40900, detail="实例已销毁，无法创建会话")
     if instance.status == "frozen":
         raise ApiError(40900, detail="实例已冻结，请先续期")
+    if parse_iso(instance.expires_at) and parse_iso(instance.expires_at) < utcnow():
+        with dbmod.session_scope() as db:
+            db.get(dbmod.Instance, instance.instance_id).status = "frozen"
+        raise ApiError(40900, detail="实例已过期冻结，请先续期")
     session_id = new_id("sess")
     snapshot_id = freeze_snapshot(
         instance.instance_id, instance.config_payload, session_id=session_id, id_prefix="pol"
@@ -126,7 +132,14 @@ def list_sessions(request: Request, instance_id: str | None = None, page: int = 
         if instance_id:
             query = query.filter(dbmod.Session.instance_id == instance_id)
         rows = query.order_by(dbmod.Session.created_at.desc()).all()
-        items = [_session_view(r) for r in rows]
+        instance_ids = {r.instance_id for r in rows}
+        names = {}
+        if instance_ids:
+            names = {
+                i.instance_id: i.name
+                for i in db.query(dbmod.Instance).filter(dbmod.Instance.instance_id.in_(instance_ids))
+            }
+        items = [_session_view(r, names.get(r.instance_id, "")) for r in rows]
     return {
         "code": 0,
         "message": "ok",
@@ -152,13 +165,16 @@ async def send_message(request: Request, session_id: str, payload: dict = Body(.
         raise ApiError(40000, detail="消息内容不能为空")
     if len(content) > 4000:
         raise ApiError(40000, detail="消息长度超过 4000 字符上限")
+    actor = payload.get("actor", "business")
+    if actor != "business":
+        raise ApiError(40000, detail="actor 仅支持 business，红队归属由系统内部标记")
     _session_row(session_id, ctx.workspace)
     result = await process_message(
         session_id,
         content,
         skip_guard=bool(payload.get("skip_guard", False)),
         source_sample_id=payload.get("source_sample_id"),
-        actor=payload.get("actor", "business"),
+        actor=actor,
     )
     return {
         "code": 0,
@@ -207,8 +223,8 @@ def terminate_session(request: Request, session_id: str):
         record = db.get(dbmod.Session, session_id)
         record.status = "terminated"
         record.terminated_at = now
-    for call_id in list(runtime.challenges.keys()):
-        runtime.cancel_challenge(call_id)
+    runtime.cancel_session_challenges(session_id)
+    runtime.cancel_task(session_id)
     publish_threadsafe(
         session_id, "session.status",
         {"session_id": session_id, "status": "terminated", "terminated_at": now},
@@ -307,6 +323,31 @@ def list_calls(request: Request, session_id: str):
     return {"code": 0, "message": "ok", "data": {"items": items, "total": len(items)}}
 
 
+@router.get("/sessions/{session_id}/messages")
+def list_messages(request: Request, session_id: str):
+    ctx = get_auth(request)
+    _session_row(session_id, ctx.workspace)
+    with dbmod.session_scope() as db:
+        rows = (
+            db.query(dbmod.Turn)
+            .filter(dbmod.Turn.session_id == session_id)
+            .order_by(dbmod.Turn.turn)
+            .all()
+        )
+        items = [
+            {
+                "turn": t.turn,
+                "user_input": t.user_input,
+                "reply": t.reply,
+                "actor": t.actor,
+                "source_sample_id": t.source_sample_id,
+                "created_at": t.created_at,
+            }
+            for t in rows
+        ]
+    return {"code": 0, "message": "ok", "data": {"items": items, "total": len(items)}}
+
+
 def _alert_view(a):
     return {
         "alert_id": a.alert_id,
@@ -369,7 +410,7 @@ def challenge_decision(request: Request, session_id: str, call_id: str, payload:
     _session_row(session_id, ctx.workspace)
     if "approved" not in payload:
         raise ApiError(40000, detail="缺少 approved 字段")
-    resolved = runtime.resolve_challenge(call_id, bool(payload["approved"]))
+    resolved = runtime.resolve_challenge(call_id, bool(payload["approved"]), session_id=session_id)
     if not resolved:
         raise ApiError(40900, detail="该质询已超时或已被处理")
     return {
@@ -390,6 +431,8 @@ async def start_redteam(request: Request, session_id: str, payload: dict = Body(
         raise ApiError(40900, detail="该会话红队已在运行")
     max_rounds = int(payload.get("max_rounds", 5))
     time_limit_s = float(payload.get("time_limit_s", 120))
+    # 同步置位标志再创建任务，关闭 check-then-act 竞态窗口。
+    runtime.redteam_flags[session_id] = True
     task = asyncio.create_task(redteam_mod.run_redteam(session_id, max_rounds, time_limit_s))
     runtime.tasks[session_id] = task
     return {
@@ -413,7 +456,7 @@ def record_snapshot(request: Request, session_id: str, payload: dict = Body(defa
     ctx.require("admin")
     _session_row(session_id, ctx.workspace)
     name = payload.get("name") or f"会话录制-{session_id}"
-    snapshot_id = record_session(session_id, name)
+    snapshot_id = record_session(session_id, name, workspace_id=ctx.workspace)
     return {"code": 0, "message": "ok", "data": {"snapshot_id": snapshot_id, "name": name}}
 
 

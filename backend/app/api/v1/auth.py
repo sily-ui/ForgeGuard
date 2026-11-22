@@ -20,7 +20,7 @@ def auth_guest(request: Request, payload: dict = Body(default={})):
             {"field": "X-Workspace-Id", "error": "必填"}
         ])
     client_id = str(payload.get("client_id", ""))[:64]
-    token, expires_in = issue_token("guest", client_id)
+    token, expires_in = issue_token("guest", client_id, workspace_id=workspace_id)
     return {
         "code": 0,
         "message": "ok",
@@ -32,6 +32,24 @@ def auth_guest(request: Request, payload: dict = Body(default={})):
             "workspace_id": workspace_id,
             "daily_max_calls": settings.quota_guest_daily,
         },
+    }
+
+
+@router.post("/auth/admin")
+def auth_admin(request: Request, payload: dict = Body(default={})):
+    """管理员引导准入：凭部署时配置的 ADMIN_BOOTSTRAP_KEY 换取 admin 令牌。"""
+    import secrets as _secrets
+
+    rate_limiter.check(f"auth:{client_ip(request)}", AUTH_LIMIT)
+    configured = settings.admin_bootstrap_key
+    provided = str(payload.get("bootstrap_key", ""))
+    if not configured or not _secrets.compare_digest(configured, provided):
+        raise ApiError(40300, detail="管理员准入未开放或引导密钥错误")
+    token, expires_in = issue_token("admin", "bootstrap")
+    return {
+        "code": 0,
+        "message": "ok",
+        "data": {"token": token, "expires_in": expires_in, "role": "admin"},
     }
 
 

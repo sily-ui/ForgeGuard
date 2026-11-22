@@ -70,7 +70,11 @@ def evaluate(tool_name, params, rules, context=None):
                 )
         elif rule_type == "allow_path_prefix":
             allow = rule_params.get("allow_paths") or []
-            if path and allow and not any(path.startswith(prefix) for prefix in allow):
+            # 前缀匹配带分隔符边界：./docs 放行 ./docs/x，但不得放行 ./docsEVIL/x。
+            if path and allow and not any(
+                path == prefix.rstrip("/") or path.startswith(prefix.rstrip("/") + "/")
+                for prefix in allow
+            ):
                 hits.append(
                     _hit(
                         policy,

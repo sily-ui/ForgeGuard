@@ -13,12 +13,17 @@ interface Options {
   onClose?: () => void;
 }
 
-// 单会话 SSE 通道：断点续传（Last-Event-ID）、按事件 ID 去重、自动重连。
+// 单会话 SSE 通道：断点续传（Last-Event-ID）、按事件 ID 去重、指数退避自动重连。
+const MAX_RETRIES = 10;
+const BASE_RETRY_MS = 1000;
+const MAX_RETRY_MS = 30000;
+
 export class SessionEventSource {
   private controller: AbortController | null = null;
   private lastId = 0;
   private seen = new Set<number>();
   private stopped = false;
+  private retries = 0;
   private opts: Options;
 
   constructor(opts: Options) {
@@ -45,6 +50,7 @@ export class SessionEventSource {
       openWhenHidden: true,
       onopen: async (response) => {
         if (response.ok && response.headers.get('content-type')?.includes('text/event-stream')) {
+          this.retries = 0;
           this.opts.onOpen?.();
           return;
         }
@@ -52,6 +58,12 @@ export class SessionEventSource {
           this.stopped = true;
           this.opts.onError?.(new Error('SSE 认证失效'));
           throw new FatalError('auth');
+        }
+        // 会话已删除/不存在：重连无意义，直接终止。
+        if (response.status === 404 || response.status === 410) {
+          this.stopped = true;
+          this.opts.onError?.(new Error('会话不存在或已删除'));
+          throw new FatalError('gone');
         }
         throw new Error(`SSE 连接失败: ${response.status}`);
       },
@@ -80,8 +92,15 @@ export class SessionEventSource {
           throw err;
         }
         this.opts.onError?.(err);
-        // 返回重试间隔（毫秒），库会自动重连并带上 Last-Event-ID。
-        return 2000;
+        this.retries += 1;
+        if (this.retries > MAX_RETRIES) {
+          this.stopped = true;
+          this.opts.onError?.(new Error('SSE 重连次数已达上限，请刷新页面'));
+          throw new FatalError('retries-exhausted');
+        }
+        // 指数退避 + 抖动，封顶 30s；返回重试间隔（毫秒），库自动带 Last-Event-ID 重连。
+        const backoff = Math.min(MAX_RETRY_MS, BASE_RETRY_MS * 2 ** (this.retries - 1));
+        return backoff + Math.random() * 500;
       },
       onclose: () => {
         this.opts.onClose?.();

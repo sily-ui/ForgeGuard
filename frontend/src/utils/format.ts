@@ -29,11 +29,6 @@ export function formatDuration(ms?: number): string {
   return `${(ms / 1000).toFixed(2)}s`;
 }
 
-export function formatNumber(n?: number): string {
-  if (n == null) return '0';
-  return n.toLocaleString('zh-CN');
-}
-
 export function percent(used: number, max: number): number {
   if (!max) return 0;
   return Math.min(100, Math.round((used / max) * 100));
@@ -44,10 +39,6 @@ export function truncate(text: string, len = 80): string {
   return text.length > len ? text.slice(0, len) + '…' : text;
 }
 
-export function classNames(...parts: (string | false | null | undefined)[]): string {
-  return parts.filter(Boolean).join(' ');
-}
-
 export function paramsSummaryText(summary: Record<string, unknown>): string {
   const entries = Object.entries(summary || {});
   if (!entries.length) return '—';
@@ -56,13 +47,28 @@ export function paramsSummaryText(summary: Record<string, unknown>): string {
     .join('  ');
 }
 
-let clientCounter = 0;
+let memoryClientId: string | null = null;
 export function clientId(): string {
-  const existing = sessionStorage.getItem('fg_client_id');
-  if (existing) return existing;
-  const id = `web-${Date.now().toString(36)}-${(clientCounter++).toString(36)}`;
-  sessionStorage.setItem('fg_client_id', id);
-  return id;
+  // 隐私模式等存储被禁用的场景回退内存 ID，保证游客准入不中断。
+  try {
+    const existing = sessionStorage.getItem('fg_client_id');
+    if (existing) return existing;
+  } catch {
+    /* storage unavailable */
+  }
+  if (!memoryClientId) {
+    const rand =
+      typeof crypto !== 'undefined' && 'randomUUID' in crypto
+        ? crypto.randomUUID()
+        : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+    memoryClientId = `web-${rand}`;
+    try {
+      sessionStorage.setItem('fg_client_id', memoryClientId);
+    } catch {
+      /* storage unavailable */
+    }
+  }
+  return memoryClientId;
 }
 
 export function idempotencyKey(prefix: string): string {

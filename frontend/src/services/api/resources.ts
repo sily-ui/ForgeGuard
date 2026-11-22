@@ -6,11 +6,8 @@ import type {
   AuthToken,
   CallRecord,
   CompareResult,
-  ConfigDetail,
-  ConfigListItem,
   ConfigPreview,
   Experiment,
-  ExperimentListItem,
   Instance,
   InstanceCreated,
   ItemsResult,
@@ -27,6 +24,7 @@ import type {
   SessionCreated,
   ShareLink,
   Template,
+  TurnMessage,
   ValidationResult,
 } from '@/types/api';
 
@@ -41,19 +39,11 @@ export const authApi = {
 };
 
 export const configApi = {
-  list: (page = 1, pageSize = 50) =>
-    api.get<Paginated<ConfigListItem>>('/configs', { page, page_size: pageSize }),
-  get: (id: string) => api.get<ConfigDetail>(`/configs/${id}`),
   validate: (config: unknown) => api.post<ValidationResult>('/configs/validate', config),
   preview: (config: unknown) => api.post<ConfigPreview>('/configs/preview', config),
   suggestPrompt: (name: string, purpose: string) =>
     api.post<{ system_prompt: string; simulated: boolean }>('/configs/suggest-prompt', { name, purpose }, { timeout: 60000 }),
   create: (config: unknown) => api.post<{ config_id: string; version: string }>('/configs', config),
-  update: (id: string, config: unknown) => api.put<{ config_id: string; version: string }>(`/configs/${id}`, config),
-  remove: (id: string) => api.delete<{ config_id: string; deleted: boolean }>(`/configs/${id}`),
-  import: (config: unknown) =>
-    api.post<{ config_id: string; version: string; validation: ValidationResult }>('/configs/import', { config }),
-  export: (id: string) => api.get<AgentConfig>(`/configs/${id}/export`),
 };
 
 export const templateApi = {
@@ -93,6 +83,7 @@ export const sessionApi = {
   reset: (id: string) =>
     api.post<{ previous_session_id: string; session_id: string; status: string; policy_snapshot_id: string }>(`/sessions/${id}/reset`),
   calls: (id: string) => api.get<ItemsResult<CallRecord>>(`/sessions/${id}/calls`),
+  messages: (id: string) => api.get<ItemsResult<TurnMessage>>(`/sessions/${id}/messages`),
   alerts: (id: string, level?: string, action?: string) =>
     api.get<ItemsResult<Alert>>(`/sessions/${id}/alerts`, { level, action }),
   alertFeedback: (alertId: string, payload: { false_positive?: boolean; false_negative?: boolean; note?: string }) =>
@@ -105,8 +96,6 @@ export const sessionApi = {
       time_limit_s: timeLimitS,
     }),
   stopRedteam: (id: string) => api.post<{ session_id: string; status: string }>(`/sessions/${id}/redteam/stop`),
-  record: (id: string, name?: string) =>
-    api.post<{ snapshot_id: string; name: string }>(`/sessions/${id}/record`, { name }),
   report: (id: string) =>
     api.post<ReportCreated>(`/sessions/${id}/report`, undefined, { headers: { 'X-Idempotency-Key': idempotencyKey('rpt') } }),
 };
@@ -132,7 +121,6 @@ export const experimentApi = {
     guard_enabled?: boolean;
   }) => api.post<CompareResult>('/experiments/compare', payload, { headers: { 'X-Idempotency-Key': idempotencyKey('exp') }, timeout: TURN_TIMEOUT_MS }),
   get: (pairId: string) => api.get<Experiment>(`/experiments/${pairId}`),
-  list: (page = 1, pageSize = 50) => api.get<Paginated<ExperimentListItem>>('/experiments', { page, page_size: pageSize }),
 };
 
 export const reportApi = {

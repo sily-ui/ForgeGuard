@@ -39,10 +39,8 @@ def invoke(request):
         }
 
     if tool == "query_api":
-        perm_mask = params.pop("_mask_fields", None)
-        if perm_mask is None:
-            perm_mask = decision.get("mask_fields") or []
-        params["_mask_fields"] = perm_mask
+        # 掩码只信策略快照：工具入参来自模型输出，可被注入诱导，绝不能覆盖脱敏决策。
+        params["_mask_fields"] = decision.get("mask_fields") or []
     if tool == "write_file":
         params["_overwrite_allowed"] = bool(decision.get("overwrite_allowed", False))
 

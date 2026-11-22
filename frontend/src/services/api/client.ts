@@ -11,9 +11,6 @@ let onUnauthorized: (() => void) | null = null;
 export function setAuthToken(token: string | null) {
   authToken = token;
 }
-export function getAuthToken() {
-  return authToken;
-}
 export function setUnauthorizedHandler(fn: (() => void) | null) {
   onUnauthorized = fn;
 }
@@ -57,27 +54,43 @@ http.interceptors.request.use((config) => {
   return config;
 });
 
-function toClientError(err: unknown): ApiClientError {
+function parseEnvelope(body: unknown, status: number): ApiClientError | null {
+  const env = body as Envelope<unknown> | null;
+  if (env && typeof env.code === 'number' && env.code !== 0) {
+    return new ApiClientError(env.code, env.message || '请求失败', status, env.detail, env.field_errors || []);
+  }
+  return null;
+}
+
+async function toClientError(err: unknown): Promise<ApiClientError> {
   if (err instanceof ApiClientError) return err;
   const ax = err as AxiosError<Envelope<unknown>>;
-  const body = ax.response?.data;
+  let body = ax.response?.data;
   const status = ax.response?.status ?? 0;
-  if (body && typeof body.code === 'number' && body.code !== 0) {
-    return new ApiClientError(body.code, body.message || '请求失败', status, body.detail, body.field_errors || []);
+  // blob 请求（PDF 下载）的错误体也是 Blob，先读文本再解析错误码。
+  if (body instanceof Blob) {
+    try {
+      body = JSON.parse(await body.text());
+    } catch {
+      body = undefined;
+    }
   }
+  const parsed = parseEnvelope(body, status);
+  if (parsed) return parsed;
   if (status === 401) {
     return new ApiClientError(40100, '未认证', 401, '登录状态已失效，请重新进入实验室');
   }
   if (!ax.response) {
     return new ApiClientError(50000, '网络错误', 0, '无法连接后端服务，请确认本地服务已启动');
   }
-  return new ApiClientError(50000, '内部错误', status, body?.detail || ax.message);
+  const detail = (body as Envelope<unknown> | undefined)?.detail;
+  return new ApiClientError(50000, '内部错误', status, detail || ax.message);
 }
 
 http.interceptors.response.use(
   (response) => response,
-  (error) => {
-    const ce = toClientError(error);
+  async (error) => {
+    const ce = await toClientError(error);
     if (ce.isAuth && onUnauthorized) onUnauthorized();
     return Promise.reject(ce);
   }
@@ -86,7 +99,11 @@ http.interceptors.response.use(
 export async function request<T>(config: AxiosRequestConfig): Promise<T> {
   const response = await http.request<Envelope<T>>(config);
   const body = response.data;
-  if (body && typeof body.code === 'number' && body.code !== 0) {
+  // 204/空响应体没有 Envelope 结构，按无数据返回而不是抛裸 TypeError。
+  if (body == null || typeof body.code !== 'number') {
+    return undefined as T;
+  }
+  if (body.code !== 0) {
     throw new ApiClientError(body.code, body.message, response.status, body.detail, body.field_errors || []);
   }
   return body.data;

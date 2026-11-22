@@ -95,7 +95,7 @@ export function TopStatusBar({ preset = 'standard', onToggleGuard, guardDisabled
         <PresetTag preset={preset} />
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+      <div className="fg-topbar-meta" style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
         <RiskRing score={session?.risk_score ?? 0} maxRisk={session?.max_risk ?? 'none'} size={40} stroke={4} />
         <Tooltip
           title={
@@ -104,7 +104,7 @@ export function TopStatusBar({ preset = 'standard', onToggleGuard, guardDisabled
               : `全局今日 ${usedCalls}/${maxCalls} 次模型调用`
           }
         >
-          <div style={{ width: 104 }}>
+          <div className="fg-topbar-quota" style={{ width: 104 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--fg-text-3)', marginBottom: 3 }}>
               <span>今日额度</span>
               <span className="mono" style={{ color: maxCalls && leftCalls === 0 ? 'var(--fg-block-text)' : undefined }}>

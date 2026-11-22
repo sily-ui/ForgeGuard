@@ -67,6 +67,9 @@ def normalize_config(payload):
             for key, value in raw_perm.items():
                 if value is not None:
                     perm[key] = value
+        for key in ("allow_paths", "deny_names", "allow_domains", "allow_endpoints", "mask_fields", "allow_cmds", "allow_keys"):
+            if key in perm and not isinstance(perm[key], list):
+                raise TypeError(f"tools.{name}.perm.{key} 必须是列表")
         if "allow_paths" in perm:
             perm["allow_paths"] = [_norm_path(p) for p in perm["allow_paths"] if str(p).strip()]
         config["tools"][name] = {"enabled": enabled, "perm": perm}
@@ -93,10 +96,10 @@ def validate_config(payload):
     warnings = []
     try:
         config = normalize_config(payload)
-    except ValueError as exc:
+    except (ValueError, TypeError) as exc:
         return {
             "valid": False,
-            "errors": [{"field": "config", "code": "format", "message": str(exc)}],
+            "errors": [{"field": "config", "code": "format", "message": f"配置格式非法：{exc}"}],
             "warnings": [],
         }
 

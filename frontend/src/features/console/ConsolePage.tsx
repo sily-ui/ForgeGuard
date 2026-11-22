@@ -178,7 +178,7 @@ export default function ConsolePage() {
 
       {/* 底部控制条 */}
       <div className="fg-lab-controlbar" style={controlBarStyle}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', rowGap: 6, minWidth: 0 }}>
           <Tag color={status === 'active' ? 'success' : status === 'paused' ? 'warning' : 'default'} style={{ margin: 0 }}>
             {SESSION_STATUS_META[status]?.label ?? status}
           </Tag>
@@ -192,7 +192,7 @@ export default function ConsolePage() {
             </Tooltip>
           )}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', rowGap: 8 }}>
           {status === 'active' && (
             <Button size="small" icon={<Pause size={14} />} onClick={() => ctrl.pause()}>
               暂停

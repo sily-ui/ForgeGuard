@@ -42,3 +42,36 @@ export function AntdProvider({ children }: { children: ReactNode }) {
     </ConfigProvider>
   );
 }
+
+// 实验舱夜档：antd 弹层/表格/输入控件跟随深色空间，避免浅色组件割裂。
+export function LabAntdProvider({ children }: { children: ReactNode }) {
+  return (
+    <ConfigProvider
+      theme={{
+        algorithm: antdTheme.darkAlgorithm,
+        token: {
+          ...token,
+          colorPrimary: '#6bc7b3',
+          colorInfo: '#7fa8c9',
+          colorTextBase: '#e8e6e0',
+          colorBgLayout: '#14171b',
+          colorBgContainer: '#1c2026',
+          colorBgElevated: '#232830',
+          colorBorder: '#333941',
+          colorBorderSecondary: '#2a3038',
+          colorLink: '#6bc7b3',
+        },
+        components: {
+          Card: { borderRadiusLG: 10 },
+          Button: { primaryShadow: 'none', defaultShadow: 'none' },
+          Table: { headerBg: '#191d22', rowHoverBg: '#232830' },
+          Menu: { itemBorderRadius: 6 },
+          Tag: { borderRadiusSM: 5 },
+          Modal: { borderRadiusLG: 10, contentBg: '#1c2026', headerBg: '#1c2026' },
+        },
+      }}
+    >
+      {children}
+    </ConfigProvider>
+  );
+}

@@ -95,7 +95,7 @@ export default function InstancesPage() {
       />
 
       {/* 统计 */}
-      <div data-tour="instances-stats" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 18 }}>
+      <div data-tour="instances-stats" className="fg-stats-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 18 }}>
         <StatCard label="存活实例" value={alive.length} accent="var(--fg-brand-primary)" />
         <StatCard label="就绪" value={instances.filter((i) => i.status === 'ready').length} />
         <StatCard label="累计调用" value={instances.reduce((s, i) => s + (i.stats?.call_count || 0), 0)} />
@@ -125,7 +125,7 @@ export default function InstancesPage() {
           />
         </SectionCard>
       ) : view === 'card' ? (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(340px, 100%), 1fr))', gap: 16 }}>
           {filtered.map((inst) => (
             <InstanceCard
               key={inst.instance_id}
@@ -152,6 +152,7 @@ export default function InstancesPage() {
             dataSource={filtered}
             rowKey="instance_id"
             pagination={{ pageSize: 10, showSizeChanger: false }}
+            scroll={{ x: 860 }}
             columns={[
               { title: '名称', dataIndex: 'name', render: (v, r) => <span style={{ fontWeight: 600 }}>{v}<div className="mono" style={{ fontSize: 11, color: 'var(--fg-text-3)' }}>{r.instance_id}</div><div style={{ marginTop: 2 }}><DossierNo no={dossierFromId(r.instance_id)} /></div></span> },
               { title: '状态', dataIndex: 'status', render: (v) => (

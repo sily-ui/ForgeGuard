@@ -59,6 +59,10 @@ class Settings:
         self.snapshot_mode = os.environ.get("SNAPSHOT_MODE", "auto")
         self.instance_ttl_minutes = int(os.environ.get("INSTANCE_TTL_MINUTES", "60"))
         self.l2_model_path = os.environ.get("L2_MODEL_PATH", "")
+        # 管理员引导密钥：配置后才开放 /auth/admin 换取 admin 令牌；留空则管理准入关闭。
+        self.admin_bootstrap_key = os.environ.get("ADMIN_BOOTSTRAP_KEY", "")
+        # 部署在可信反向代理之后时置 true，按 X-Forwarded-For 首个地址识别客户端 IP。
+        self.trust_proxy_headers = os.environ.get("TRUST_PROXY_HEADERS", "").lower() in ("1", "true", "yes")
         self.cors_origins = [
             o.strip()
             for o in os.environ.get(

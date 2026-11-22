@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { App, Button, Drawer, Input, InputNumber, Select, Slider, Switch, Tooltip, Alert } from 'antd';
@@ -46,9 +46,16 @@ export default function OrchestrationPage() {
 
   const templatesQuery = useQuery({ queryKey: ['templates'], queryFn: () => templateApi.list() });
 
+  // 预览防抖：编辑停顿 500ms 后才请求，避免每次击键都 POST 预览。
+  const [debouncedConfig, setDebouncedConfig] = useState(config);
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedConfig(config), 500);
+    return () => clearTimeout(t);
+  }, [config]);
+
   const previewQuery = useQuery({
-    queryKey: ['preview', config],
-    queryFn: () => configApi.preview(config),
+    queryKey: ['preview', debouncedConfig],
+    queryFn: () => configApi.preview(debouncedConfig),
     enabled: previewOpen,
   });
 
@@ -341,7 +348,7 @@ export default function OrchestrationPage() {
       </div>
 
       {/* 策略预览 Drawer */}
-      <Drawer title="三级策略预览" width={560} open={previewOpen} onClose={() => setPreviewOpen(false)}>
+      <Drawer title="三级策略预览" width="min(560px, 100vw)" open={previewOpen} onClose={() => setPreviewOpen(false)}>
         {previewQuery.isLoading ? (
           <div style={{ padding: 40, textAlign: 'center', color: 'var(--fg-text-3)' }}>生成策略中…</div>
         ) : (

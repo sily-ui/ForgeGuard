@@ -36,6 +36,15 @@ export interface ItemsResult<T> {
   total: number;
 }
 
+export interface TurnMessage {
+  turn: number;
+  user_input: string;
+  reply: string;
+  actor: string;
+  source_sample_id: string | null;
+  created_at: string;
+}
+
 // ---- Auth / Quota ----
 export interface AuthToken {
   token: string;

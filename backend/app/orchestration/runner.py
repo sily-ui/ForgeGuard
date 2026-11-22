@@ -7,7 +7,7 @@ import time
 from ..core import quota
 from ..core.errors import ApiError, QuotaExhausted
 from ..core.ids import new_id
-from ..core.security import iso, utcnow
+from ..core.security import iso, parse_iso, utcnow
 from ..core.state import runtime
 from ..guard import risk as risk_mod
 from ..guard.judge import run_judgement
@@ -21,6 +21,8 @@ from .business_agent import ReasonContext, build_business_graph
 
 RISK_ORDER = {"none": 0, "low": 1, "medium": 2, "high": 3}
 CHALLENGE_TIMEOUT = 120
+# 仿真/演示链路无人值守裁决，质询短暂等待后保守拒绝，保证一键演示秒级完成。
+SIM_CHALLENGE_TIMEOUT = 8
 REPLAY_EVENT_DELAY = 0.1
 
 
@@ -42,6 +44,13 @@ def _update_session(session_id, **fields):
         for key, value in fields.items():
             setattr(row, key, value)
         return row
+
+
+def _update_instance_status(instance_id, status):
+    with dbmod.session_scope() as db:
+        row = db.get(dbmod.Instance, instance_id)
+        if row is not None:
+            row.status = status
 
 
 def _params_summary(tool, params):
@@ -98,16 +107,21 @@ def _risk_label(decision):
 
 
 def _active_recording():
+    from ..core.security import current_auth
     from ..data.demo_snapshot import builtin_recording
 
     meta = quota.get_mode_meta()
+    ctx = current_auth()
+    workspace = ctx.workspace if ctx else "default"
     with dbmod.session_scope() as db:
         row = None
         if meta.get("snapshot_id"):
             row = db.get(dbmod.SnapshotRecording, meta["snapshot_id"])
         if row is None:
+            # 只回放本工作区录制的快照，避免跨工作区取数。
             row = (
                 db.query(dbmod.SnapshotRecording)
+                .filter(dbmod.SnapshotRecording.workspace_id == workspace)
                 .order_by(dbmod.SnapshotRecording.created_at.desc())
                 .first()
             )
@@ -209,6 +223,17 @@ async def replay_for_session(session_id, instance):
 async def process_message(
     session_id, content, skip_guard=False, source_sample_id=None, actor="business"
 ):
+    # 同会话消息串行化：用户消息与红队循环并发进入时，轮次与计数器读-改-写不丢失。
+    async with runtime.session_lock(session_id):
+        return await _process_message(
+            session_id, content, skip_guard=skip_guard,
+            source_sample_id=source_sample_id, actor=actor,
+        )
+
+
+async def _process_message(
+    session_id, content, skip_guard=False, source_sample_id=None, actor="business"
+):
     session = _get_session(session_id)
     if session is None:
         raise ApiError(40400, detail="会话不存在")
@@ -217,6 +242,12 @@ async def process_message(
     instance = _get_instance(session.instance_id)
     if instance is None or instance.status == "destroyed":
         raise ApiError(40900, detail="实例已销毁，无法继续会话")
+    expires = parse_iso(instance.expires_at)
+    if expires and expires < utcnow() and instance.status != "frozen":
+        _update_instance_status(instance.instance_id, "frozen")
+        raise ApiError(40900, detail="实例已过期冻结，请先续期")
+    if instance.status == "frozen":
+        raise ApiError(40900, detail="实例已冻结，请先续期")
     if quota.get_mode() == quota.MODE_REPLAY:
         return await replay_for_session(session_id, instance)
 
@@ -232,7 +263,6 @@ async def process_message(
         session_id,
         turn=turn,
         skip_guard_turns=skip_turns,
-        last_active_at=iso(utcnow()),
     )
 
     turn_calls = 0
@@ -323,13 +353,23 @@ async def process_message(
                     session_id, "guard.judgement",
                     {"call_id": call_id, "tool": tool, "challenge_pending": True, **decision},
                 )
-                future = runtime.register_challenge(call_id)
+                future = runtime.register_challenge(call_id, session_id=session_id)
+                timed_out = False
+                from ..internal.llm.proxy import current_simulated_reason
+                wait_s = SIM_CHALLENGE_TIMEOUT if current_simulated_reason() else CHALLENGE_TIMEOUT
                 try:
-                    challenge_approved = await asyncio.wait_for(future, CHALLENGE_TIMEOUT)
-                except (asyncio.TimeoutError, asyncio.CancelledError):
+                    challenge_approved = await asyncio.wait_for(future, wait_s)
+                except asyncio.CancelledError:
+                    runtime.cancel_challenge(call_id)
+                    raise
+                except asyncio.TimeoutError:
+                    runtime.cancel_challenge(call_id)
                     challenge_approved = False
+                    timed_out = True
                     decision["reason"] += "（质询超时，默认拒绝）"
-                runtime.remember_challenge(session_id, kind, challenge_approved)
+                # 超时拒绝不写入记忆：一次无人响应不应让同类调用在整个会话内永久被拒。
+                if not timed_out:
+                    runtime.remember_challenge(session_id, kind, challenge_approved)
             decision["action"] = "allow" if challenge_approved else "block"
             decision["challenge_approved"] = challenge_approved
 
@@ -614,7 +654,7 @@ def _append_context(session_id, turn, content, actions):
     _update_session(session_id, context_summary="\n".join(lines[-3:]))
 
 
-def record_session(session_id, name):
+def record_session(session_id, name, workspace_id="default"):
     """把会话完整事件序列与证据录制为快照（只增不改）。"""
     events = event_bus.full_history(session_id)
     with dbmod.session_scope() as db:
@@ -657,6 +697,7 @@ def record_session(session_id, name):
                 snapshot_id=snapshot_id,
                 name=name,
                 session_id=session_id,
+                workspace_id=workspace_id,
                 events=payload,
                 created_at=iso(utcnow()),
             )

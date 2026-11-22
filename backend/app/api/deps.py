@@ -3,6 +3,7 @@ import time
 
 from fastapi import Request
 
+from ..core.config import settings
 from ..core.errors import ApiError
 from ..core.security import (
     GENERAL_LIMIT,
@@ -26,6 +27,10 @@ _SEEN_INTERVAL_S = 300
 
 
 def client_ip(request: Request):
+    if settings.trust_proxy_headers:
+        forwarded = request.headers.get("X-Forwarded-For", "")
+        if forwarded:
+            return forwarded.split(",")[0].strip()
     return request.client.host if request.client else "unknown"
 
 
@@ -53,6 +58,17 @@ def resolve_workspace(request: Request) -> str:
     return raw
 
 
+def _apply_workspace(ctx, request: Request):
+    """令牌已绑定工作区时强制一致，杜绝改头越权；未绑定的旧令牌沿用请求头。"""
+    raw = request.headers.get(WORKSPACE_HEADER, "").strip()
+    if ctx.workspace:
+        if raw and raw != ctx.workspace:
+            raise ApiError(40300, detail="工作区与令牌绑定不一致")
+        return ctx.workspace
+    ctx.workspace = resolve_workspace(request)
+    return ctx.workspace
+
+
 def get_auth(request: Request):
     header = request.headers.get("Authorization", "")
     if not header.startswith("Bearer "):
@@ -62,7 +78,7 @@ def get_auth(request: Request):
     ip_limit = GUEST_GENERAL_LIMIT if ctx.role == "guest" else GENERAL_LIMIT
     rate_limiter.check(f"ip:{ctx.ip}", ip_limit)
     rate_limiter.check(f"token:{ctx.token}", GENERAL_LIMIT)
-    ctx.workspace = resolve_workspace(request)
+    _apply_workspace(ctx, request)
     rate_limiter.check(f"ws:{ctx.workspace}", ip_limit)
     bind_auth(ctx)
     return ctx
@@ -76,7 +92,9 @@ def get_sse_auth(request: Request):
     ctx.ip = client_ip(request)
     ip_limit = GUEST_GENERAL_LIMIT if ctx.role == "guest" else GENERAL_LIMIT
     rate_limiter.check(f"ip:{ctx.ip}", ip_limit)
-    ctx.workspace = resolve_workspace(request)
+    rate_limiter.check(f"token:{ctx.token}", GENERAL_LIMIT)
+    _apply_workspace(ctx, request)
+    rate_limiter.check(f"ws:{ctx.workspace}", ip_limit)
     bind_auth(ctx)
     return ctx
 

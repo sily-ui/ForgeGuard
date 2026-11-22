@@ -54,7 +54,7 @@ async def compare(request: Request, payload: dict = Body(...)):
     ctx = get_auth(request)
     heavy_check(request, "compare")
     idem_key = request.headers.get("X-Idempotency-Key")
-    cached = get_cached(idem_key, "experiments.compare")
+    cached = get_cached(idem_key, "experiments.compare", ctx.workspace)
     if cached is not None:
         return cached
     dimension = payload.get("dimension", "instance")
@@ -140,7 +140,7 @@ async def compare(request: Request, payload: dict = Body(...)):
             },
         },
     }
-    store(idem_key, "experiments.compare", response)
+    store(idem_key, "experiments.compare", response, ctx.workspace)
     return response
 
 

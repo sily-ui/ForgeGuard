@@ -25,12 +25,12 @@ def parse_iso(value):
 
 
 class AuthContext:
-    def __init__(self, token, role, client_id, ip=""):
+    def __init__(self, token, role, client_id, ip="", workspace=""):
         self.token = token
         self.role = role
         self.client_id = client_id
         self.ip = ip
-        self.workspace = "default"
+        self.workspace = workspace
 
     def require(self, min_role):
         if ROLE_LEVELS.get(self.role, 0) < ROLE_LEVELS[min_role]:
@@ -50,7 +50,7 @@ def current_auth():
     return _current_auth.get()
 
 
-def issue_token(role, client_id):
+def issue_token(role, client_id, workspace_id=""):
     from ..models import db as dbmod
 
     token = secrets.token_urlsafe(32)
@@ -61,6 +61,7 @@ def issue_token(role, client_id):
                 token=token,
                 role=role,
                 client_id=client_id or "",
+                workspace_id=workspace_id or "",
                 expires_at=expires_at,
                 revoked=False,
             )
@@ -79,7 +80,9 @@ def resolve_token(token):
         raise ApiError(40100, detail="令牌无效")
     if record.expires_at < utcnow().timestamp():
         raise ApiError(40100, detail="令牌已过期")
-    return AuthContext(record.token, record.role, record.client_id)
+    return AuthContext(
+        record.token, record.role, record.client_id, workspace=record.workspace_id or ""
+    )
 
 
 def revoke_token(token):
@@ -107,6 +110,10 @@ class RateLimiter:
 
     def check(self, key, limit, window_seconds=60):
         now = time.monotonic()
+        # 令牌键随游客签发持续增长，定期清空桶防止字典无界膨胀。
+        if len(self._hits) > 10000:
+            for stale in [k for k, v in self._hits.items() if not v or v[-1] <= now - window_seconds]:
+                del self._hits[stale]
         bucket = self._hits[key]
         while bucket and bucket[0] <= now - window_seconds:
             bucket.popleft()

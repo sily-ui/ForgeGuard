@@ -39,13 +39,15 @@ export function useConsoleSession(sessionId: string) {
 
     (async () => {
       try {
-        const [session, callsRes, alertsRes] = await Promise.all([
-          sessionApi.get(sessionId),
-          sessionApi.calls(sessionId),
+        // 与 sessionQuery / ConsolePage 共用 react-query 缓存键，同键并发请求自动去重。
+        const [session, callsRes, alertsRes, messagesRes] = await Promise.all([
+          queryClient.fetchQuery({ queryKey: ['session', sessionId], queryFn: () => sessionApi.get(sessionId) }),
+          queryClient.fetchQuery({ queryKey: ['console-full-calls', sessionId], queryFn: () => sessionApi.calls(sessionId) }),
           sessionApi.alerts(sessionId),
+          sessionApi.messages(sessionId),
         ]);
         if (cancelled) return;
-        useSessionStore.getState().hydrate(session, callsRes.items, alertsRes.items);
+        useSessionStore.getState().hydrate(session, callsRes.items, alertsRes.items, messagesRes.items);
         useSessionStore.getState().setConnection('connecting');
         refreshQuota(sessionId);
 
@@ -75,11 +77,13 @@ export function useConsoleSession(sessionId: string) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId, token]);
 
-  // 会话状态变化时刷新元数据
+  // 会话状态变化时刷新元数据；按 turn 单调性丢弃过期 REST 快照，避免覆盖 SSE 已推送的新状态。
   useEffect(() => {
-    if (sessionQuery.data) {
-      useSessionStore.getState().setSession(sessionQuery.data);
-    }
+    const data = sessionQuery.data;
+    if (!data) return;
+    const current = useSessionStore.getState().session;
+    if (current && current.session_id === data.session_id && data.turn < current.turn) return;
+    useSessionStore.getState().setSession(data);
   }, [sessionQuery.data]);
 
   const invalidate = useCallback(() => {

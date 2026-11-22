@@ -72,7 +72,7 @@ export default function ReportsPage() {
         }
       />
 
-      <div data-tour="reports-stats" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 18 }}>
+      <div data-tour="reports-stats" className="fg-stats-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 18 }}>
         <StatCard label="报告总数" value={stats.total} />
         <StatCard label="累计拦截" value={stats.blocked} color="var(--fg-allow-text)" />
         <StatCard label="高危报告" value={stats.high} color="var(--fg-block-text)" />
@@ -82,7 +82,7 @@ export default function ReportsPage() {
       <SectionCard
         title={`报告列表 · ${filtered.length}`}
         extra={
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
             <Input
               allowClear
               size="small"
@@ -127,7 +127,7 @@ export default function ReportsPage() {
             onAction={reports.length === 0 ? () => navigate('/instances') : undefined}
           />
         ) : view === 'card' ? (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 14 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(320px, 100%), 1fr))', gap: 14 }}>
             {filtered.map((r) => (
               <ReportCard key={r.report_id} report={r} onOpen={() => navigate(`/reports/${r.report_id}`)} />
             ))}
@@ -192,7 +192,7 @@ function ReportCard({ report, onOpen }: { report: Report; onOpen: () => void }) 
 function ReportTable({ reports, onOpen }: { reports: Report[]; onOpen: (id: string) => void }) {
   return (
     <div style={{ overflowX: 'auto' }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13.5 }}>
+      <table style={{ width: '100%', minWidth: 720, borderCollapse: 'collapse', fontSize: 13.5 }}>
         <thead>
           <tr style={{ background: 'var(--fg-bg-subtle)', textAlign: 'left' }}>
             {['靶标', '最高风险', '拦截', '回合', '结论', '生成时间', ''].map((h) => (

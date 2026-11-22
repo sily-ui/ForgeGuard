@@ -14,6 +14,7 @@ import type {
   SseRecord,
   StatusColor,
   ToolCallEvent,
+  TurnMessage,
 } from '@/types/api';
 
 export interface ChatMessage {
@@ -74,7 +75,7 @@ interface SessionState {
   lastActivity: { tool?: string; action?: string; at: number } | null;
 
   reset: (sessionId: string) => void;
-  hydrate: (session: Session, calls: CallRecord[], alerts: Alert[]) => void;
+  hydrate: (session: Session, calls: CallRecord[], alerts: Alert[], turns?: TurnMessage[]) => void;
   setSession: (session: Session) => void;
   patchSession: (patch: Partial<Session>) => void;
   setConnection: (c: Connection) => void;
@@ -111,6 +112,17 @@ function callFromRecord(c: CallRecord): LiveCall {
   };
 }
 
+// SSE 重放会重发已水合回合的 agent 事件；按 turn+actor 认领历史消息并改用 SSE id，避免重复气泡。
+function adoptHydrated(messages: ChatMessage[], id: string, turn: number, actor?: string): ChatMessage[] | null {
+  const idx = messages.findIndex(
+    (m) => m.id === `hist-a-${turn}` && (actor == null || m.actor === actor),
+  );
+  if (idx < 0) return null;
+  const next = [...messages];
+  next[idx] = { ...next[idx], id };
+  return next;
+}
+
 export const useSessionStore = create<SessionState>((set, get) => ({
   sessionId: null,
   session: null,
@@ -145,15 +157,41 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       lastActivity: null,
     }),
 
-  hydrate: (session, calls, alerts) => {
+  hydrate: (session, calls, alerts, turns = []) => {
     const map: Record<string, LiveCall> = {};
     const order: string[] = [];
     for (const c of calls) {
       map[c.call_id] = callFromRecord(c);
       order.push(c.call_id);
     }
+    // 从 Turn 表重建历史对话，刷新/重进会话不再丢失聊天记录。
+    const messages: ChatMessage[] = [];
+    for (const t of turns) {
+      if (t.user_input) {
+        messages.push({
+          id: `hist-u-${t.turn}`,
+          role: 'user',
+          content: t.user_input,
+          turn: t.turn,
+          actor: t.actor,
+          source_sample_id: t.source_sample_id,
+          created_at: t.created_at,
+        });
+      }
+      if (t.reply) {
+        messages.push({
+          id: `hist-a-${t.turn}`,
+          role: 'assistant',
+          content: t.reply,
+          turn: t.turn,
+          actor: t.actor,
+          created_at: t.created_at,
+        });
+      }
+    }
     set({
       session,
+      messages,
       calls: map,
       callOrder: order,
       alerts,
@@ -196,6 +234,10 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       if (exists) {
         return { messages: s.messages.map((m) => (m.id === id ? { ...m, content, pending: false } : m)) };
       }
+      const adopted = adoptHydrated(s.messages, id, turn, actor);
+      if (adopted) {
+        return { messages: adopted.map((m) => (m.id === id ? { ...m, content, pending: false } : m)) };
+      }
       return {
         messages: [
           ...s.messages,
@@ -207,6 +249,10 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   startAssistantMessage: (id, turn, actor) =>
     set((s) => {
       if (s.messages.some((m) => m.id === id)) return s;
+      const adopted = adoptHydrated(s.messages, id, turn, actor);
+      if (adopted) {
+        return { messages: adopted.map((m) => (m.id === id ? { ...m, content: '', pending: true } : m)) };
+      }
       return {
         messages: [
           ...s.messages,
@@ -223,6 +269,10 @@ export const useSessionStore = create<SessionState>((set, get) => ({
             m.id === id ? { ...m, content: m.content + delta, pending: true } : m,
           ),
         };
+      }
+      const adopted = adoptHydrated(s.messages, id, turn, actor);
+      if (adopted) {
+        return { messages: adopted.map((m) => (m.id === id ? { ...m, content: delta, pending: true } : m)) };
       }
       return {
         messages: [

@@ -12,7 +12,6 @@ from sqlalchemy import (
     create_engine,
 )
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
-from sqlalchemy.pool import NullPool
 
 from ..core.config import settings
 
@@ -26,6 +25,7 @@ class Token(Base):
     token = Column(String, primary_key=True)
     role = Column(String, nullable=False)
     client_id = Column(String, default="")
+    workspace_id = Column(String, default="")
     expires_at = Column(Float, nullable=False)
     revoked = Column(Boolean, default=False)
 
@@ -225,6 +225,7 @@ class SnapshotRecording(Base):
     snapshot_id = Column(String, primary_key=True)
     name = Column(String, nullable=False)
     session_id = Column(String, nullable=True)
+    workspace_id = Column(String, default="default", nullable=False)
     events = Column(JSON, nullable=False)
     created_at = Column(String, nullable=False)
 
@@ -252,7 +253,9 @@ def get_engine():
         _engine = create_engine(
             f"sqlite:///{path}",
             connect_args={"check_same_thread": False},
-            poolclass=NullPool,
+            pool_size=10,
+            max_overflow=20,
+            pool_pre_ping=True,
         )
         with _engine.connect() as conn:
             from sqlalchemy import text
@@ -267,9 +270,28 @@ def init_db():
     engine = get_engine()
     Base.metadata.create_all(engine)
     _migrate_workspace_columns(engine)
+    _migrate_extra_columns(engine)
 
 
 _WORKSPACE_TABLES = ("configs", "instances", "sessions", "reports", "experiments")
+
+# 存量库补列：(表, 列, DDL 类型与默认值)
+_EXTRA_COLUMNS = (
+    ("tokens", "workspace_id", "VARCHAR NOT NULL DEFAULT ''"),
+    ("snapshot_recordings", "workspace_id", "VARCHAR NOT NULL DEFAULT 'default'"),
+)
+
+
+def _migrate_extra_columns(engine):
+    from sqlalchemy import text
+
+    with engine.connect() as conn:
+        for table, column, ddl in _EXTRA_COLUMNS:
+            columns = {row[1] for row in conn.execute(text(f"PRAGMA table_info({table})"))}
+            if not columns or column in columns:
+                continue
+            conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {column} {ddl}"))
+        conn.commit()
 
 
 def _migrate_workspace_columns(engine):

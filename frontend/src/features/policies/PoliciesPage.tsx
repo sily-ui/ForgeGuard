@@ -11,7 +11,7 @@ import {
   ScrollText,
   GitBranch,
 } from 'lucide-react';
-import { instanceApi } from '@/services/api/resources';
+import { instanceApi, sessionApi } from '@/services/api/resources';
 import { ApiClientError } from '@/services/api/client';
 import { PageHeader } from '@/components/common/PageHeader';
 import { SectionCard } from '@/components/common/SectionCard';
@@ -100,6 +100,15 @@ export default function PoliciesPage() {
 
   const selected = policies.find((p) => p.policy_id === selectedId) ?? null;
 
+  const enterSession = useMutation({
+    mutationFn: () => sessionApi.create(instanceId, true),
+    onSuccess: (data) => {
+      message.success('会话已创建');
+      navigate(`/console/${data.session_id}`);
+    },
+    onError: (err) => message.error(err instanceof ApiClientError ? err.message : '创建会话失败'),
+  });
+
   const overrideMutation = useMutation({
     mutationFn: (payload: Record<string, unknown>) =>
       instanceApi.overridePolicy(instanceId, selected!.policy_id, payload),
@@ -138,7 +147,9 @@ export default function PoliciesPage() {
             <Button
               type="primary"
               icon={<GitBranch size={15} />}
-              onClick={() => navigate('/instances')}
+              loading={enterSession.isPending}
+              disabled={!instance || instance.status === 'destroyed'}
+              onClick={() => enterSession.mutate()}
             >
               进入会话测评
             </Button>
@@ -255,7 +266,7 @@ export default function PoliciesPage() {
           ) : filtered.length === 0 ? (
             <EmptyState icon={<ScrollText size={22} />} title="没有匹配的策略条目" description="调整筛选条件或清空搜索关键字" compact />
           ) : (
-            <div style={{ maxHeight: 'calc(100vh - 360px)', overflowY: 'auto' }}>
+            <div style={{ maxHeight: 'max(240px, calc(100vh - 360px))', overflowY: 'auto' }}>
               {(['L1', 'L2', 'L3'] as const).map((lv) =>
                 grouped[lv]?.length ? (
                   <div key={lv}>

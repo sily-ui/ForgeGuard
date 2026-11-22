@@ -9,8 +9,9 @@ from ...core.idempotency import get_cached, store
 from ...core.ids import new_instance_id
 from ...core.response import paginate, parse_pagination, slice_page
 from ...core.security import iso, parse_iso, utcnow
+from ...core.state import runtime
 from ...models import db as dbmod
-from ...policies.baseline import enabled_tools, normalize_config, validate_config
+from ...policies.baseline import PRESET_NAMES, enabled_tools, normalize_config, validate_config
 from ...policies.snapshot import (
     apply_policy_override,
     freeze_snapshot,
@@ -56,10 +57,13 @@ def _instance_view(row, with_config=False):
     return data
 
 
-def _alive_count(db):
+def _alive_count(db, workspace):
     return (
         db.query(dbmod.Instance)
-        .filter(dbmod.Instance.status.in_(ALIVE_STATUSES))
+        .filter(
+            dbmod.Instance.status.in_(ALIVE_STATUSES),
+            dbmod.Instance.workspace_id == workspace,
+        )
         .count()
     )
 
@@ -75,15 +79,16 @@ def _create_instance(config, source_config_id, name, guard_preset, workspace="de
         )
     config = normalize_config(config)
     config["guard"]["preset"] = guard_preset or config["guard"]["preset"]
+    # 上限按工作区计数，且先检查再冻结快照/分区，避免被拒时留下孤儿资源。
+    with dbmod.session_scope() as db:
+        if _alive_count(db, workspace) >= settings.instance_max:
+            raise ApiError(42902, detail=f"本工作区存活实例数已达上限 {settings.instance_max}")
     instance_id = new_instance_id(name or config["name"])
     sandbox_key = f"sbx:{instance_id}"
     now = utcnow()
     snapshot_id = freeze_snapshot(instance_id, config, id_prefix="pol")
     sandbox_manager.create(sandbox_key)
     with dbmod.session_scope() as db:
-        if _alive_count(db) >= settings.instance_max:
-            sandbox_manager.destroy(sandbox_key)
-            raise ApiError(42902, detail=f"存活实例数已达上限 {settings.instance_max}")
         db.add(
             dbmod.Instance(
                 instance_id=instance_id,
@@ -117,7 +122,7 @@ def create_instance(request: Request, payload: dict = Body(...)):
     ctx = get_auth(request)
     heavy_check(request, "instance")
     idem_key = request.headers.get("X-Idempotency-Key")
-    cached = get_cached(idem_key, "instances")
+    cached = get_cached(idem_key, "instances", ctx.workspace)
     if cached is not None:
         return cached
     config_id = payload.get("config_id")
@@ -133,6 +138,9 @@ def create_instance(request: Request, payload: dict = Body(...)):
         config_version = str(config.get("version", "1.0"))
     else:
         raise ApiError(40000, detail="缺少 config_id 或 config")
+    guard_preset = payload.get("guard_preset")
+    if guard_preset and guard_preset not in PRESET_NAMES:
+        raise ApiError(40000, detail=f"guard_preset 仅支持 {'/'.join(PRESET_NAMES)}")
     data = _create_instance(
         config,
         config_id or "inline",
@@ -142,7 +150,7 @@ def create_instance(request: Request, payload: dict = Body(...)):
     )
     data["config_version"] = config_version
     response = {"code": 0, "message": "ok", "data": data}
-    store(idem_key, "instances", response)
+    store(idem_key, "instances", response, ctx.workspace)
     return response
 
 
@@ -272,11 +280,19 @@ def recycle_instance(request: Request, instance_id: str, payload: dict = Body(de
     if row.status == "destroyed":
         raise ApiError(40900, detail="实例已销毁")
     with dbmod.session_scope() as db:
+        session_ids = [
+            s.session_id
+            for s in db.query(dbmod.Session).filter(dbmod.Session.instance_id == instance_id)
+        ]
         record = db.get(dbmod.Instance, instance_id)
         record.status = "destroyed"
         db.query(dbmod.Session).filter(dbmod.Session.instance_id == instance_id).update(
             {"status": "terminated", "terminated_at": iso(utcnow())}, synchronize_session=False
         )
+    # 回收即终止运行态：取消红队任务与待决质询，避免协程继续消耗配额。
+    for sid in session_ids:
+        runtime.cancel_task(sid)
+        runtime.cancel_session_challenges(sid)
     sandbox_manager.destroy(row.sandbox_key)
     return {"code": 0, "message": "ok", "data": {"instance_id": instance_id, "status": "destroyed"}}
 

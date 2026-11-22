@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { App, Button, Spin } from 'antd';
@@ -61,14 +61,18 @@ export default function WorkspacePage() {
   };
 
   // 演示启动：重置取消标记并挂超时兜底（快速链路秒级完成，超时即中止）。
-  const startDemo = () => {
-    if (!templates[0] || demo.isPending) return;
+  const startDemo = (template?: Template) => {
+    const target = template ?? templates[0];
+    if (!target || demo.isPending) return;
     demoCancelRef.current = false;
+    if (demoTimerRef.current) window.clearTimeout(demoTimerRef.current);
     demoTimerRef.current = window.setTimeout(() => {
       demoCancelRef.current = true;
     }, DEMO_TIMEOUT_MS);
-    demo.mutate(templates[0]);
+    demo.mutate(target);
   };
+
+  useEffect(() => cancelDemo, []);
 
   const templatesQuery = useQuery({ queryKey: ['templates'], queryFn: () => templateApi.list() });
   const instancesQuery = useQuery({ queryKey: ['instances', 'recent'], queryFn: () => instanceApi.list(undefined, 1, 6) });
@@ -109,22 +113,17 @@ export default function WorkspacePage() {
         samples.items[0];
       if (demoCancelRef.current) throw new DemoCancelled();
       if (target) {
-        console.log('[demo] loading sample', target.sample_id);
         try {
           // 快速链路：整条调用链走离线仿真，秒级完成、答辩可控、不耗配额。
           await sampleApi.load(sess.session_id, target.sample_id, true, true);
-          console.log('[demo] sample loaded');
-        } catch (e) {
-          console.log('[demo] sample load failed (swallowed)', e);
+        } catch {
           /* 样本可能不适用，仍进入控制台 */
         }
       }
       if (demoCancelRef.current) throw new DemoCancelled();
-      console.log('[demo] returning session', sess.session_id);
       return sess.session_id;
     },
     onSuccess: (sessionId) => {
-      console.log('[demo] onSuccess', sessionId);
       setDemoPhase(null);
       cancelDemo();
       queryClient.invalidateQueries({ queryKey: ['instances'] });
@@ -133,7 +132,6 @@ export default function WorkspacePage() {
       navigate(`/console/${sessionId}`);
     },
     onError: (err) => {
-      console.log('[demo] onError', err);
       setDemoPhase(null);
       cancelDemo();
       if (err instanceof DemoCancelled) {
@@ -253,7 +251,7 @@ export default function WorkspacePage() {
           <Button
             type="primary"
             size="large"
-            onClick={startDemo}
+            onClick={() => startDemo()}
             disabled={!templates.length || demo.isPending}
             style={{ height: 44, padding: '0 24px', fontWeight: 600, flexShrink: 0 }}
             icon={bannerPending ? <Spin size="small" /> : <Play size={16} />}
@@ -298,7 +296,7 @@ export default function WorkspacePage() {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 16, alignItems: 'start' }}>
+      <div className="fg-workspace-grid" style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 16, alignItems: 'start' }}>
         {/* 靶标模板 */}
         <div data-tour="templates">
         <SectionCard
@@ -339,7 +337,7 @@ export default function WorkspacePage() {
                     icon={<Play size={13} />}
                     loading={demoPhase !== null && demoTargetId === t.id}
                     disabled={demoPhase !== null && demoTargetId !== t.id}
-                    onClick={() => demo.mutate(t)}
+                    onClick={() => startDemo(t)}
                   >
                     演示
                   </Button>
@@ -368,7 +366,7 @@ export default function WorkspacePage() {
                     <StatusBadge action={s.block_count > 0 ? 'block' : 'allow'} size="sm" showText={false} />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 13.5, fontWeight: 500, color: 'var(--fg-text-1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.instance_name}</div>
-                      <div className="mono" style={{ fontSize: 11, color: 'var(--fg-text-3)' }}>
+                      <div className="mono" style={{ fontSize: 11, color: 'var(--fg-text-3)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         档号 {dossierFromId(s.session_id)} · {s.session_id.slice(0, 8)} · {s.turn} 轮
                       </div>
                     </div>

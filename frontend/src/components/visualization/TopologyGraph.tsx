@@ -103,16 +103,25 @@ export function TopologyGraph({ state, height = 268 }: Props) {
         zIndex: 0,
       });
     }
-    // 适配内容到容器宽度
-    requestAnimationFrame(() => {
+    // 适配内容到容器宽度；容器尺寸变化（响应式降列/窗口缩放）时重新适配。
+    const fit = () => {
       try {
         graph.zoomToFit({ padding: 16, maxScale: 1 });
       } catch {
         /* 容器尚未布局时忽略 */
       }
+    };
+    requestAnimationFrame(fit);
+    let fitRaf = 0;
+    const ro = new ResizeObserver(() => {
+      cancelAnimationFrame(fitRaf);
+      fitRaf = requestAnimationFrame(fit);
     });
+    ro.observe(containerRef.current);
 
     return () => {
+      ro.disconnect();
+      cancelAnimationFrame(fitRaf);
       graph.dispose();
       graphRef.current = null;
     };

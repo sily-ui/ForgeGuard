@@ -67,13 +67,13 @@ export default function ExperimentPage() {
 
   return (
     <>
-      <div style={labNavStyle}>
+      <div className="fg-lab-nav" style={labNavStyle}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
           <Button size="small" icon={<ArrowLeft size={14} />} onClick={() => navigate(`/console/${exp.source_session_id}`)}>
             返回控制台
           </Button>
           <Logo size={24} />
-          <span style={{ fontSize: 13.5, color: 'var(--fg-text-2)' }}>
+          <span style={{ fontSize: 13.5, color: 'var(--fg-text-2)', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             对照实验 <span style={{ color: 'var(--fg-text-3)' }}>/</span>{' '}
             <b className="mono" style={{ color: 'var(--fg-text-1)' }}>{exp.pair_id}</b>
           </span>
@@ -124,7 +124,7 @@ export default function ExperimentPage() {
           </div>
 
           {/* A/B 概要 */}
-          <div data-tour="exp-runs" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          <div data-tour="exp-runs" className="fg-exp-runs" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
             <RunSummary label="A 组 · 起点" run={exp.run_a} session={sessionAQuery.data} loading={sessionAQuery.isLoading} accent="#7aa3c8" onOpen={() => navigate(`/console/${exp.run_a.session_id}`)} />
             <RunSummary label="B 组 · 对照" run={exp.run_b} session={sessionBQuery.data} loading={sessionBQuery.isLoading} accent="#d9a441" onOpen={() => navigate(`/console/${exp.run_b.session_id}`)} />
           </div>
@@ -177,7 +177,7 @@ function RunSummary({ label, run, session, loading, accent, onOpen }: { label: s
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ fontSize: 14, fontWeight: 600, color: accent }}>{label}</span>
-          <span className="mono" style={{ fontSize: 11, color: 'var(--fg-text-3)' }}>{run.session_id}</span>
+          <span className="mono" style={{ fontSize: 11, color: 'var(--fg-text-3)', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{run.session_id}</span>
           <Button size="small" type="text" icon={<ExternalLink size={13} />} onClick={onOpen} style={{ marginLeft: 'auto', color: accent }}>
             控制台
           </Button>
@@ -199,7 +199,7 @@ function RunSummary({ label, run, session, loading, accent, onOpen }: { label: s
                 </div>
               </div>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+            <div className="fg-stats-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
               <Metric label="调用" value={session.call_count} />
               <Metric label="拦截" value={session.block_count} color="var(--fg-block-text)" />
               <Metric label="质询" value={session.challenge_count} color="var(--fg-observe-text)" />
