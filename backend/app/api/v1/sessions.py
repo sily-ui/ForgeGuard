@@ -8,12 +8,12 @@ from ...core import quota
 from ...core.errors import ApiError
 from ...core.ids import new_id
 from ...core.response import paginate, parse_pagination, slice_page
-from ...core.security import iso, parse_iso, utcnow
+from ...core.security import iso, utcnow
 from ...core.state import runtime
 from ...internal.events import event_bus, publish_threadsafe
 from ...models import db as dbmod
 from ...orchestration import redteam as redteam_mod
-from ...orchestration.runner import process_message, record_session
+from ...orchestration.runner import process_message, record_session, renew_if_stale
 from ...policies.snapshot import freeze_snapshot
 from ..deps import get_auth, get_sse_auth, heavy_check
 
@@ -66,12 +66,7 @@ def create_session(request: Request, payload: dict = Body(...)):
         raise ApiError(40400, detail="实例不存在")
     if instance.status == "destroyed":
         raise ApiError(40900, detail="实例已销毁，无法创建会话")
-    if instance.status == "frozen":
-        raise ApiError(40900, detail="实例已冻结，请先续期")
-    if parse_iso(instance.expires_at) and parse_iso(instance.expires_at) < utcnow():
-        with dbmod.session_scope() as db:
-            db.get(dbmod.Instance, instance.instance_id).status = "frozen"
-        raise ApiError(40900, detail="实例已过期冻结，请先续期")
+    renew_if_stale(instance)
     session_id = new_id("sess")
     snapshot_id = freeze_snapshot(
         instance.instance_id, instance.config_payload, session_id=session_id, id_prefix="pol"

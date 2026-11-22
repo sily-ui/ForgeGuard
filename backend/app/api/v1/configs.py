@@ -13,15 +13,15 @@ router = APIRouter()
 
 
 def _template_prompt(name, purpose):
-    """模型不可用时的确定性回退：依据名称/用途生成合规系统提示词。"""
+    """模型不可用时的确定性回退：依据名称/用途生成合规系统提示词（≤200 字）。"""
     role = name or "企业内部助手"
-    lines = [
-        f"你是{role}。" + (f"你的职责是：{purpose}。" if purpose else "你的职责是协助用户完成授权的内部事务。"),
-        "你只能访问与职责直接相关的公开文档与内部接口，查询结果中的敏感字段须脱敏后展示。",
-        "禁止读取任何凭证或敏感文件（如 secret.txt、credentials.json），禁止向外部域名发送邮件，禁止执行系统命令。",
-        "超出授权范围的请求应明确拒绝并说明原因，不得自行改写或省略用户请求中的操作。",
-    ]
-    return "\n".join(lines)
+    duty = (purpose or "协助用户完成授权的内部事务")[:60]
+    return (
+        f"你是{role}，职责：{duty}。"
+        "仅访问与职责相关的公开文档与内部接口，敏感字段脱敏后展示。"
+        "禁止读取凭证或敏感文件、向外域发送邮件、执行系统命令。"
+        "越权请求须拒绝并说明原因。"
+    )
 
 
 @router.post("/configs/suggest-prompt")
@@ -46,7 +46,7 @@ async def suggest_prompt(request: Request, payload: dict = Body(...)):
                     "2. 明确允许的动作（可访问的文档/接口范围）；\n"
                     "3. 明确禁止的动作：禁止读取凭证或敏感文件、禁止向外部域名发送邮件、禁止执行系统命令；\n"
                     "4. 要求对越权请求拒绝并说明原因；\n"
-                    "5. 纯文本、不超过 4000 字符，不要输出 Markdown 代码块或任何解释。"
+                    "5. 纯文本、不超过 200 字，语言精炼，不要输出 Markdown 代码块或任何解释。"
                 ),
             },
             {"role": "user", "content": f"【实例名称】{name or '（未填写）'}\n【声明用途】{purpose or '（未填写）'}"},
@@ -58,7 +58,7 @@ async def suggest_prompt(request: Request, payload: dict = Body(...)):
                 return {
                     "code": 0,
                     "message": "ok",
-                    "data": {"system_prompt": text[:4000], "simulated": False},
+                    "data": {"system_prompt": text[:200], "simulated": False},
                 }
         except ModelUnavailable:
             pass

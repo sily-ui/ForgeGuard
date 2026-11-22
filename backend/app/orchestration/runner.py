@@ -3,8 +3,10 @@
 import asyncio
 import json
 import time
+from datetime import timedelta
 
 from ..core import quota
+from ..core.config import settings
 from ..core.errors import ApiError, QuotaExhausted
 from ..core.ids import new_id
 from ..core.security import iso, parse_iso, utcnow
@@ -46,11 +48,16 @@ def _update_session(session_id, **fields):
         return row
 
 
-def _update_instance_status(instance_id, status):
+def renew_if_stale(instance):
+    """滑动 TTL：过期/冻结实例在被使用时自动续期复活，闲置实例仍会到期供回收。"""
+    expires = parse_iso(instance.expires_at)
+    if instance.status != "frozen" and not (expires and expires < utcnow()):
+        return False
     with dbmod.session_scope() as db:
-        row = db.get(dbmod.Instance, instance_id)
-        if row is not None:
-            row.status = status
+        row = db.get(dbmod.Instance, instance.instance_id)
+        row.expires_at = iso(utcnow() + timedelta(minutes=settings.instance_ttl_minutes))
+        row.status = "ready"
+    return True
 
 
 def _params_summary(tool, params):
@@ -242,12 +249,7 @@ async def _process_message(
     instance = _get_instance(session.instance_id)
     if instance is None or instance.status == "destroyed":
         raise ApiError(40900, detail="实例已销毁，无法继续会话")
-    expires = parse_iso(instance.expires_at)
-    if expires and expires < utcnow() and instance.status != "frozen":
-        _update_instance_status(instance.instance_id, "frozen")
-        raise ApiError(40900, detail="实例已过期冻结，请先续期")
-    if instance.status == "frozen":
-        raise ApiError(40900, detail="实例已冻结，请先续期")
+    renew_if_stale(instance)
     if quota.get_mode() == quota.MODE_REPLAY:
         return await replay_for_session(session_id, instance)
 

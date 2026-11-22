@@ -111,9 +111,9 @@ def validate_config(payload):
         errors.append(
             {"field": "system_prompt", "code": "required", "message": "系统提示词不能为空"}
         )
-    elif len(config["system_prompt"]) > 4000:
+    elif len(config["system_prompt"]) > 500:
         errors.append(
-            {"field": "system_prompt", "code": "too_long", "message": "系统提示词不得超过 4000 字符"}
+            {"field": "system_prompt", "code": "too_long", "message": "系统提示词不得超过 500 字符"}
         )
     for name in config.get("_unknown_tools", []):
         errors.append(

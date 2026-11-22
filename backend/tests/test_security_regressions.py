@@ -5,6 +5,7 @@
 
 import asyncio
 
+from app.core.security import iso, utcnow
 from app.core.state import runtime
 from app.models import db as dbmod
 from app.sandbox.invoke import invoke
@@ -203,10 +204,10 @@ def test_admin_bootstrap_disabled_by_default(client, monkeypatch):
     assert resp.status_code == 403, resp.text
 
 
-# ---- M-5 过期实例惰性冻结 ----
+# ---- M-5 过期实例滑动 TTL：使用时自动续期复活 ----
 
-def test_expired_instance_frozen_on_session_create(client, auth):
-    inst = create_instance(client, auth, name="过期冻结")
+def test_expired_instance_auto_renews_on_session_create(client, auth):
+    inst = create_instance(client, auth, name="过期续期")
     with dbmod.session_scope() as db:
         db.get(dbmod.Instance, inst["instance_id"]).expires_at = "2000-01-01T00:00:00Z"
     resp = client.post(
@@ -214,9 +215,25 @@ def test_expired_instance_frozen_on_session_create(client, auth):
         json={"instance_id": inst["instance_id"]},
         headers=auth,
     )
-    assert resp.status_code == 409, resp.text
+    assert resp.status_code == 200, resp.text
     with dbmod.session_scope() as db:
-        assert db.get(dbmod.Instance, inst["instance_id"]).status == "frozen"
+        row = db.get(dbmod.Instance, inst["instance_id"])
+        assert row.status == "ready"
+        assert row.expires_at > iso(utcnow())
+
+
+def test_frozen_instance_auto_renews_on_message(client, auth):
+    inst = create_instance(client, auth, name="冻结续期")
+    sess = create_session(client, auth, inst["instance_id"])
+    with dbmod.session_scope() as db:
+        row = db.get(dbmod.Instance, inst["instance_id"])
+        row.status = "frozen"
+        row.expires_at = "2000-01-01T00:00:00Z"
+    send(client, auth, sess["session_id"], "你好")
+    with dbmod.session_scope() as db:
+        row = db.get(dbmod.Instance, inst["instance_id"])
+        assert row.status == "ready"
+        assert row.expires_at > iso(utcnow())
 
 
 # ---- 聊天历史水合：GET messages 端点 + 工作区隔离 ----

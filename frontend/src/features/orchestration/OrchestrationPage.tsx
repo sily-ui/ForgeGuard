@@ -187,9 +187,9 @@ export default function OrchestrationPage() {
                 <Field
                   label="系统提示词"
                   required
-                  hint="不超过 4000 字符，明确授权与禁止动作"
+                  hint={`不超过 500 字符，明确授权与禁止动作（当前 ${(config.system_prompt ?? '').length} 字）`}
                   action={
-                    <Tooltip title="依据实例名称与声明用途，调用模型自动生成系统提示词">
+                    <Tooltip title="依据实例名称与声明用途，调用模型自动生成约 200 字的系统提示词">
                       <Button
                         size="small"
                         icon={<Sparkles size={14} />}
