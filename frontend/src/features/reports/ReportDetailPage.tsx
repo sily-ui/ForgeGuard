@@ -83,7 +83,9 @@ export default function ReportDetailPage() {
       const url = URL.createObjectURL(res.data as Blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${reportId}.pdf`;
+      const instName = (content?.part1_overview?.instance_name || '靶标Agent').replace(/[\\/:*?"<>|\s]+/g, '_').slice(0, 40);
+      const date = (report?.created_at || '').slice(0, 10).replace(/-/g, '');
+      a.download = `越界之前_测评报告_${instName}_${date}.pdf`;
       document.body.appendChild(a);
       a.click();
       a.remove();

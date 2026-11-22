@@ -57,14 +57,14 @@ React 18 + TypeScript + Vite + Ant Design 5 + AntV X6 + Zustand + TanStack Query
 
 **术语**：编排基线（Baseline）、Agent 实例（Instance）、旁路监护（Sidecar Guard）、三级判定（L1/L2/L3）、处置动作（Action）、越权（Privilege Violation）、根因类别（Root Cause）、对照实验（A/B Run）、多 Agent 编排（Multi-Agent Orchestration）。
 
-**明确未决**：品牌表述已定为"白盒 Whitebox"（2026-11-21）；如需调整英文名或副题，可在后续迭代中重议。
+**明确未决**：品牌表述已定为"越界之前 BeforeBound"（2026-11-22 二次重命名，取代 2026-11-21 的"白盒 Whitebox"——原名易被误读为白盒测试）；副题"Agent 安全实验室"不变。
 
 ## Brand Commitments
 
-- **品牌：白盒 Whitebox**（用户 2026-11-21 重命名确认）。副题"Agent 安全实验室"，保留"实验室"定位。
+- **品牌：越界之前 BeforeBound**（用户 2026-11-22 确认，取代"白盒 Whitebox"）。副题"Agent 安全实验室"，保留"实验室"定位。语义：调用越界之前先被三级判据看见并处置。
 - **定位绑定**："智能体安全实验室"定位保留（用户 2026-11-21 确认）。
 - **视觉硬约束（用户明确给出，绑定）**：不要科技炫酷黑 / 黑客风；贴近红队测评主题；整体耳目一新、有设计感；去 AI 味、反模板化。
-- 原产品代号 AgentShield / ForgeGuard / Agent Security Lab 不再使用。
+- 原产品代号 AgentShield / ForgeGuard / Agent Security Lab / 白盒 Whitebox 不再作为对外品牌；`ForgeGuard` 仅保留为仓库与内部代码代号（模块名、`--fg-` Token 前缀、日志前缀）。
 
 ## Evidence on Hand
 

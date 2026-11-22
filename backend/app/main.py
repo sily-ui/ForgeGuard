@@ -65,7 +65,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="ForgeGuard API",
+    title="越界之前 BeforeBound API",
     description="面向可编排 Agent 的自适应红队测评与动态旁路监护平台（全仿真）",
     version="1.0.0",
     lifespan=lifespan,

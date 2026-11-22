@@ -1,6 +1,8 @@
 import hashlib
+import re
 import secrets
 from datetime import timedelta
+from urllib.parse import quote
 
 from fastapi import APIRouter, Body, Request
 from fastapi.responses import Response
@@ -166,10 +168,24 @@ def export_pdf(request: Request, report_id: str):
     pdf_bytes = render_pdf(
         {"report_id": row.report_id, "created_at": row.created_at, "content": row.content}
     )
+    filename = _pdf_filename(row)
     return _cached_asset(
         request,
         pdf_bytes,
         "application/pdf",
         f"{row.report_id}:{row.created_at}",
-        {"Content-Disposition": f'attachment; filename="{report_id}.pdf"'},
+        {
+            "Content-Disposition": (
+                f'attachment; filename="beforebound-report.pdf"; '
+                f"filename*=UTF-8''{quote(filename)}"
+            )
+        },
     )
+
+
+def _pdf_filename(row):
+    """语义化文件名：越界之前_测评报告_{实例名}_{日期}.pdf（RFC 5987 编码中文）。"""
+    name = (row.content.get("part1_overview") or {}).get("instance_name") or "靶标Agent"
+    safe = re.sub(r'[\\/:*?"<>|\s]+', "_", str(name).strip())[:40] or "靶标Agent"
+    date = (row.created_at or "")[:10].replace("-", "")
+    return f"越界之前_测评报告_{safe}_{date}.pdf"

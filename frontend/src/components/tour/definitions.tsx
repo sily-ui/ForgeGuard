@@ -62,7 +62,7 @@ export const TOURS: Record<TourId, { label: string; steps: TourStepProps[] }> = 
     label: '实验室工作台',
     steps: [
       {
-        title: <Title icon={FlaskConical}>欢迎来到白盒 Whitebox</Title>,
+        title: <Title icon={FlaskConical}>欢迎来到越界之前</Title>,
         description: (
           <>
             这是一个「编排靶标 Agent → 发起攻击 → 旁路监护 → 取证报告」的一体化红队测评平台。所有工具调用都在

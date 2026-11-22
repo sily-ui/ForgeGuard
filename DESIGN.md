@@ -1,5 +1,5 @@
 ---
-name: 白盒 Whitebox · Agent 安全实验室
+name: 越界之前 BeforeBound · Agent 安全实验室
 description: 档案卷宗工作台——面向可编排 Agent 的自适应红队测评与动态旁路监护平台
 colors:
   paper: "#f4f5f2"
@@ -87,7 +87,7 @@ components:
     padding: "1px 7px"
 ---
 
-# Design System: 白盒 Whitebox · Agent 安全实验室
+# Design System: 越界之前 BeforeBound · Agent 安全实验室
 
 ## Overview
 

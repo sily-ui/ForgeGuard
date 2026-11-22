@@ -150,7 +150,7 @@ GUARD = _obj(
 AGENT_CONFIG = _obj(
     {"name": _str("实例名称（≤32 字符）", example="运维审计助手"),
      "purpose": _str("声明用途", example="读取运维文档与周报，按需通知相关同事"),
-     "system_prompt": _str("系统提示词（≤4000 字符）", example="你是运维审计助手……"),
+     "system_prompt": _str("系统提示词（≤500 字符）", example="你是运维审计助手……"),
      "tools": _obj({t: {"$ref": "#/components/schemas/ToolSpec"} for t in
                     ["read_file", "write_file", "send_email", "query_api", "run_cmd", "update_config"]},
                    description="按工具名索引的启用与权限配置"),
@@ -443,10 +443,10 @@ def custom_openapi(app):
     spec = get_openapi(title=app.title, version=app.version, routes=app.routes, description=app.description)
     spec["openapi"] = "3.1.0"
     spec["info"] = {
-        "title": "ForgeGuard API",
+        "title": "越界之前 BeforeBound API",
         "version": app.version,
         "description": _INFO_DESCRIPTION,
-        "contact": {"name": "ForgeGuard 维护团队", "email": "forgeguard@example.com"},
+        "contact": {"name": "越界之前 维护团队", "email": "forgeguard@example.com"},
         "license": {"name": "MIT", "identifier": "MIT"},
         "x-rate-limits": {"general_per_minute": 240, "heavy_per_minute": 12, "auth_per_minute": 12},
         "x-id-format": "prefixed-string (cfg-/inst-/sess-/rpt-/alt-/rec-/snap-/exp-)",
@@ -455,7 +455,7 @@ def custom_openapi(app):
     spec["servers"] = [
         {"url": "http://127.0.0.1:8000", "description": "本地开发服务器"},
     ]
-    spec["externalDocs"] = {"description": "ForgeGuard 开发与接口文档", "url": "http://127.0.0.1:8000/docs"}
+    spec["externalDocs"] = {"description": "越界之前（内部代号 ForgeGuard）开发与接口文档", "url": "http://127.0.0.1:8000/docs"}
     spec["tags"] = [{"name": name, "description": desc} for name, desc in TAG_DESCRIPTIONS.items()]
     spec.setdefault("components", {})
     spec["components"]["securitySchemes"] = {

@@ -21,7 +21,7 @@ def render_html(report):
     overview = content["part1_overview"]
     baseline = content["part2_baseline"]
     parts = []
-    parts.append(f"<h1>ForgeGuard 测评报告 {_e(report['report_id'])}</h1>")
+    parts.append(f"<h1>越界之前 · 测评报告 {_e(report['report_id'])}</h1>")
     parts.append(
         f"<p class='meta'>生成时间：{_e(report['created_at'])} ｜ 策略快照版本：{_e(baseline.get('policy_snapshot_version'))} ｜ "
         f"报告结构版本：{_e(content.get('report_version'))}</p>"
@@ -136,7 +136,7 @@ def render_html(report):
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<title>ForgeGuard 测评报告 {_e(report['report_id'])}</title>
+<title>越界之前 · 测评报告 {_e(report['report_id'])}</title>
 <style>
 body {{ font-family: "Segoe UI", "Microsoft YaHei", sans-serif; margin: 2rem auto; max-width: 960px; color: #111827; line-height: 1.6; }}
 h1 {{ border-bottom: 3px solid #111827; padding-bottom: .4rem; }}

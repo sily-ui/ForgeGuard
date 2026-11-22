@@ -59,9 +59,10 @@ export default function PortalPage() {
                 color: 'var(--fg-text-1)',
                 fontFamily: 'var(--fg-font-display)',
                 letterSpacing: 0.2,
+                whiteSpace: 'nowrap',
               }}
             >
-              白盒 Whitebox
+              越界之前 BeforeBound
             </div>
             <div style={{ fontSize: 12.5, color: 'var(--fg-text-3)', marginTop: 1 }}>Agent 安全实验室</div>
             <DossierNo no={dossier} label="本工作区案卷档号" style={{ marginTop: 3 }} />
@@ -172,59 +173,115 @@ export default function PortalPage() {
 }
 
 // 实验链路图：红队 → 靶标 Agent → 仿真沙盒，旁路监护镜像与阻断点。
-// 产品自身的拓扑作为门面视觉，攻击路径以流动虚线表示方向。
+// 6s 剧情循环：攻击注入 → Agent 发起工具调用 → 网关三级判定 → 阻断落印；
+// 镜像/判定数据包持续流动。动效仅用 transform/opacity，reduced-motion 下退化为静态拓扑。
 function LabDiagram() {
-  const nodes: Array<{ x: number; y: number; label: string }> = [
-    { x: 80, y: 84, label: '红队攻击源' },
-    { x: 260, y: 84, label: '靶标 Agent' },
-    { x: 440, y: 84, label: '仿真沙盒' },
-    { x: 260, y: 196, label: '旁路监护网关' },
-  ];
   return (
-    <figure style={{ margin: 0, maxWidth: 520 }}>
-      <svg viewBox="0 0 520 252" width="100%" role="img" aria-label="实验链路：红队攻击源到靶标 Agent 到仿真沙盒，旁路监护网关镜像判定并可阻断">
+    <figure className="fg-diagram" style={{ margin: 0, maxWidth: 520 }}>
+      <svg viewBox="0 0 520 264" width="100%" role="img" aria-label="实验链路：红队攻击源注入靶标 Agent，工具调用被旁路监护网关三级判定并实时阻断，镜像流量持续观测仿真沙盒">
         <defs>
           <pattern id="fg-portal-grid" width="32" height="32" patternUnits="userSpaceOnUse">
             <path d="M32 0H0V32" fill="none" stroke="var(--fg-border)" strokeWidth="0.5" />
           </pattern>
+          <radialGradient id="fg-portal-glow" cx="50%" cy="55%" r="60%">
+            <stop offset="0%" stopColor="var(--fg-brand-primary)" stopOpacity="0.1" />
+            <stop offset="100%" stopColor="var(--fg-brand-primary)" stopOpacity="0" />
+          </radialGradient>
           <marker id="fg-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
             <path d="M0 0 8 4 0 8Z" fill="var(--fg-text-3)" />
           </marker>
           <marker id="fg-arrow-block" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
             <path d="M0 0 8 4 0 8Z" fill="var(--fg-block)" />
           </marker>
+          <marker id="fg-arrow-info" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0 0 8 4 0 8Z" fill="var(--fg-info)" />
+          </marker>
         </defs>
-        <rect width="520" height="252" fill="url(#fg-portal-grid)" opacity="0.6" />
+        <rect width="520" height="264" fill="url(#fg-portal-grid)" opacity="0.6" />
+        <rect width="520" height="264" fill="url(#fg-portal-glow)" />
 
         {/* 攻击路径 */}
-        <path
-          d="M104 84H232"
-          stroke="var(--fg-block)"
-          strokeWidth="1.5"
-          strokeDasharray="5 5"
-          markerEnd="url(#fg-arrow-block)"
-          style={{ animation: 'fg-flow-dash 1.2s linear infinite' }}
-        />
+        <path className="fg-dash-attack" d="M106 84H234" stroke="var(--fg-block)" strokeWidth="1.5" strokeDasharray="5 5" markerEnd="url(#fg-arrow-block)" />
         {/* 工具调用 */}
-        <path d="M288 84H412" stroke="var(--fg-text-3)" strokeWidth="1.5" markerEnd="url(#fg-arrow)" />
-        {/* 阻断点：监护网关可在工具调用路径上拦截 */}
-        <path d="M350 74v20" stroke="var(--fg-block)" strokeWidth="2" />
-        {/* 旁路镜像 */}
-        <path d="M260 108v64" stroke="var(--fg-info)" strokeWidth="1.5" strokeDasharray="3 5" />
-        <path d="M288 196H440V112" stroke="var(--fg-info)" strokeWidth="1.5" strokeDasharray="3 5" fill="none" markerEnd="url(#fg-arrow)" />
+        <path d="M286 84H414" stroke="var(--fg-text-3)" strokeWidth="1.5" markerEnd="url(#fg-arrow)" />
+        {/* 旁路镜像与判定回注 */}
+        <path className="fg-dash-mirror" d="M260 110V174" stroke="var(--fg-info)" strokeWidth="1.5" strokeDasharray="3 5" />
+        <path className="fg-dash-mirror" d="M286 200H440V110" stroke="var(--fg-info)" strokeWidth="1.5" strokeDasharray="3 5" fill="none" markerEnd="url(#fg-arrow-info)" />
 
-        {nodes.map((n) => (
-          <g key={n.label}>
-            <rect x={n.x - 24} y={n.y - 24} width="48" height="48" rx="8" fill="var(--fg-bg-card)" stroke="var(--fg-border)" strokeWidth="1.5" />
-            <rect x={n.x - 5} y={n.y - 5} width="10" height="10" fill={n.label.includes('监护') ? 'var(--fg-info)' : n.label.includes('红队') ? 'var(--fg-block)' : 'var(--fg-brand-primary)'} />
-            <text x={n.x} y={n.y + 42} textAnchor="middle" fontSize="11" fill="var(--fg-text-2)">
-              {n.label}
-            </text>
+        {/* 阻断点：屏障随拦截剧情闪烁 */}
+        <g className="fg-barrier">
+          <path d="M350 72v24" stroke="var(--fg-block)" strokeWidth="2.5" strokeLinecap="round" />
+          <path d="M345 76l10 16M355 76l-10 16" stroke="var(--fg-block)" strokeWidth="1" opacity="0.55" />
+        </g>
+        {/* 拦截落印 */}
+        <g className="fg-chip">
+          <rect x="322" y="40" width="56" height="20" rx="5" fill="var(--fg-block)" />
+          <text x="350" y="54" textAnchor="middle" fontSize="10.5" fontWeight="700" fill="#fff">已拦截</text>
+        </g>
+
+        {/* 节点呼吸环 */}
+        <circle className="fg-ring fg-ring-red" cx="80" cy="84" r="30" fill="none" stroke="var(--fg-block)" strokeWidth="1" />
+        <circle className="fg-ring fg-ring-agent" cx="260" cy="84" r="30" fill="none" stroke="var(--fg-brand-primary)" strokeWidth="1" />
+        <circle className="fg-ring fg-ring-guard" cx="260" cy="200" r="32" fill="none" stroke="var(--fg-info)" strokeWidth="1" />
+
+        {/* 流动数据包 */}
+        <circle className="fg-pk fg-pk-attack" r="4" fill="var(--fg-block)" />
+        <circle className="fg-pk fg-pk-tool" r="4" fill="var(--fg-text-2)" />
+        <circle className="fg-pk fg-pk-mirror" r="3" fill="var(--fg-info)" />
+        <circle className="fg-pk fg-pk-verdict" r="3" fill="var(--fg-info)" />
+
+        {/* 红队攻击源 */}
+        <g className="fg-node" style={{ animationDelay: '0ms' }}>
+          <rect x="54" y="58" width="52" height="52" rx="12" fill="var(--fg-bg-card)" stroke="var(--fg-border)" strokeWidth="1.5" />
+          <g stroke="var(--fg-block)" strokeWidth="1.6" fill="none" strokeLinecap="round">
+            <circle cx="80" cy="84" r="7.5" />
+            <path d="M80 72v5M80 91v5M68 84h5M87 84h5" />
+            <circle cx="80" cy="84" r="1.6" fill="var(--fg-block)" stroke="none" />
           </g>
-        ))}
+          <text x="80" y="128" textAnchor="middle" fontSize="11" fill="var(--fg-text-2)">红队攻击源</text>
+        </g>
+        {/* 靶标 Agent */}
+        <g className="fg-node" style={{ animationDelay: '70ms' }}>
+          <rect x="234" y="58" width="52" height="52" rx="12" fill="var(--fg-bg-card)" stroke="var(--fg-border)" strokeWidth="1.5" />
+          <g stroke="var(--fg-brand-primary)" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="251" y="78" width="18" height="13" rx="3" />
+            <path d="M260 78v-4M256 95h8" />
+            <circle cx="256" cy="84" r="1.4" fill="var(--fg-brand-primary)" stroke="none" />
+            <circle cx="264" cy="84" r="1.4" fill="var(--fg-brand-primary)" stroke="none" />
+          </g>
+          <text x="260" y="128" textAnchor="middle" fontSize="11" fill="var(--fg-text-2)">靶标 Agent</text>
+        </g>
+        {/* 仿真沙盒 */}
+        <g className="fg-node" style={{ animationDelay: '140ms' }}>
+          <rect x="414" y="58" width="52" height="52" rx="12" fill="var(--fg-bg-card)" stroke="var(--fg-border)" strokeWidth="1.5" />
+          <g className="fg-sandbox-icon" stroke="var(--fg-brand-primary)" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M440 74l10 5v10l-10 5-10-5V79z" />
+            <path d="M430 79l10 5 10-5M440 84v10" />
+          </g>
+          <text x="440" y="128" textAnchor="middle" fontSize="11" fill="var(--fg-text-2)">仿真沙盒</text>
+        </g>
+        {/* 旁路监护网关 */}
+        <g className="fg-node" style={{ animationDelay: '210ms' }}>
+          <rect x="234" y="174" width="52" height="52" rx="12" fill="var(--fg-bg-card)" stroke="var(--fg-info)" strokeWidth="1.5" />
+          <path d="M260 182l10 4v7c0 7-10 12-10 12s-10-5-10-12v-7z" stroke="var(--fg-info)" strokeWidth="1.6" fill="none" strokeLinejoin="round" />
+          <path d="M256 194l3 3 6-6" stroke="var(--fg-info)" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+          {/* 三级判定指示灯：L1 → L2 → L3 依次点亮 */}
+          <rect className="fg-dot fg-dot-1" x="248" y="212" width="5" height="3" rx="1" fill="var(--fg-info)" />
+          <rect className="fg-dot fg-dot-2" x="257" y="212" width="5" height="3" rx="1" fill="var(--fg-info)" />
+          <rect className="fg-dot fg-dot-3" x="266" y="212" width="5" height="3" rx="1" fill="var(--fg-info)" />
+          <text x="260" y="244" textAnchor="middle" fontSize="11" fill="var(--fg-text-2)">旁路监护网关</text>
+        </g>
       </svg>
-      <figcaption className="mono" style={{ fontSize: 11.5, color: 'var(--fg-text-3)', marginTop: 8 }}>
-        攻击路径 · 旁路镜像 · 实时阻断
+      <figcaption className="mono" style={{ fontSize: 11.5, color: 'var(--fg-text-3)', marginTop: 8, display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ width: 18, borderTop: '2px dashed var(--fg-block)' }} /> 攻击路径
+        </span>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ width: 18, borderTop: '2px dashed var(--fg-info)' }} /> 旁路镜像
+        </span>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ width: 3, height: 12, background: 'var(--fg-block)', borderRadius: 2 }} /> 实时阻断
+        </span>
       </figcaption>
     </figure>
   );

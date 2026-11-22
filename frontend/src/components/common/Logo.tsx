@@ -1,5 +1,5 @@
-// 品牌标识：白盒 Whitebox——档案袋开盖，露出内部的靶心。
-// 双重隐喻：白盒测评（看得见内部配置）+ 红队靶标 + 档案世界（档案袋标签）。
+// 品牌标识：越界之前 BeforeBound——档案袋开盖，露出内部的靶心。
+// 双重隐喻：调用越界之前先被看见（三级判据）+ 红队靶标 + 档案世界（档案袋标签）。
 // 墨线描边、品牌墨绿点睛，深浅底通用（取当前空间的 Token）。
 export function Logo({ size = 32, withText = false }: { size?: number; withText?: boolean }) {
   return (
@@ -29,16 +29,17 @@ export function Logo({ size = 32, withText = false }: { size?: number; withText?
           <span
             style={{
               display: 'block',
-              fontSize: 16.5,
+              fontSize: 15,
               fontWeight: 700,
               color: 'var(--fg-text-1)',
               fontFamily: 'var(--fg-font-display)',
               letterSpacing: 0.2,
+              whiteSpace: 'nowrap',
             }}
           >
-            白盒 Whitebox
+            越界之前 BeforeBound
           </span>
-          <span style={{ display: 'block', fontSize: 12.5, color: 'var(--fg-text-3)', marginTop: 1 }}>
+          <span style={{ display: 'block', fontSize: 12, color: 'var(--fg-text-3)', marginTop: 1 }}>
             Agent 安全实验室
           </span>
         </span>
