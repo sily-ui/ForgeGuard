@@ -10,6 +10,8 @@ from sqlalchemy import (
     String,
     Text,
     create_engine,
+    inspect,
+    text,
 )
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
@@ -246,22 +248,25 @@ _SessionFactory = None
 def get_engine():
     global _engine, _SessionFactory
     if _engine is None:
-        path = settings.sqlite_path
-        parent = os.path.dirname(path)
-        if parent:
-            os.makedirs(parent, exist_ok=True)
-        _engine = create_engine(
-            f"sqlite:///{path}",
-            connect_args={"check_same_thread": False},
-            pool_size=10,
-            max_overflow=20,
-            pool_pre_ping=True,
-        )
-        with _engine.connect() as conn:
-            from sqlalchemy import text
-
-            conn.execute(text("PRAGMA journal_mode=WAL"))
-            conn.commit()
+        url = settings.database_url or f"sqlite:///{settings.sqlite_path}"
+        if url.startswith("sqlite"):
+            path = url.replace("sqlite:///", "", 1)
+            parent = os.path.dirname(path)
+            if parent:
+                os.makedirs(parent, exist_ok=True)
+            _engine = create_engine(
+                url,
+                connect_args={"check_same_thread": False},
+                pool_size=10,
+                max_overflow=20,
+                pool_pre_ping=True,
+            )
+            with _engine.connect() as conn:
+                conn.execute(text("PRAGMA journal_mode=WAL"))
+                conn.commit()
+        else:
+            # 共享库（PostgreSQL/MySQL）：多副本并发写由数据库本身保证，无需 SQLite 专属参数。
+            _engine = create_engine(url, pool_size=10, max_overflow=20, pool_pre_ping=True)
         _SessionFactory = sessionmaker(bind=_engine, expire_on_commit=False)
     return _engine
 
@@ -282,12 +287,18 @@ _EXTRA_COLUMNS = (
 )
 
 
-def _migrate_extra_columns(engine):
-    from sqlalchemy import text
+def _existing_columns(conn, table):
+    """跨方言读取已存在列名；表不存在返回 None（create_all 之前的存量库迁移）。"""
+    insp = inspect(conn)
+    if not insp.has_table(table):
+        return None
+    return {col["name"] for col in insp.get_columns(table)}
 
+
+def _migrate_extra_columns(engine):
     with engine.connect() as conn:
         for table, column, ddl in _EXTRA_COLUMNS:
-            columns = {row[1] for row in conn.execute(text(f"PRAGMA table_info({table})"))}
+            columns = _existing_columns(conn, table)
             if not columns or column in columns:
                 continue
             conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {column} {ddl}"))
@@ -295,12 +306,10 @@ def _migrate_extra_columns(engine):
 
 
 def _migrate_workspace_columns(engine):
-    """为存量 SQLite 库补充 workspace_id 列（create_all 不会修改已存在的表）。"""
-    from sqlalchemy import text
-
+    """为存量库补充 workspace_id 列（create_all 不会修改已存在的表）。"""
     with engine.connect() as conn:
         for table in _WORKSPACE_TABLES:
-            columns = {row[1] for row in conn.execute(text(f"PRAGMA table_info({table})"))}
+            columns = _existing_columns(conn, table)
             if not columns or "workspace_id" in columns:
                 continue
             conn.execute(

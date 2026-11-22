@@ -7,6 +7,7 @@ from ...core.security import iso, revoke_all_tokens, utcnow
 from ...core.state import runtime
 from ...internal.events import event_bus
 from ...models import db as dbmod
+from ...orchestration import suggestions
 from ...orchestration.runner import record_session
 from ...sandbox.partition import sandbox_manager
 from ..deps import get_auth
@@ -100,7 +101,7 @@ def cleanup(request: Request, payload: dict = Body(...)):
     if scope not in ("daily", "pre_contest"):
         raise ApiError(40000, detail="scope 仅支持 daily 或 pre_contest")
     now = iso(utcnow())
-    counts = {"instances": 0, "sessions": 0, "sandbox_partitions": 0}
+    counts = {"instances": 0, "sessions": 0, "sandbox_partitions": 0, "suggestion_caches": 0}
     with dbmod.session_scope() as db:
         if scope == "daily":
             instances = (
@@ -138,6 +139,7 @@ def cleanup(request: Request, payload: dict = Body(...)):
                 session.status = "terminated"
                 session.terminated_at = now
                 counts["sessions"] += 1
+        counts["suggestion_caches"] = suggestions.prune_cache(db)
         db.add(
             dbmod.CleanupLog(scope=scope, counts=counts, operator="admin", created_at=now)
         )

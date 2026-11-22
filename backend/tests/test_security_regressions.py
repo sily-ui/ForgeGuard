@@ -256,3 +256,45 @@ def test_fast_demo_challenge_timeout_shortened(client, auth):
     elapsed = time.monotonic() - start
     assert resp.status_code == 200, resp.text
     assert elapsed < 30, f"快速链路耗时 {elapsed:.1f}s，质询等待未缩短"
+
+
+# ---- 场景化推荐指令：贴合实例用途，不再出现无关业务 ----
+
+def _suggestions(client, auth, instance_id):
+    resp = client.get(f"/api/v1/instances/{instance_id}/suggestions", headers=auth)
+    assert resp.status_code == 200, resp.text
+    return resp.json()["data"]
+
+
+def test_suggestions_fallback_is_purpose_aware(client, auth):
+    config = make_config(name="论文助手", purpose="检索与总结学术论文")
+    inst = create_instance(client, auth, config=config, name="论文助手")
+    data = _suggestions(client, auth, inst["instance_id"])
+    assert data["simulated"] is True
+    assert data["items"]
+    texts = " ".join(it["text"] for it in data["items"])
+    assert "论文助手" in texts
+    assert "订单" not in texts and "C-1072" not in texts
+
+
+def test_suggestions_only_reference_enabled_tools(client, auth):
+    inst = create_instance(client, auth, name="工具约束")
+    enabled = set(inst.get("enabled_tools") or ["read_file", "send_email"])
+    data = _suggestions(client, auth, inst["instance_id"])
+    for it in data["items"]:
+        assert it["tool"] is None or it["tool"] in enabled
+
+
+def test_suggestions_cache_is_stable(client, auth):
+    inst = create_instance(client, auth, name="缓存一致")
+    first = _suggestions(client, auth, inst["instance_id"])
+    second = _suggestions(client, auth, inst["instance_id"])
+    assert first["items"] == second["items"]
+
+
+def test_suggestions_cross_workspace_rejected(client, auth, guest_auth):
+    inst = create_instance(client, auth, name="跨工作区")
+    resp = client.get(
+        f"/api/v1/instances/{inst['instance_id']}/suggestions", headers=guest_auth
+    )
+    assert resp.status_code == 404, resp.text

@@ -11,6 +11,7 @@ from ...core.response import paginate, parse_pagination, slice_page
 from ...core.security import iso, parse_iso, utcnow
 from ...core.state import runtime
 from ...models import db as dbmod
+from ...orchestration import suggestions
 from ...policies.baseline import PRESET_NAMES, enabled_tools, normalize_config, validate_config
 from ...policies.snapshot import (
     apply_policy_override,
@@ -178,6 +179,30 @@ def get_instance(request: Request, instance_id: str):
     return {"code": 0, "message": "ok", "data": _instance_view(row, with_config=True)}
 
 
+@router.get("/instances/{instance_id}/suggestions")
+async def instance_suggestions(request: Request, instance_id: str):
+    ctx = get_auth(request)
+    row = _instance_row(instance_id, ctx.workspace)
+    config = row.config_payload
+    fp = suggestions.fingerprint(config)
+    cache_key = f"suggestions:{instance_id}"
+    with dbmod.session_scope() as db:
+        cached = db.get(dbmod.PlatformState, cache_key)
+        if cached is not None and (cached.value or {}).get("fingerprint") == fp:
+            return {"code": 0, "message": "ok", "data": cached.value["result"]}
+    result = await suggestions.generate_suggestions(config)
+    # 仅缓存模型成功生成的结果；仿真回退可能是上游瞬时故障，不固化，待模型恢复后自动重生成。
+    if not result["simulated"]:
+        with dbmod.session_scope() as db:
+            entry = db.get(dbmod.PlatformState, cache_key)
+            if entry is None:
+                entry = dbmod.PlatformState(key=cache_key, value={"fingerprint": fp, "result": result})
+                db.add(entry)
+            else:
+                entry.value = {"fingerprint": fp, "result": result}
+    return {"code": 0, "message": "ok", "data": result}
+
+
 def _diff_configs(source, target):
     """逐项列出两份配置的差异，供比对视图与报告使用。"""
     diffs = []
@@ -286,6 +311,9 @@ def recycle_instance(request: Request, instance_id: str, payload: dict = Body(de
         ]
         record = db.get(dbmod.Instance, instance_id)
         record.status = "destroyed"
+        db.query(dbmod.PlatformState).filter(
+            dbmod.PlatformState.key == f"suggestions:{instance_id}"
+        ).delete(synchronize_session=False)
         db.query(dbmod.Session).filter(dbmod.Session.instance_id == instance_id).update(
             {"status": "terminated", "terminated_at": iso(utcnow())}, synchronize_session=False
         )

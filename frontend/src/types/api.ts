@@ -205,6 +205,16 @@ export interface InstanceCreated {
   diff_note?: string;
 }
 
+export interface InstanceSuggestion {
+  tool: string | null;
+  text: string;
+}
+
+export interface InstanceSuggestions {
+  items: InstanceSuggestion[];
+  simulated: boolean;
+}
+
 export interface PolicySnapshot {
   snapshot_id: string;
   version: number;

@@ -10,6 +10,7 @@ import type {
   Experiment,
   Instance,
   InstanceCreated,
+  InstanceSuggestions,
   ItemsResult,
   MessageResult,
   Paginated,
@@ -54,6 +55,7 @@ export const instanceApi = {
   list: (status?: string, page = 1, pageSize = 100) =>
     api.get<Paginated<Instance>>('/instances', { status, page, page_size: pageSize }),
   get: (id: string) => api.get<Instance>(`/instances/${id}`),
+  suggestions: (id: string) => api.get<InstanceSuggestions>(`/instances/${id}/suggestions`),
   create: (payload: { config_id?: string; config?: AgentConfig; name?: string; guard_preset?: string }) =>
     api.post<InstanceCreated>('/instances', payload, { headers: { 'X-Idempotency-Key': idempotencyKey('inst') } }),
   clone: (

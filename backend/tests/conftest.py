@@ -34,9 +34,10 @@ def client():
 
 @pytest.fixture(autouse=True)
 def _reset_rate_limiter():
-    """测试密集请求不触发生产限流阈值；每个用例前清空计数。"""
+    """测试密集请求不触发生产限流阈值；每个用例前清空计数，并强制内存回退避免本机 Redis 串扰。"""
     from app.core.security import rate_limiter
 
+    rate_limiter.bind_redis(None)
     rate_limiter._hits.clear()
     yield
     rate_limiter._hits.clear()

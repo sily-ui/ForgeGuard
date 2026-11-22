@@ -37,12 +37,27 @@ logger = logging.getLogger("forgeguard")
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()
+    from .models import db as dbmod
+    from .orchestration.suggestions import prune_cache
+
+    with dbmod.session_scope() as db:
+        pruned = prune_cache(db)
+    if pruned:
+        logger.info("启动收口：清理孤儿推荐缓存 %d 行", pruned)
     bind_main_loop()
     runtime.init_redis()
+    rate_limiter.bind_redis(runtime._redis)
     if not runtime.redis_reachable:
-        logger.info("Redis 不可用，实例状态为单进程内存态（不支持多实例并发扩展）")
+        logger.info("Redis 不可用，限流回退进程内存；多副本部署需配置 REDIS_URL 以共享限流计数")
     else:
-        logger.info("Redis 可达，但运行态（质询/任务/事件）仍为进程内存实现，多副本部署前需落地共享存储")
+        logger.info("Redis 可达，限流计数已跨副本共享")
+    from .models.db import get_engine
+
+    dialect = get_engine().dialect.name
+    if dialect == "sqlite":
+        logger.info("存储为本地 SQLite（单进程）；多副本部署请置 DATABASE_URL 为共享 PostgreSQL")
+    else:
+        logger.info("存储为共享 %s；运行态（质询/任务/事件）仍为进程内存，多副本须按会话亲和路由", dialect)
     if not settings.model_configured:
         logger.info("未配置 MODEL_* 环境变量，使用离线仿真推理（可随时配置真实模型接口）")
     logger.info("ForgeGuard 后端就绪，监听 %s:%s", settings.host, settings.port)
@@ -132,6 +147,7 @@ async def unhandled_error_handler(request: Request, exc: Exception):
 @app.get("/api/v1/health")
 def health():
     from .core import quota
+    from .models.db import get_engine
 
     return {
         "code": 0,
@@ -141,6 +157,8 @@ def health():
             "mode": quota.get_mode(),
             "model_configured": settings.model_configured,
             "state_backend": runtime.state_backend,
+            "db_backend": get_engine().dialect.name,
+            "rate_limit_backend": "redis" if runtime.redis_reachable else "memory",
             "simulation": True,
             "guest_daily_quota": settings.quota_guest_daily,
         },

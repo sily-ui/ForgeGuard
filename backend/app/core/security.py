@@ -104,11 +104,58 @@ def revoke_all_tokens():
 
 
 class RateLimiter:
+    """滑动窗口限流：Redis 可达时跨副本共享计数，否则回退进程内存（单进程开发/测试）。"""
+
+    # 原子「裁剪过期 + 计数 + 未超限则写入」，返回 {allowed, count, retry_after}。
+    _CHECK_LUA = """
+local key = KEYS[1]
+local now = tonumber(ARGV[1])
+local window = tonumber(ARGV[2])
+local limit = tonumber(ARGV[3])
+local member = ARGV[4]
+redis.call('ZREMRANGEBYSCORE', key, 0, now - window)
+local count = redis.call('ZCARD', key)
+if count >= limit then
+  local oldest = redis.call('ZRANGE', key, 0, 0, 'WITHSCORES')
+  local retry = 0
+  if oldest[2] then retry = math.ceil(tonumber(oldest[2]) + window - now) + 1 end
+  return {0, count, retry}
+end
+redis.call('ZADD', key, now, member)
+redis.call('EXPIRE', key, window + 1)
+return {1, count + 1, 0}
+"""
+
     def __init__(self):
         self._hits = defaultdict(deque)
         self.hit_log = deque(maxlen=2000)
+        self._redis = None
+        self._check_script = None
+
+    def bind_redis(self, client):
+        self._redis = client
+        self._check_script = client.register_script(self._CHECK_LUA) if client else None
+
+    def _reject(self, key, limit, retry_after):
+        self.hit_log.append(
+            {"key": key, "limit": limit, "at": iso(utcnow()), "retry_after": retry_after}
+        )
+        raise ApiError(
+            42900,
+            detail=f"请求过于频繁，请 {retry_after} 秒后重试",
+            headers={"Retry-After": str(retry_after)},
+        )
 
     def check(self, key, limit, window_seconds=60):
+        if self._redis is not None:
+            now = time.time()
+            member = f"{now}:{secrets.token_hex(6)}"
+            allowed, _count, retry = self._check_script(
+                keys=[f"rl:{key}"], args=[now, window_seconds, limit, member]
+            )
+            if not allowed:
+                self._reject(key, limit, int(retry))
+            return
         now = time.monotonic()
         # 令牌键随游客签发持续增长，定期清空桶防止字典无界膨胀。
         if len(self._hits) > 10000:
@@ -119,18 +166,22 @@ class RateLimiter:
             bucket.popleft()
         if len(bucket) >= limit:
             retry_after = int(bucket[0] + window_seconds - now) + 1
-            self.hit_log.append(
-                {"key": key, "limit": limit, "at": iso(utcnow()), "retry_after": retry_after}
-            )
-            raise ApiError(
-                42900,
-                detail=f"请求过于频繁，请 {retry_after} 秒后重试",
-                headers={"Retry-After": str(retry_after)},
-            )
+            self._reject(key, limit, retry_after)
         bucket.append(now)
 
     def remaining(self, key, limit, window_seconds=60):
         """只读 peek：返回 (剩余可用数, 窗口重置 Unix 秒)，不消费配额。"""
+        if self._redis is not None:
+            now = time.time()
+            rkey = f"rl:{key}"
+            pipe = self._redis.pipeline()
+            pipe.zremrangebyscore(rkey, 0, now - window_seconds)
+            pipe.zcard(rkey)
+            pipe.zrange(rkey, 0, 0, withscores=True)
+            _removed, count, oldest = pipe.execute()
+            remaining = max(0, limit - count)
+            reset = int(oldest[0][1] + window_seconds) if oldest else int(now + window_seconds)
+            return remaining, reset
         now = time.monotonic()
         bucket = self._hits.get(key)
         if bucket:

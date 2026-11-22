@@ -56,16 +56,20 @@ def _used(db, key):
 
 
 def _consume(db, key, amount, limit):
-    from sqlalchemy.dialects.sqlite import insert as sqlite_insert
-
     from ..models import db as dbmod
 
     # 先原子建行（并发下仅一个成功），再以条件 UPDATE 原子自增，消除读-改-写竞态。
-    db.execute(
-        sqlite_insert(dbmod.QuotaCounter)
-        .values(key=key, used=0, max_calls=limit)
-        .on_conflict_do_nothing()
-    )
+    # 建行 upsert 按方言选择：SQLite/PostgreSQL 用 ON CONFLICT DO NOTHING，MySQL 用 INSERT IGNORE。
+    dialect = db.get_bind().dialect.name
+    if dialect == "postgresql":
+        from sqlalchemy.dialects.postgresql import insert as dialect_insert
+    elif dialect == "mysql":
+        from sqlalchemy.dialects.mysql import insert as dialect_insert
+    else:
+        from sqlalchemy.dialects.sqlite import insert as dialect_insert
+    stmt = dialect_insert(dbmod.QuotaCounter).values(key=key, used=0, max_calls=limit)
+    stmt = stmt.prefix_with("IGNORE") if dialect == "mysql" else stmt.on_conflict_do_nothing()
+    db.execute(stmt)
     updated = (
         db.query(dbmod.QuotaCounter)
         .filter(

@@ -36,6 +36,9 @@ class Settings:
         self.sqlite_path = os.environ.get(
             "SQLITE_PATH", str(BACKEND_DIR / "data" / "forgeguard.db")
         )
+        # 共享存储：多副本部署置为 postgresql+psycopg://user:pass@host:5432/db；
+        # 留空则回退本地 SQLite（单进程开发/测试）。
+        self.database_url = os.environ.get("DATABASE_URL", "").strip()
         self.model_api_key = os.environ.get("MODEL_API_KEY", "")
         self.model_base_url = os.environ.get("MODEL_BASE_URL", "").rstrip("/")
         self.model_name = os.environ.get("MODEL_NAME", "")
