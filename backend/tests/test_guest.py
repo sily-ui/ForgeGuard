@@ -5,7 +5,7 @@ import pytest
 from app.core import quota
 from app.core.config import settings
 from app.core.errors import ApiError, QuotaExhausted
-from app.core.security import AuthContext, bind_auth
+from app.core.security import AuthContext, bind_auth, rate_limiter
 from tests.conftest import create_instance, create_session
 
 
@@ -59,7 +59,26 @@ def test_guest_message_flow(client, guest_auth):
     )
     assert resp.status_code == 200, resp.text
     data = client.get("/api/v1/quota", headers=guest_auth).json()["data"]
-    assert data["guest_used_calls"] >= 1
+    # 测试环境未接入真实模型，本轮走离线仿真：不扣模型额度，但限流照常计数
+    assert data["guest_used_calls"] == 0
+    assert any(key.startswith("call:ws:") for key in rate_limiter._hits)
+
+
+def test_guest_rate_limited_even_when_simulated(monkeypatch):
+    """仿真链路不扣额度，但游客"模型调用每分钟 N 次"限流仍然生效，防止刷接口。"""
+    import asyncio
+
+    from app.internal.llm import proxy
+
+    _guest_ctx("pygustrate01", "203.0.113.21")
+    monkeypatch.setattr(quota, "GUEST_CALL_LIMIT", 2)
+    msgs = [{"role": "user", "content": "你好"}]
+    for _ in range(2):
+        asyncio.run(proxy.llm_proxy.chat("business", msgs, "sess-rate"))
+    with pytest.raises(ApiError) as exc:
+        asyncio.run(proxy.llm_proxy.chat("business", msgs, "sess-rate"))
+    assert exc.value.code == 42900
+    assert quota.status("sess-rate")["guest_used_calls"] == 0
 
 
 def test_guest_workspace_daily_cap(monkeypatch):

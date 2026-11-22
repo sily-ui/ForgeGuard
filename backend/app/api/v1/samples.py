@@ -3,6 +3,7 @@ from fastapi import APIRouter, Body, Request
 from ...core.errors import ApiError
 from ...core.response import paginate, parse_pagination, slice_page
 from ...data.samples import CATEGORY_NAMES, SAMPLES, applicability, get_sample, sample_view
+from ...internal.llm.proxy import force_simulated
 from ...models import db as dbmod
 from ...orchestration.runner import process_message
 from ...policies.baseline import enabled_tools
@@ -62,12 +63,22 @@ async def load_sample(request: Request, session_id: str, sample_id: str, payload
     applicable, reason = applicability(sample, tools)
     if not applicable and not payload.get("force"):
         raise ApiError(40900, detail=reason)
+    # fast：一键演示的快速链路——整条调用链走离线仿真，秒级完成、答辩可控、不耗配额。
+    fast = bool(payload.get("fast"))
     results = []
-    for setup in sample.get("setup_turns", []):
-        results.append(await process_message(session_id, setup, source_sample_id=sample_id))
-    results.append(
-        await process_message(session_id, sample["payload"], source_sample_id=sample_id)
-    )
+    if fast:
+        with force_simulated("演示链路：快速仿真模式"):
+            for setup in sample.get("setup_turns", []):
+                results.append(await process_message(session_id, setup, source_sample_id=sample_id))
+            results.append(
+                await process_message(session_id, sample["payload"], source_sample_id=sample_id)
+            )
+    else:
+        for setup in sample.get("setup_turns", []):
+            results.append(await process_message(session_id, setup, source_sample_id=sample_id))
+        results.append(
+            await process_message(session_id, sample["payload"], source_sample_id=sample_id)
+        )
     final = results[-1]
     return {
         "code": 0,

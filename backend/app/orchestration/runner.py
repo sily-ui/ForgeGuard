@@ -488,7 +488,12 @@ async def process_message(
 
     reply = final_state.get("reply", "")
     if ctx.simulated_fallback:
-        reply += "\n（注：本轮模型接口不可达，使用离线仿真推理，已留痕）"
+        from ..internal.llm.proxy import current_simulated_reason
+
+        forced = current_simulated_reason()
+        reply += (
+            f"\n（{forced}）" if forced else "\n（注：本轮模型接口不可达，使用离线仿真推理，已留痕）"
+        )
     await event_bus.publish(
         session_id, "agent.message",
         {"message_id": message_id, "role": "assistant", "content": reply, "turn": turn, "actor": actor},

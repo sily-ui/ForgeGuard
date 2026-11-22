@@ -15,6 +15,10 @@ os.environ["INSTANCE_MAX"] = "200"
 os.environ["MODEL_API_KEY"] = ""
 os.environ["MODEL_BASE_URL"] = ""
 os.environ["MODEL_NAME"] = ""
+# 备用档位同样置空，避免单元测试触达真实备用网关
+os.environ["FALLBACK_MODEL_API_KEY"] = ""
+os.environ["FALLBACK_MODEL_BASE_URL"] = ""
+os.environ["FALLBACK_MODEL_NAME"] = ""
 
 from fastapi.testclient import TestClient  # noqa: E402
 

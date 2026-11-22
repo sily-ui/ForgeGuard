@@ -42,13 +42,19 @@ class Settings:
         self.guardian_model_name = (
             os.environ.get("GUARDIAN_MODEL_NAME", "") or self.model_name
         )
+        # 备用模型：主模型额度耗尽、限流或上游不可达时由 llm.proxy 自动切换。
+        # 三项齐备才生效，缺任一项则退回「只有主模型一档」的行为。
+        self.fallback_model_api_key = os.environ.get("FALLBACK_MODEL_API_KEY", "")
+        self.fallback_model_base_url = os.environ.get("FALLBACK_MODEL_BASE_URL", "").rstrip("/")
+        self.fallback_model_name = os.environ.get("FALLBACK_MODEL_NAME", "")
         self.quota_global_daily = int(os.environ.get("QUOTA_GLOBAL_DAILY", "1000"))
         self.quota_session_max = int(os.environ.get("QUOTA_SESSION_MAX", "60"))
         # 游客匿名放行：每工作区每日模型调用上限，以及同一 IP 的每日总量上限
         # （后者防止不断切换工作区绕过配额）。
         self.quota_guest_daily = int(os.environ.get("QUOTA_GUEST_DAILY", "20"))
         self.quota_guest_ip_daily = int(os.environ.get("QUOTA_GUEST_IP_DAILY", "60"))
-        self.instance_max = int(os.environ.get("INSTANCE_MAX", "8"))
+        # 演示期放宽存活实例上限；一键演示会复用同类就绪实例，正常使用不会逼近此值。
+        self.instance_max = int(os.environ.get("INSTANCE_MAX", "16"))
         self.session_ttl = int(os.environ.get("SESSION_TTL", "14400"))
         self.snapshot_mode = os.environ.get("SNAPSHOT_MODE", "auto")
         self.instance_ttl_minutes = int(os.environ.get("INSTANCE_TTL_MINUTES", "60"))
@@ -64,6 +70,14 @@ class Settings:
     @property
     def model_configured(self) -> bool:
         return bool(self.model_base_url and self.model_api_key and self.model_name)
+
+    @property
+    def fallback_configured(self) -> bool:
+        return bool(
+            self.fallback_model_base_url
+            and self.fallback_model_api_key
+            and self.fallback_model_name
+        )
 
 
 settings = Settings()

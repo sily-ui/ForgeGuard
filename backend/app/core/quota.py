@@ -110,14 +110,24 @@ def status(session_id=None):
     return data
 
 
-def check_and_consume(session_id, amount=1):
+def check_guest_call_rate():
+    """游客模型调用请求限流：与是否真实计费无关，仿真链路同样受限。
+
+    离线仿真或强制演示模式不消耗额度，若只在扣费时限流，游客即可借仿真链路绕过
+    "模型调用每分钟 N 次" 的开销上限。
+    """
+    ctx = current_auth()
+    if ctx is not None and ctx.role == "guest":
+        rate_limiter.check(f"call:ip:{ctx.ip}", GUEST_CALL_LIMIT)
+        rate_limiter.check(f"call:ws:{ctx.workspace}", GUEST_CALL_LIMIT)
+
+
+def consume_model_quota(session_id, amount=1):
+    """扣减真实模型调用配额；任一维度不足则整体回滚并抛 QuotaExhausted。"""
     from ..models import db as dbmod
 
     ctx = current_auth()
     guest = ctx is not None and ctx.role == "guest"
-    if guest:
-        rate_limiter.check(f"call:ip:{ctx.ip}", GUEST_CALL_LIMIT)
-        rate_limiter.check(f"call:ws:{ctx.workspace}", GUEST_CALL_LIMIT)
 
     global_ok = True
     session_ok = True
@@ -150,6 +160,12 @@ def check_and_consume(session_id, amount=1):
         if settings.snapshot_mode == "auto" and not global_ok:
             set_mode(MODE_REPLAY, reason="全局模型配额耗尽，自动切换快照回放")
         raise
+
+
+def check_and_consume(session_id, amount=1):
+    """限流 + 扣减一次完成，供需要完整语义的直接调用方使用。"""
+    check_guest_call_rate()
+    consume_model_quota(session_id, amount)
 
 
 def adjust(global_max=None, session_max=None):

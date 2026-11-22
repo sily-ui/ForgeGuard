@@ -8,7 +8,7 @@ from typing import TypedDict
 from langgraph.graph import END, StateGraph
 
 from ..internal.llm import simulated
-from ..internal.llm.proxy import llm_proxy
+from ..internal.llm.proxy import current_simulated_reason, llm_proxy
 from ..core.errors import ModelUnavailable
 from ..core.state import runtime
 
@@ -202,6 +202,13 @@ class ReasonContext:
                         if cycle:
                             await self.on_delta(cycle)
                         await asyncio.sleep(0.02)
+        # 强制仿真链路（一键演示的快速模式）：模型调用走仿真但未抛错，
+        # 仍需置留痕标记，让 runner 为回复附加"演示链路：快速仿真模式"说明。
+        if content is not None and not self.simulated_fallback:
+            forced_reason = current_simulated_reason()
+            if forced_reason:
+                runtime.note_degradation(self.session_id, forced_reason)
+                self.simulated_fallback = True
         parsed = parse_business_json(content or "")
         if parsed is not None:
             reply = str(parsed.get("reply", ""))
