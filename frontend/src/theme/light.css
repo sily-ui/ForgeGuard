@@ -1,63 +1,70 @@
-/* Agent Security Lab — 浅色工程工作台：石墨冷灰中性色阶 + 深青绿品牌 */
+/* 白盒 Whitebox — 日档：冷调纸面工作台（纸白 + 墨色 + 墨绿品牌 + 墨色状态） */
 :root {
-  /* 品牌：深青绿（唯一强调色，仅用于主操作、选中与关键判定） */
-  --fg-brand-primary: #176b63;
-  --fg-brand-secondary: #2d9184;
-  --fg-brand-light: #e7f0ee;
-  --fg-brand-deep: #113c38;
-
-  /* 石墨冷灰中性色阶：背景 / 表面 / 发丝线 / 三级文字 */
-  --fg-bg-page: #f4f5f6;
+  /* 纸墨基础：冷调纸白底、墨色文字、发丝线分层 */
+  --fg-bg-page: #f4f5f2;
   --fg-bg-card: #ffffff;
-  --fg-bg-subtle: #eef0f2;
-  --fg-text-1: #1e2429;
-  --fg-text-2: #5b6570;
-  --fg-text-3: #8d97a1;
-  --fg-border: #e2e5e8;
+  --fg-bg-subtle: #ecede8;
+  --fg-text-1: #1c1f24;
+  --fg-text-2: #5a6168;
+  --fg-text-3: #8a918b;
+  --fg-border: #d9dcd7;
 
-  /* 安全状态色（跨空间共享语义，饱和度收敛） */
+  /* 品牌墨绿：主操作、选中与强调 */
+  --fg-brand-primary: #1f6b5e;
+  --fg-brand-secondary: #3e8f7e;
+  --fg-brand-light: #e9f0ed;
+  --fg-brand-deep: #12382f;
+
+  /* 状态墨色（跨空间共享语义，饱和度收敛如墨锭落纸） */
   --fg-allow: #2e7d5b;
-  --fg-observe: #c2892b;
-  --fg-block: #b5484d;
-  --fg-info: #4f7ba6;
+  --fg-observe: #8f6a14;
+  --fg-block: #a33d3f;
+  --fg-info: #3d6488;
   --fg-disabled: #97a1a8;
   --fg-allow-text: #256b4d;
-  --fg-observe-text: #8f6a14;
-  --fg-block-text: #a33d43;
-  --fg-info-text: #3d6488;
+  --fg-observe-text: #7a5a12;
+  --fg-block-text: #8f3338;
+  --fg-info-text: #34557a;
 
-  /* 状态浅底（仅阻断/高危等强语义使用） */
+  /* 状态浅底 */
   --fg-allow-bg: #e9f2ed;
   --fg-observe-bg: #f7efdc;
   --fg-block-bg: #f6e9ea;
   --fg-info-bg: #e9eff5;
 
-  /* 强调面：单色，不做跨色相渐变 */
-  --fg-gradient-brand: #176b63;
-  --fg-gradient-subtle: linear-gradient(180deg, #f7f8f9 0%, #f1f3f4 100%);
+  /* 功能底色过渡（仅两处，不做装饰渐变） */
+  --fg-gradient-brand: #1f6b5e;
+  --fg-gradient-subtle: linear-gradient(180deg, #f4f5f2 0%, #ecede8 100%);
 
-  /* 圆角与阴影：深度靠表面层级与发丝线，阴影只留给浮层 */
-  --fg-radius-sm: 8px;
-  --fg-radius-md: 12px;
-  --fg-radius-lg: 16px;
+  /* 骑缝斜纹（卷宗装订条） */
+  --fg-spine-1: #e3e6e0;
+  --fg-spine-2: #f4f5f2;
+
+  /* 圆角与阴影：深度靠发丝线，阴影只留给浮层 */
+  --fg-radius-sm: 6px;
+  --fg-radius-md: 8px;
+  --fg-radius-lg: 10px;
   --fg-shadow-1: none;
-  --fg-shadow-2: 0 2px 8px rgba(20, 24, 28, 0.06);
-  --fg-shadow-3: 0 8px 24px rgba(20, 24, 28, 0.1);
+  --fg-shadow-2: 0 2px 6px rgba(28, 31, 36, 0.05);
+  --fg-shadow-3: 0 8px 20px rgba(28, 31, 36, 0.08);
 
-  /* 图表多色板（亮度可区分，无紫） */
-  --fg-chart-1: #176b63;
-  --fg-chart-2: #4f7ba6;
-  --fg-chart-3: #c2892b;
-  --fg-chart-4: #b5484d;
+  /* 图表色板（墨色系，无紫） */
+  --fg-chart-1: #1f6b5e;
+  --fg-chart-2: #3d6488;
+  --fg-chart-3: #8f6a14;
+  --fg-chart-4: #a33d3f;
   --fg-chart-5: #64748b;
   --fg-chart-6: #6a8f5f;
   --fg-chart-7: #4fb0a5;
   --fg-chart-8: #97a1a8;
 
-  --fg-scrollbar-track: #eef0f2;
-  --fg-scrollbar-thumb: #c9ced4;
-  --fg-scrollbar-thumb-hover: #adb5bd;
+  --fg-scrollbar-track: #ecede8;
+  --fg-scrollbar-thumb: #c5c9c2;
+  --fg-scrollbar-thumb-hover: #a9afa6;
 
-  --fg-sidebar-bg: #fafbfc;
-  --fg-topbar-bg: rgba(255, 255, 255, 0.9);
+  --fg-sidebar-bg: #f7f7f4;
+  --fg-topbar-bg: rgba(255, 255, 255, 0.92);
+
+  /* Display 级排版用字（中文回退思源黑体/系统黑体） */
+  --fg-font-display: 'IBM Plex Sans', 'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif;
 }

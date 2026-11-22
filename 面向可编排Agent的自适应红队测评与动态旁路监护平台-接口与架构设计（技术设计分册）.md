@@ -71,13 +71,13 @@
 
 #### 1.2.1 认证
 
-平台采用"口令换凭据"的无状态令牌机制（对应 FD9 准入）：
+平台采用"游客匿名换令牌"的无状态令牌机制（对应 FD9 准入）：
 
-1. 评委访问入口页，输入评审口令；
-2. 调用 `POST /api/v1/auth/token` 换取会话令牌 `token`；
+1. 访问者打开门户页，浏览器生成或沿用本地工作区标识（`X-Workspace-Id`）；
+2. 调用 `POST /api/v1/auth/guest` 换取游客令牌 `token`，无需口令与注册；
 3. 后续请求在 `Authorization: Bearer <token>` 中携带；
-4. 令牌绑定浏览器会话，超时失效（默认 4 小时，可由管理角色调整）；
-5. 令牌不写入链接参数，避免随截图外泄。
+4. 令牌仅存于页面内存（前端不持久化，刷新页面需重新准入），绑定浏览器会话，超时失效（默认 4 小时）；
+5. 令牌不写入链接参数；模型密钥只存在于后端环境变量，绝不进入前端。
 
 #### 1.2.2 统一响应封装
 
@@ -127,8 +127,7 @@
 | 40000 | 参数校验失败 | 必填缺失、枚举越界、格式错误 |
 | 40001 | 配置冲突 | 同一路径同时出现在允许与禁止清单 |
 | 40100 | 未认证 | 缺少或过期令牌 |
-| 40101 | 口令无效 | 访问口令错误或已过期 |
-| 40300 | 权限不足 | 评审角色调用管理接口 |
+| 40300 | 权限不足 | 游客令牌调用管理接口 |
 | 40400 | 资源不存在 | 实例、会话、报告标识无效 |
 | 40900 | 状态冲突 | 对已终止会话发起消息、对已销毁实例克隆 |
 | 42200 | 校验不可通过 | 编排配置无法通过冲突校验 |
@@ -188,26 +187,29 @@ data: {"call_id":"rec-abc123","tool":"read_file","risk":"high","action":"block",
 
 ### 2.1 认证与配额
 
-#### 2.1.1 口令换取令牌
+#### 2.1.1 游客换取令牌
 
-- **路径**：`POST /api/v1/auth/token`
-- **说明**：评委输入评审口令，换取会话令牌；支持一次性口令与有效期口令（FD9）。
-- **请求体**：
+- **路径**：`POST /api/v1/auth/guest`
+- **说明**：匿名游客准入，无需口令；请求头必须携带 `X-Workspace-Id`（缺失时返回 `40000`，`field_errors` 指向该头）。
+- **请求头**：`X-Workspace-Id: <workspace_id>`
+- **请求体**（可选）：
 ```json
 {
-  "passcode": "xxxx-xxxx",
   "client_id": "browser-session-uuid"
 }
 ```
 - **响应 data**：
 ```json
 {
-  "token": "eyJhbGciOiJIUzI1NiIs...",
+  "token": "a1b2c3d4...",
   "expires_in": 14400,
-  "mode": "live"
+  "mode": "live",
+  "role": "guest",
+  "workspace_id": "ws-xxxxxxxx",
+  "daily_max_calls": 20
 }
 ```
-- **失败**：`40101`（口令无效）、`42900`（来源被限流）。
+- **失败**：`40000`（缺少工作区标识）、`42900`（来源被限流）。
 
 #### 2.1.2 查询当前配额
 
@@ -220,15 +222,20 @@ data: {"call_id":"rec-abc123","tool":"read_file","risk":"high","action":"block",
   "session_max_calls": 60,
   "global_used_calls": 320,
   "global_max_calls": 1000,
-  "mode": "live"
+  "mode": "live",
+  "guest_used_calls": 6,
+  "guest_max_calls": 20,
+  "guest_ip_used_calls": 9,
+  "guest_ip_max_calls": 60
 }
 ```
-- `mode` 取值 `live`（实时）/ `replay`（快照回放）；配额耗尽时后端自动切换 `replay`，状态带同步。
+- `mode` 取值 `live`（实时）/ `replay`（快照回放）；全局额度耗尽时后端自动切换 `replay`，状态带同步。
+- `guest_*` 四个字段仅对游客令牌返回：工作区日额度与 IP 日额度。
 
 #### 2.1.3 退出会话
 
 - **路径**：`POST /api/v1/auth/logout`
-- **说明**：注销令牌；管理角色可批量失效令牌（`POST /api/v1/admin/tokens/invalidate`）。
+- **说明**：注销令牌；可由管理令牌批量失效令牌（`POST /api/v1/admin/tokens/invalidate`）。
 
 ### 2.2 编排配置
 
@@ -578,14 +585,14 @@ data: {"call_id":"rec-abc123","tool":"read_file","risk":"high","action":"block",
 
 ### 3.5 平台管理
 
-以下接口仅管理角色可调用（返回 `40300` 拒绝评审角色）。
+以下接口仅管理令牌可调用（返回 `40300` 拒绝游客令牌）。
 
 | 路径 | 方法 | 说明 |
 | --- | --- | --- |
 | `/api/v1/admin/quota` | PUT | 调整全局/会话配额 |
 | `/api/v1/admin/snapshot` | POST | 切换快照回放模式（`{"mode": "replay", "snapshot_id": "..."}`） |
 | `/api/v1/admin/snapshots` | GET/POST | 列出 / 录制快照 |
-| `/api/v1/admin/cleanup` | POST | 赛前/日常清理（请求体带 `confirm: true` 与清理范围） |
+| `/api/v1/admin/cleanup` | POST | 日常/重置清理（请求体带 `confirm: true` 与清理范围） |
 | `/api/v1/admin/metrics` | GET | 运行指标（调用量、判定分布、误报标记统计） |
 | `/api/v1/admin/tokens/invalidate` | POST | 批量失效令牌 |
 
@@ -805,7 +812,7 @@ LLMChatResult = {"content": str, "usage": {"prompt_tokens": int, "completion_tok
 
 ### 5.6 告警 Alert
 
-审计字段（功能设计分册表 10）加：`level`（高/中/低）、`label`（风险标签）、`action`（处置动作）、`false_positive`（bool?）、`false_negative`（bool?）、`note`（备注）。误报/漏报标记由评委在使用中标注，作为赛后效果统计输入。
+审计字段（功能设计分册表 10）加：`level`（高/中/低）、`label`（风险标签）、`action`（处置动作）、`false_positive`（bool?）、`false_negative`（bool?）、`note`（备注）。误报/漏报标记由评委在使用中标注，作为效果统计输入。
 
 ### 5.7 报告 Report
 
@@ -933,10 +940,11 @@ forgeguard/
 | `MODEL_BASE_URL` | 无 | OpenAI 兼容接口地址 |
 | `MODEL_NAME` | 无 | 默认模型名 |
 | `GUARDIAN_MODEL_NAME` | 同 MODEL_NAME | L3 监护智能体模型 |
-| `ACCESS_PASSCODES` | 无 | 口令列表（JSON，支持一次性/有效期） |
+| `QUOTA_GUEST_DAILY` | `20` | 游客每工作区日调用上限（F-31） |
+| `QUOTA_GUEST_IP_DAILY` | `60` | 游客每 IP 日调用上限（防换工作区绕过） |
 | `QUOTA_GLOBAL_DAILY` | `1000` | 全局日调用上限 |
 | `QUOTA_SESSION_MAX` | `60` | 单会话调用上限 |
-| `INSTANCE_MAX` | `8` | 并发实例上限 |
+| `INSTANCE_MAX` | `16` | 存活实例上限（演示期放宽） |
 | `SESSION_TTL` | `14400` | 令牌有效期（秒） |
 | `SNAPSHOT_MODE` | `auto` | `auto` / `manual` 快照切换策略 |
 
@@ -963,9 +971,10 @@ forgeguard/
 ```bash
 BASE=https://your-host/api/v1
 
-# 1. 口令换令牌
-TOKEN=$(curl -s -X POST "$BASE/auth/token" -H 'Content-Type: application/json' \
-  -d '{"passcode":"demo-2026","client_id":"curl-demo"}' | jq -r '.data.token')
+# 1. 游客换令牌（X-Workspace-Id 必填，任意稳定字符串即可）
+TOKEN=$(curl -s -X POST "$BASE/auth/guest" -H 'Content-Type: application/json' \
+  -H 'X-Workspace-Id: curl-demo-ws' \
+  -d '{"client_id":"curl-demo"}' | jq -r '.data.token')
 
 # 2. 提交编排配置
 CONFIG_ID=$(curl -s -X POST "$BASE/configs" -H "Authorization: Bearer $TOKEN" \

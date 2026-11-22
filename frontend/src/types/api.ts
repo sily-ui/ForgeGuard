@@ -335,6 +335,7 @@ export interface Sample {
   payload_preview: string;
   expected_off: string;
   expected_on: string;
+  setup_turns?: string[];
   applicable: boolean;
   reason?: string;
 }

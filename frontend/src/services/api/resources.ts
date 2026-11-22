@@ -119,8 +119,8 @@ export const sampleApi = {
       page,
       page_size: pageSize,
     }),
-  load: (sessionId: string, sampleId: string, force = false) =>
-    api.post<SampleLoadResult>(`/sessions/${sessionId}/samples/${sampleId}/load`, { force }, { timeout: TURN_TIMEOUT_MS }),
+  load: (sessionId: string, sampleId: string, force = false, fast = false) =>
+    api.post<SampleLoadResult>(`/sessions/${sessionId}/samples/${sampleId}/load`, { force, fast }, { timeout: TURN_TIMEOUT_MS }),
 };
 
 export const experimentApi = {

@@ -6,7 +6,8 @@ import { AttackIcon } from '@/components/icons/SecurityIcons';
 import { useAuthStore } from '@/stores/authStore';
 import { useQuotaStore } from '@/stores/quotaStore';
 import { SimBadge } from '@/components/common/SimBadge';
-import { getWorkspaceId, regenerateWorkspace, workspaceShort } from '@/utils/workspace';
+import { DossierNo } from '@/components/common/DossierNo';
+import { dossierNo, getWorkspaceId, regenerateWorkspace, workspaceShort } from '@/utils/workspace';
 
 const NAV = [
   { to: '/orchestration', label: '编排中心', icon: LayoutGrid },
@@ -33,6 +34,7 @@ export function Sidebar() {
   const quota = useQuotaStore((s) => s.quota);
   const refreshQuota = useQuotaStore((s) => s.refresh);
   const [wsId] = useState(getWorkspaceId);
+  const dossier = dossierNo(wsId);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -92,9 +94,24 @@ export function Sidebar() {
         <Logo size={32} withText />
       </button>
 
+      <div
+        style={{
+          padding: '10px 18px 0',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 8,
+        }}
+      >
+        <DossierNo no={dossier} label="本工作区案卷档号" />
+        <span className="mono" style={{ fontSize: 9.5, letterSpacing: 1.4, color: 'var(--fg-text-3)' }}>
+          ARCHIVE
+        </span>
+      </div>
+
       <nav className="fg-sider-nav" style={{ flex: 1, padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: 2, overflowY: 'auto' }}>
         <div className="fg-sider-label" style={{ fontSize: 12, fontWeight: 500, color: 'var(--fg-text-3)', padding: '8px 12px 6px' }}>
-          科研工作区
+          案卷导航
         </div>
         {NAV.map((item) => (
           <NavLink key={item.to} to={item.to} style={({ isActive }) => rowStyle(isActive)}>
@@ -104,7 +121,7 @@ export function Sidebar() {
         ))}
 
         <div className="fg-sider-label" style={{ fontSize: 12, fontWeight: 500, color: 'var(--fg-text-3)', padding: '20px 12px 6px' }}>
-          攻防实验舱
+          攻防阅档舱
         </div>
         <button onClick={() => navigate('/workspace')} style={{ ...rowStyle(false), border: 'none', cursor: 'pointer', textAlign: 'left', width: '100%' }}>
           <AttackIcon size={16} strokeWidth={1.5} style={{ flexShrink: 0 }} />

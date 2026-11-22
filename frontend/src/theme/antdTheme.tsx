@@ -2,24 +2,24 @@ import { theme as antdTheme, ConfigProvider } from 'antd';
 import type { ReactNode } from 'react';
 
 const token = {
-  borderRadius: 8,
-  fontSize: 16,
+  borderRadius: 6,
+  fontSize: 14,
   fontFamily:
-    "'Inter', 'PingFang SC', 'Microsoft YaHei', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+    "'IBM Plex Sans', 'Inter', 'PingFang SC', 'Microsoft YaHei', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
   controlHeight: 36,
   wireframe: false,
-  colorPrimary: '#176b63',
-  colorInfo: '#4f7ba6',
+  colorPrimary: '#1f6b5e',
+  colorInfo: '#3d6488',
   colorSuccess: '#2e7d5b',
-  colorWarning: '#c2892b',
-  colorError: '#b5484d',
-  colorTextBase: '#1e2429',
-  colorBgLayout: '#f4f5f6',
+  colorWarning: '#8f6a14',
+  colorError: '#a33d3f',
+  colorTextBase: '#1c1f24',
+  colorBgLayout: '#f4f5f2',
   colorBgContainer: '#ffffff',
   colorBgElevated: '#ffffff',
-  colorBorder: '#e2e5e8',
-  colorBorderSecondary: '#eef0f2',
-  colorLink: '#176b63',
+  colorBorder: '#d9dcd7',
+  colorBorderSecondary: '#ecede8',
+  colorLink: '#1f6b5e',
 };
 
 export function AntdProvider({ children }: { children: ReactNode }) {
@@ -29,10 +29,12 @@ export function AntdProvider({ children }: { children: ReactNode }) {
         algorithm: antdTheme.defaultAlgorithm,
         token,
         components: {
-          Card: { borderRadiusLG: 12 },
+          Card: { borderRadiusLG: 10 },
           Button: { primaryShadow: 'none', defaultShadow: 'none' },
-          Table: { headerBg: '#f4f5f6', rowHoverBg: '#f4f5f6' },
-          Menu: { itemBorderRadius: 8 },
+          Table: { headerBg: '#ecede8', rowHoverBg: '#f4f5f2' },
+          Menu: { itemBorderRadius: 6 },
+          Tag: { borderRadiusSM: 5 },
+          Modal: { borderRadiusLG: 10 },
         },
       }}
     >

@@ -9,10 +9,13 @@ import { SectionCard } from '@/components/common/SectionCard';
 import { SimBadge } from '@/components/common/SimBadge';
 import { EmptyState } from '@/components/common/EmptyState';
 import { PresetTag } from '@/components/common/PresetTag';
+import { DossierNo } from '@/components/common/DossierNo';
+import { StatusLine } from '@/components/common/StatusLine';
 import { confirmAction } from '@/components/common/confirmAction';
 import { instanceApi, sessionApi } from '@/services/api/resources';
 import { INSTANCE_STATUS_META, PRESET_META, TOOL_META } from '@/utils/constants';
 import { fromNow, formatShort } from '@/utils/format';
+import { dossierFromId } from '@/utils/workspace';
 import { ApiClientError } from '@/services/api/client';
 import type { Instance } from '@/types/api';
 
@@ -22,6 +25,15 @@ const STATUS_COLOR: Record<string, string> = {
   pending_retry: 'orange',
   frozen: 'default',
   destroyed: 'default',
+};
+
+// 实例状态 → 线形状态：实线=运行、虚线=待启动、半线=即将过期、划线=已回收。
+const STATUS_LINE: Record<string, { variant: 'solid' | 'dashed' | 'half' | 'strike'; color: string }> = {
+  ready: { variant: 'solid', color: 'var(--fg-allow)' },
+  creating: { variant: 'dashed', color: 'var(--fg-brand-primary)' },
+  pending_retry: { variant: 'half', color: 'var(--fg-observe)' },
+  frozen: { variant: 'half', color: 'var(--fg-observe)' },
+  destroyed: { variant: 'strike', color: 'var(--fg-text-3)' },
 };
 
 export default function InstancesPage() {
@@ -141,8 +153,13 @@ export default function InstancesPage() {
             rowKey="instance_id"
             pagination={{ pageSize: 10, showSizeChanger: false }}
             columns={[
-              { title: '名称', dataIndex: 'name', render: (v, r) => <span style={{ fontWeight: 600 }}>{v}<div className="mono" style={{ fontSize: 11, color: 'var(--fg-text-3)' }}>{r.instance_id}</div></span> },
-              { title: '状态', dataIndex: 'status', render: (v) => <Tag color={STATUS_COLOR[v]}>{INSTANCE_STATUS_META[v]?.label || v}</Tag> },
+              { title: '名称', dataIndex: 'name', render: (v, r) => <span style={{ fontWeight: 600 }}>{v}<div className="mono" style={{ fontSize: 11, color: 'var(--fg-text-3)' }}>{r.instance_id}</div><div style={{ marginTop: 2 }}><DossierNo no={dossierFromId(r.instance_id)} /></div></span> },
+              { title: '状态', dataIndex: 'status', render: (v) => (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                  <StatusLine variant={STATUS_LINE[v]?.variant ?? 'solid'} color={STATUS_LINE[v]?.color} thickness={3} />
+                  <Tag color={STATUS_COLOR[v]}>{INSTANCE_STATUS_META[v]?.label || v}</Tag>
+                </span>
+              ) },
               { title: '防护', dataIndex: ['guard', 'preset'], render: (v) => <PresetTag preset={v} /> },
               { title: '工具', dataIndex: 'enabled_tools', render: (v: string[]) => <span className="mono" style={{ fontSize: 12 }}>{v.length} 个</span> },
               { title: '调用', dataIndex: ['stats', 'call_count'], render: (v) => <span className="mono">{v || 0}</span> },
@@ -193,8 +210,12 @@ function InstanceCard({ instance, onEnter, entering, onClone, onPolicies, onRene
         <div style={{ minWidth: 0 }}>
           <div style={{ fontSize: 16.5, fontWeight: 600, color: 'var(--fg-text-1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{instance.name}</div>
           <div className="mono" style={{ fontSize: 11.5, color: 'var(--fg-text-3)', marginTop: 2 }}>{instance.instance_id}</div>
+          <div style={{ marginTop: 2 }}><DossierNo no={dossierFromId(instance.instance_id)} /></div>
         </div>
-        <Tag color={STATUS_COLOR[instance.status]} style={{ margin: 0 }}>{INSTANCE_STATUS_META[instance.status]?.label}</Tag>
+        <span style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-end', gap: 5 }}>
+          <Tag color={STATUS_COLOR[instance.status]} style={{ margin: 0 }}>{INSTANCE_STATUS_META[instance.status]?.label}</Tag>
+          <StatusLine variant={STATUS_LINE[instance.status]?.variant ?? 'solid'} color={STATUS_LINE[instance.status]?.color} thickness={3} />
+        </span>
       </div>
 
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>

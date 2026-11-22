@@ -10,10 +10,13 @@ import { PromptEditor } from '@/components/editor/PromptEditor';
 import { SimBadge } from '@/components/common/SimBadge';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { PresetTag } from '@/components/common/PresetTag';
+import { DossierSpine } from '@/components/common/DossierSpine';
+import { DossierNo } from '@/components/common/DossierNo';
 import { configApi, instanceApi, templateApi } from '@/services/api/resources';
 import { defaultConfig, configFromTemplate, enabledToolNames } from '@/utils/config';
 import { TOOL_NAMES, TOOL_META, PRESET_META } from '@/utils/constants';
 import { ApiClientError } from '@/services/api/client';
+import { dossierFromId, dossierNo, getWorkspaceId } from '@/utils/workspace';
 import type { AgentConfig, Policy, ToolName, ValidationResult } from '@/types/api';
 
 const STEPS = [
@@ -39,6 +42,7 @@ export default function OrchestrationPage() {
   const [step, setStep] = useState(0);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [validation, setValidation] = useState<ValidationResult | null>(null);
+  const [savedConfigId, setSavedConfigId] = useState<string | null>(null);
 
   const templatesQuery = useQuery({ queryKey: ['templates'], queryFn: () => templateApi.list() });
 
@@ -65,6 +69,7 @@ export default function OrchestrationPage() {
   const saveMutation = useMutation({
     mutationFn: () => configApi.create(config),
     onSuccess: (data) => {
+      setSavedConfigId(data.config_id);
       message.success(`配置已保存（${data.config_id}）`);
     },
     onError: (err) => {
@@ -95,6 +100,7 @@ export default function OrchestrationPage() {
 
   const enabled = enabledToolNames(config);
   const policies = previewQuery.data?.policies ?? [];
+  const configDossierNo = savedConfigId ? dossierFromId(savedConfigId) : dossierNo(getWorkspaceId());
   const grouped = useMemo(() => {
     const g: Record<string, Policy[]> = { L1: [], L2: [], L3: [] };
     for (const p of policies) g[p.level]?.push(p);
@@ -291,23 +297,27 @@ export default function OrchestrationPage() {
 
         {/* 右侧实时预览 */}
         <div className="fg-orch-aside" style={{ display: 'flex', flexDirection: 'column', gap: 16, position: 'sticky', top: 24 }}>
-          <SectionCard title="编排摘要" padding={16}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <SummaryRow label="名称" value={config.name || '—'} />
-              <SummaryRow label="防护档位" value={<PresetTag preset={config.guard.preset} size="sm" />} />
-              <div>
-                <div style={{ fontSize: 12, color: 'var(--fg-text-3)', marginBottom: 6 }}>启用工具 ({enabled.length})</div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
-                  {enabled.length === 0 && <span style={{ fontSize: 13, color: 'var(--fg-text-3)' }}>未启用任何工具</span>}
-                  {enabled.map((t) => (
-                    <span key={t} className="mono" style={{ fontSize: 11.5, padding: '2px 8px', borderRadius: 4, background: 'var(--fg-bg-subtle)', color: 'var(--fg-text-2)', border: '1px solid var(--fg-border)' }}>{t}</span>
-                  ))}
+            <div style={{ display: 'flex', alignItems: 'stretch', overflow: 'hidden', borderRadius: 14, border: '1px solid var(--fg-border)', background: 'var(--fg-bg-card)' }}>
+              <DossierSpine no={configDossierNo} style={{ alignSelf: 'stretch' }} />
+              <SectionCard title="配置案卷" padding={16} noBorder bodyStyle={{ minWidth: 0 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <SummaryRow label="案卷档号" value={<DossierNo no={configDossierNo} />} />
+                  <SummaryRow label="名称" value={config.name || '—'} />
+                  <SummaryRow label="防护档位" value={<PresetTag preset={config.guard.preset} size="sm" />} />
+                  <div>
+                    <div style={{ fontSize: 12, color: 'var(--fg-text-3)', marginBottom: 6 }}>启用工具 ({enabled.length})</div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+                      {enabled.length === 0 && <span style={{ fontSize: 13, color: 'var(--fg-text-3)' }}>未启用任何工具</span>}
+                      {enabled.map((t) => (
+                        <span key={t} className="mono" style={{ fontSize: 11.5, padding: '2px 8px', borderRadius: 4, background: 'var(--fg-bg-subtle)', color: 'var(--fg-text-2)', border: '1px solid var(--fg-border)' }}>{t}</span>
+                      ))}
+                    </div>
+                  </div>
+                  <SummaryRow label="单轮 / 会话" value={`${config.limits.max_calls_per_turn} / ${config.limits.max_calls_per_session}`} />
+                  <SummaryRow label="超时" value={`${config.limits.timeout_ms}ms`} />
                 </div>
-              </div>
-              <SummaryRow label="单轮 / 会话" value={`${config.limits.max_calls_per_turn} / ${config.limits.max_calls_per_session}`} />
-              <SummaryRow label="超时" value={`${config.limits.timeout_ms}ms`} />
+              </SectionCard>
             </div>
-          </SectionCard>
 
           {validation && (
             <SectionCard title="校验结果" padding={14}>

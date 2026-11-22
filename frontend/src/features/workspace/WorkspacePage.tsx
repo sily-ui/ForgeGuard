@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { App, Button, Spin } from 'antd';
-import { Play, LayoutGrid, Boxes, FileBarChart, ArrowRight, Clock } from 'lucide-react';
+import { Play, LayoutGrid, Boxes, FileBarChart, ArrowRight, Clock, Check } from 'lucide-react';
 import { PageHeader } from '@/components/common/PageHeader';
 import { SectionCard } from '@/components/common/SectionCard';
 import { SimBadge } from '@/components/common/SimBadge';
@@ -10,6 +10,8 @@ import { ModeBadge } from '@/components/common/ModeBadge';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { EmptyState } from '@/components/common/EmptyState';
 import { PresetTag } from '@/components/common/PresetTag';
+import { DossierSpine } from '@/components/common/DossierSpine';
+import { DossierNo } from '@/components/common/DossierNo';
 import { AttackIcon, GuardIcon } from '@/components/icons/SecurityIcons';
 import { templateApi, instanceApi, sessionApi, sampleApi, reportApi } from '@/services/api/resources';
 import { useAuthStore } from '@/stores/authStore';
@@ -17,9 +19,26 @@ import { useQuotaStore } from '@/stores/quotaStore';
 import { ApiClientError } from '@/services/api/client';
 import { TOOL_META } from '@/utils/constants';
 import { fromNow, formatShort } from '@/utils/format';
+import { dossierFromId, getWorkspaceId, dossierNo } from '@/utils/workspace';
 import type { Template } from '@/types/api';
 
-const DEMO_STEPS = ['创建实例', '开启会话', '载入样本', '进入控制台'];
+const DEMO_STEPS = ['准备靶标', '开启会话', '载入样本', '进入控制台'];
+const DEMO_PHASE_LABEL = ['正在准备靶标实例…', '正在开启攻防会话…', '正在载入攻击样本…'];
+// 演示超时兜底：快速链路目标秒级完成；超时视为异常，避免前端长时间转圈。
+const DEMO_TIMEOUT_MS = 120000;
+
+class DemoCancelled extends Error {}
+
+const CAPABILITIES = [
+  { no: '01', icon: LayoutGrid, title: '编排中心', desc: '配置靶标 Agent 的身份、工具、约束与防护档位', to: '/orchestration' },
+  { no: '02', icon: Boxes, title: '实例管理', desc: '运行、克隆、比对与回收靶标实例', to: '/instances' },
+  { no: '03', icon: FileBarChart, title: '测评报告', desc: '根因归因与可执行加固建议', to: '/reports' },
+];
+
+interface DemoPhase {
+  templateId: string;
+  phase: number;
+}
 
 export default function WorkspacePage() {
   const navigate = useNavigate();
@@ -27,7 +46,29 @@ export default function WorkspacePage() {
   const queryClient = useQueryClient();
   const mode = useAuthStore((s) => s.mode);
   const quota = useQuotaStore((s) => s.quota);
-  const [demoStep, setDemoStep] = useState<string | null>(null);
+  const [demoPhase, setDemoPhase] = useState<DemoPhase | null>(null);
+  const dossier = dossierNo(getWorkspaceId());
+  // 取消与超时兜底：快速链路正常秒级完成，异常情况不再无限转圈。
+  const demoCancelRef = useRef(false);
+  const demoTimerRef = useRef<number | null>(null);
+
+  const cancelDemo = () => {
+    demoCancelRef.current = true;
+    if (demoTimerRef.current) {
+      window.clearTimeout(demoTimerRef.current);
+      demoTimerRef.current = null;
+    }
+  };
+
+  // 演示启动：重置取消标记并挂超时兜底（快速链路秒级完成，超时即中止）。
+  const startDemo = () => {
+    if (!templates[0] || demo.isPending) return;
+    demoCancelRef.current = false;
+    demoTimerRef.current = window.setTimeout(() => {
+      demoCancelRef.current = true;
+    }, DEMO_TIMEOUT_MS);
+    demo.mutate(templates[0]);
+  };
 
   const templatesQuery = useQuery({ queryKey: ['templates'], queryFn: () => templateApi.list() });
   const instancesQuery = useQuery({ queryKey: ['instances', 'recent'], queryFn: () => instanceApi.list(undefined, 1, 6) });
@@ -36,32 +77,70 @@ export default function WorkspacePage() {
 
   const demo = useMutation({
     mutationFn: async (template: Template) => {
-      setDemoStep('正在创建靶标实例…');
-      const inst = await instanceApi.create({ config: template.config, name: template.name, guard_preset: template.suggested_guard });
-      setDemoStep('正在开启攻防会话…');
-      const sess = await sessionApi.create(inst.instance_id, true);
-      setDemoStep('正在载入攻击样本…');
-      const samples = await sampleApi.list(inst.instance_id, undefined, 1, 50);
-      const target = samples.items.find((s) => s.applicable) || samples.items[0];
+      if (demoCancelRef.current) throw new DemoCancelled();
+      setDemoPhase({ templateId: template.id, phase: 0 });
+      // 同工作区已有该模板的就绪实例时直接复用，反复演示不新建实例、不会触发存活上限。
+      let instanceId: string;
+      if (demoCancelRef.current) throw new DemoCancelled();
+      const existing = await instanceApi.list('ready', 1, 100);
+      const reusable = existing.items.find((i) => i.name === template.name);
+      if (reusable) {
+        instanceId = reusable.instance_id;
+      } else {
+        if (demoCancelRef.current) throw new DemoCancelled();
+        const inst = await instanceApi.create({
+          config: template.config,
+          name: template.name,
+          guard_preset: template.suggested_guard,
+        });
+        instanceId = inst.instance_id;
+      }
+      if (demoCancelRef.current) throw new DemoCancelled();
+      setDemoPhase({ templateId: template.id, phase: 1 });
+      const sess = await sessionApi.create(instanceId, true);
+      if (demoCancelRef.current) throw new DemoCancelled();
+      setDemoPhase({ templateId: template.id, phase: 2 });
+      const samples = await sampleApi.list(instanceId, undefined, 1, 100);
+      const applicable = samples.items.filter((s) => s.applicable);
+      // 演示优先选无需铺垫、一击即中的样本，保证一轮内就能看到拦截或放行结论。
+      const target =
+        applicable.find((s) => !(s.setup_turns ?? []).length) ||
+        applicable[0] ||
+        samples.items[0];
+      if (demoCancelRef.current) throw new DemoCancelled();
       if (target) {
+        console.log('[demo] loading sample', target.sample_id);
         try {
-          await sampleApi.load(sess.session_id, target.sample_id, true);
-        } catch {
+          // 快速链路：整条调用链走离线仿真，秒级完成、答辩可控、不耗配额。
+          await sampleApi.load(sess.session_id, target.sample_id, true, true);
+          console.log('[demo] sample loaded');
+        } catch (e) {
+          console.log('[demo] sample load failed (swallowed)', e);
           /* 样本可能不适用，仍进入控制台 */
         }
       }
+      if (demoCancelRef.current) throw new DemoCancelled();
+      console.log('[demo] returning session', sess.session_id);
       return sess.session_id;
     },
     onSuccess: (sessionId) => {
-      setDemoStep(null);
+      console.log('[demo] onSuccess', sessionId);
+      setDemoPhase(null);
+      cancelDemo();
       queryClient.invalidateQueries({ queryKey: ['instances'] });
       queryClient.invalidateQueries({ queryKey: ['sessions'] });
       message.success('演示已就绪，进入攻防控制台');
       navigate(`/console/${sessionId}`);
     },
     onError: (err) => {
-      setDemoStep(null);
-      message.error(err instanceof ApiClientError ? err.message : '一键演示失败');
+      console.log('[demo] onError', err);
+      setDemoPhase(null);
+      cancelDemo();
+      if (err instanceof DemoCancelled) {
+        message.info('演示已取消');
+      } else {
+        message.error(err instanceof ApiClientError ? err.message : '一键演示失败');
+      }
     },
   });
 
@@ -71,80 +150,159 @@ export default function WorkspacePage() {
   const reports = reportsQuery.data?.items ?? [];
   // 仅「当前正在演示的那个模板」显示 loading，避免点一个全部转圈。
   const demoTargetId = demo.variables?.id;
-  const bannerPending = demo.isPending && demoTargetId === templates[0]?.id;
-  const activeStep = demoStep ? (demoStep.includes('实例') ? 0 : demoStep.includes('会话') ? 1 : 2) : -1;
+  const bannerPending = demoPhase !== null && demoTargetId === templates[0]?.id;
+  const activeStep = demoPhase ? demoPhase.phase : -1;
+  const activeLabel = demoPhase ? DEMO_PHASE_LABEL[Math.min(demoPhase.phase, DEMO_PHASE_LABEL.length - 1)] : '准备中';
 
   return (
     <div>
-      <PageHeader title="实验室工作台" extra={<><ModeBadge mode={mode} /><SimBadge /></>} />
+      <PageHeader title="案卷工作台" extra={<><ModeBadge mode={mode} /><SimBadge /></>} />
 
-      {/* 演示序列：一键演示的流程面板，步骤状态实时可见 */}
+      {/* 演示案卷：骑缝条 + 一键演示流程，步骤状态以线形推进 */}
       <div
         data-tour="demo-banner"
-        className="fg-card"
-        style={{ padding: 20, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap' }}
+        style={{
+          marginBottom: 16,
+          display: 'flex',
+          borderRadius: 10,
+          overflow: 'hidden',
+          border: '1px solid var(--fg-border)',
+          boxShadow: 'var(--fg-shadow-1)',
+          background: 'var(--fg-bg-card)',
+        }}
       >
-        <div style={{ flex: 1, minWidth: 280 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <AttackIcon size={16} strokeWidth={1.5} style={{ color: 'var(--fg-text-3)' }} />
-            <span style={{ fontSize: 16, fontWeight: 600, color: 'var(--fg-text-1)' }}>一键演示</span>
-          </div>
-          <p style={{ margin: '4px 0 0', fontSize: 13.5, color: 'var(--fg-text-2)', lineHeight: 1.6 }}>
-            自动选用预置模板创建靶标实例与会话，载入攻击样本后进入实时控制台，全程内存仿真
-          </p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 12, flexWrap: 'wrap' }}>
-            {DEMO_STEPS.map((label, i) => {
-              const state = bannerPending ? (i < activeStep ? 'done' : i === activeStep ? 'run' : 'idle') : 'idle';
-              return (
-                <span key={label} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                  <span
-                    className="mono"
-                    style={{
-                      fontSize: 12,
-                      color: state === 'run' ? 'var(--fg-brand-primary)' : state === 'done' ? 'var(--fg-text-2)' : 'var(--fg-text-3)',
-                    }}
-                  >
-                    {String(i + 1).padStart(2, '0')}
+        <DossierSpine no={dossier} />
+        <div style={{ flex: 1, padding: 20, display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap', minWidth: 0 }}>
+          <div style={{ flex: 1, minWidth: 280 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <AttackIcon size={16} strokeWidth={1.5} style={{ color: 'var(--fg-text-3)' }} />
+              <span style={{ fontSize: 16, fontWeight: 600, color: 'var(--fg-text-1)' }}>一键演示</span>
+            </div>
+            <p style={{ margin: '4px 0 0', fontSize: 13.5, color: 'var(--fg-text-2)', lineHeight: 1.6 }}>
+              自动选用预置模板创建靶标实例与会话，载入攻击样本后进入实时控制台，全程内存仿真，演示走快速链路秒级完成
+            </p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 12, flexWrap: 'wrap' }}>
+              {DEMO_STEPS.map((label, i) => {
+                const state = bannerPending ? (i < activeStep ? 'done' : i === activeStep ? 'run' : 'idle') : 'idle';
+                const active = state === 'run';
+                const done = state === 'done';
+                // 墨线状态：已过步骤为实线品牌色；下一个步骤进行中，线随数据流动。
+                const nextRunning = bannerPending && i + 1 === activeStep;
+                return (
+                  <span key={label} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                    <span
+                      className="mono"
+                      style={{
+                        fontSize: 12,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 3,
+                        color: active || done ? 'var(--fg-brand-primary)' : 'var(--fg-text-3)',
+                      }}
+                    >
+                      {done ? <Check size={11} strokeWidth={2.5} /> : String(i + 1).padStart(2, '0')}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: 13,
+                        fontWeight: active ? 600 : 400,
+                        color: active ? 'var(--fg-brand-primary)' : done ? 'var(--fg-text-2)' : 'var(--fg-text-3)',
+                      }}
+                    >
+                      {label}
+                    </span>
+                    {i < DEMO_STEPS.length - 1 && (
+                      <span
+                        style={
+                          nextRunning
+                            ? {
+                                width: 20,
+                                height: 2,
+                                marginLeft: 10,
+                                backgroundImage:
+                                  'repeating-linear-gradient(90deg, var(--fg-brand-primary) 0 5px, transparent 5px 10px)',
+                                backgroundSize: '20px 100%',
+                                backgroundRepeat: 'repeat',
+                                animation: 'fg-flow-bg 800ms linear infinite',
+                                borderRadius: 2,
+                              }
+                            : {
+                                width: 16,
+                                height: 1,
+                                marginLeft: 10,
+                                background: done ? 'var(--fg-brand-primary)' : 'var(--fg-border)',
+                              }
+                        }
+                      />
+                    )}
                   </span>
-                  <span
-                    style={{
-                      fontSize: 13,
-                      fontWeight: state === 'run' ? 600 : 400,
-                      color: state === 'run' ? 'var(--fg-brand-primary)' : state === 'done' ? 'var(--fg-text-2)' : 'var(--fg-text-3)',
-                    }}
-                  >
-                    {label}
-                  </span>
-                  {i < DEMO_STEPS.length - 1 && <span style={{ width: 16, height: 1, background: 'var(--fg-border)', marginLeft: 10 }} />}
-                </span>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
+          {bannerPending && (
+            <Button
+              type="text"
+              size="large"
+              onClick={cancelDemo}
+              style={{ flexShrink: 0, color: 'var(--fg-text-2)' }}
+            >
+              取消
+            </Button>
+          )}
+          <Button
+            type="primary"
+            size="large"
+            onClick={startDemo}
+            disabled={!templates.length || demo.isPending}
+            style={{ height: 44, padding: '0 24px', fontWeight: 600, flexShrink: 0 }}
+            icon={bannerPending ? <Spin size="small" /> : <Play size={16} />}
+          >
+            {bannerPending ? activeLabel : '开始演示'}
+          </Button>
         </div>
-        <Button
-          type="primary"
-          size="large"
-          onClick={() => templates[0] && demo.mutate(templates[0])}
-          disabled={!templates.length || demo.isPending}
-          style={{ height: 44, padding: '0 24px', fontWeight: 600 }}
-          icon={bannerPending ? <Spin size="small" /> : <Play size={16} />}
-        >
-          {bannerPending ? demoStep || '准备中' : '开始演示'}
-        </Button>
       </div>
 
-      {/* 能力入口 */}
-      <div data-tour="capabilities" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 16 }}>
-        <CapabilityCard icon={<LayoutGrid size={18} strokeWidth={1.5} />} title="编排中心" desc="配置靶标 Agent 的身份、工具、约束与防护档位" onClick={() => navigate('/orchestration')} />
-        <CapabilityCard icon={<Boxes size={18} strokeWidth={1.5} />} title="实例管理" desc="运行、克隆、比对与回收靶标实例" onClick={() => navigate('/instances')} />
-        <CapabilityCard icon={<FileBarChart size={18} strokeWidth={1.5} />} title="测评报告" desc="根因归因与可执行加固建议" onClick={() => navigate('/reports')} />
+      {/* 能力入口：文书索引条目，不用等大卡片行 */}
+      <div data-tour="capabilities" style={{ marginBottom: 16 }}>
+        <div className="fg-card" style={{ padding: '4px 18px' }}>
+          {CAPABILITIES.map((c, i) => (
+            <button
+              key={c.title}
+              onClick={() => navigate(c.to)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 14,
+                width: '100%',
+                padding: '13px 4px',
+                border: 'none',
+                background: 'transparent',
+                cursor: 'pointer',
+                textAlign: 'left',
+                borderBottom: i < CAPABILITIES.length - 1 ? '1px solid var(--fg-border)' : 'none',
+                transition: 'background-color 150ms ease',
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--fg-bg-subtle)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+            >
+              <span className="mono" style={{ fontSize: 12, fontWeight: 600, color: 'var(--fg-brand-primary)', width: 20, textAlign: 'right', flexShrink: 0 }}>
+                {c.no}
+              </span>
+              <c.icon size={16} strokeWidth={1.5} style={{ color: 'var(--fg-text-3)', flexShrink: 0 }} />
+              <span style={{ fontSize: 14.5, fontWeight: 600, color: 'var(--fg-text-1)', flexShrink: 0 }}>{c.title}</span>
+              <span style={{ fontSize: 13, color: 'var(--fg-text-2)', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.desc}</span>
+              <ArrowRight size={14} style={{ color: 'var(--fg-text-3)', flexShrink: 0 }} />
+            </button>
+          ))}
+        </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 16, alignItems: 'start' }}>
         {/* 靶标模板 */}
         <div data-tour="templates">
         <SectionCard
-          title={<><GuardIcon size={15} strokeWidth={1.5} /> 预置靶标模板</>}
+          title={<><GuardIcon size={15} strokeWidth={1.5} /> 当前可测靶标</>}
           extra={<Button size="small" type="link" onClick={() => navigate('/orchestration')}>去编排 <ArrowRight size={13} /></Button>}
           padding={12}
         >
@@ -160,7 +318,8 @@ export default function WorkspacePage() {
                   style={{ display: 'flex', alignItems: 'center', gap: 14, padding: 12, borderRadius: 8, border: '1px solid var(--fg-border)' }}
                 >
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
+                      <DossierNo no={dossierFromId(t.id)} />
                       <span style={{ fontSize: 14.5, fontWeight: 600, color: 'var(--fg-text-1)' }}>{t.name}</span>
                       <PresetTag preset={t.suggested_guard} size="sm" />
                     </div>
@@ -178,8 +337,8 @@ export default function WorkspacePage() {
                     ghost
                     size="small"
                     icon={<Play size={13} />}
-                    loading={demo.isPending && demoTargetId === t.id}
-                    disabled={demo.isPending && demoTargetId !== t.id}
+                    loading={demoPhase !== null && demoTargetId === t.id}
+                    disabled={demoPhase !== null && demoTargetId !== t.id}
                     onClick={() => demo.mutate(t)}
                   >
                     演示
@@ -209,7 +368,9 @@ export default function WorkspacePage() {
                     <StatusBadge action={s.block_count > 0 ? 'block' : 'allow'} size="sm" showText={false} />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 13.5, fontWeight: 500, color: 'var(--fg-text-1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.instance_name}</div>
-                      <div className="mono" style={{ fontSize: 11, color: 'var(--fg-text-3)' }}>{s.session_id} · {s.turn} 轮</div>
+                      <div className="mono" style={{ fontSize: 11, color: 'var(--fg-text-3)' }}>
+                        档号 {dossierFromId(s.session_id)} · {s.session_id.slice(0, 8)} · {s.turn} 轮
+                      </div>
                     </div>
                     <span style={{ fontSize: 11.5, color: 'var(--fg-text-3)' }}>{fromNow(s.created_at)}</span>
                   </button>
@@ -234,7 +395,9 @@ export default function WorkspacePage() {
                     <FileBarChart size={15} strokeWidth={1.5} style={{ color: 'var(--fg-text-3)' }} />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 13.5, fontWeight: 500, color: 'var(--fg-text-1)' }}>{r.summary.instance_name}</div>
-                      <div style={{ fontSize: 11.5, color: 'var(--fg-text-3)' }}>拦截 {r.summary.block_count} · {formatShort(r.created_at)}</div>
+                      <div className="mono" style={{ fontSize: 11.5, color: 'var(--fg-text-3)' }}>
+                        档号 {dossierFromId(r.report_id)} · 拦截 {r.summary.block_count} · {formatShort(r.created_at)}
+                      </div>
                     </div>
                     <ArrowRight size={13} style={{ color: 'var(--fg-text-3)' }} />
                   </button>
@@ -257,24 +420,5 @@ export default function WorkspacePage() {
         </div>
       )}
     </div>
-  );
-}
-
-function CapabilityCard({ icon, title, desc, onClick }: { icon: React.ReactNode; title: string; desc: string; onClick: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      className="fg-card"
-      style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: 16, cursor: 'pointer', textAlign: 'left', transition: 'background-color 150ms ease' }}
-      onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--fg-bg-subtle)'; }}
-      onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--fg-bg-card)'; }}
-    >
-      <span style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--fg-text-3)' }}>
-        {icon}
-        <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--fg-text-1)' }}>{title}</span>
-        <ArrowRight size={14} style={{ marginLeft: 'auto', color: 'var(--fg-text-3)' }} />
-      </span>
-      <span style={{ fontSize: 13, color: 'var(--fg-text-2)', lineHeight: 1.55 }}>{desc}</span>
-    </button>
   );
 }

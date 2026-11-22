@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Agent Security Lab — 面向可编排 Agent 的自适应红队测评与动态旁路监护平台前端",
+  "description": "白盒 Whitebox — 面向可编排 Agent 的自适应红队测评与动态旁路监护平台前端",
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",

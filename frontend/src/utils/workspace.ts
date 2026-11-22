@@ -45,3 +45,15 @@ export function regenerateWorkspace(): string {
 export function workspaceShort(id: string): string {
   return id.slice(0, 8);
 }
+
+// 案卷档号：由任意业务标识确定性派生，作为案卷的全局身份（FG-YYYY-NNNN）。
+export function dossierFromId(id: string): string {
+  let h = 0;
+  for (let i = 0; i < id.length; i += 1) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  return `FG-2026-${(h & 0xffff).toString(16).toUpperCase().padStart(4, '0')}`;
+}
+
+// 案卷档号：由工作区标识派生，作为本工作区案卷的全局身份。
+export function dossierNo(wsId: string): string {
+  return dossierFromId(wsId);
+}

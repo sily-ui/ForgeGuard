@@ -29,9 +29,21 @@ import { ModeBadge } from '@/components/common/ModeBadge';
 import { SimBadge } from '@/components/common/SimBadge';
 import { RiskRing } from '@/components/common/RiskRing';
 import { PresetTag } from '@/components/common/PresetTag';
+import { DossierSpine } from '@/components/common/DossierSpine';
+import { DossierNo } from '@/components/common/DossierNo';
+import { StampBadge } from '@/components/common/StampBadge';
 import { RISK_META, BOUNDARY_META, CATEGORY_NAMES, TOOL_META } from '@/utils/constants';
 import { formatTime, formatDuration, truncate } from '@/utils/format';
+import { dossierFromId } from '@/utils/workspace';
 import type { HardeningSuggestion, Policy, ReportContent } from '@/types/api';
+
+// 处置动作 → 判定章。
+const ACTION_STAMP: Record<'allow' | 'block' | 'challenge' | 'degrade', 'allow' | 'block' | 'challenge' | 'degrade'> = {
+  allow: 'allow',
+  block: 'block',
+  challenge: 'challenge',
+  degrade: 'degrade',
+};
 
 const SECTIONS = [
   { id: 'part1', label: '测评概要', icon: FileBarChart },
@@ -100,6 +112,7 @@ export default function ReportDetailPage() {
   }
 
   const ov = content.part1_overview;
+  const dossierNo = dossierFromId(report.report_id);
 
   return (
     <div>
@@ -108,6 +121,8 @@ export default function ReportDetailPage() {
         title={`测评报告 · ${ov.instance_name}`}
         subtitle={
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <DossierNo no={dossierNo} label="报告档号" />
+            <span>·</span>
             <span className="mono">{report.report_id}</span>
             <span>·</span>
             <span>{formatTime(report.created_at)}</span>
@@ -142,13 +157,16 @@ export default function ReportDetailPage() {
         </nav>
 
         {/* 报告正文 */}
-        <div data-tour="report-body" style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-          <Part1 content={content} />
-          <Part2 content={content} />
-          <Part3 content={content} />
-          <Part4 content={content} />
-          <Part5 content={content} />
-          <Part6 content={content} />
+        <div data-tour="report-body" style={{ display: 'flex', alignItems: 'flex-start' }}>
+          <DossierSpine no={dossierNo} style={{ alignSelf: 'stretch', position: 'sticky', top: 16 }} />
+          <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 18 }}>
+            <Part1 content={content} />
+            <Part2 content={content} />
+            <Part3 content={content} />
+            <Part4 content={content} />
+            <Part5 content={content} />
+            <Part6 content={content} />
+          </div>
         </div>
       </div>
 
@@ -296,7 +314,7 @@ function Part3({ content }: { content: ReportContent }) {
                       <span className="mono" style={{ fontSize: 12, fontWeight: 600, color: 'var(--fg-text-1)' }}>{c.tool}</span>
                       <span style={{ fontSize: 11.5, color: 'var(--fg-text-3)' }}>{TOOL_META[c.tool]?.label}</span>
                       <span style={{ flex: 1, fontSize: 11.5, color: 'var(--fg-text-2)', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{truncate(c.reason, 60)}</span>
-                      <StatusBadge action={c.action} size="sm" showText={false} />
+                      {c.action === 'block' ? <StampBadge kind="block" size="sm" /> : <StatusBadge action={c.action} size="sm" showText={false} />}
                       <span className="mono" style={{ fontSize: 10.5, color: 'var(--fg-text-3)' }}>{formatDuration(c.duration_ms)}</span>
                     </div>
                   ))}
@@ -327,7 +345,7 @@ function Part4({ content }: { content: ReportContent }) {
                 <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--fg-text-1)' }}>{a.label}</span>
                 <Tag color={a.level === 'high' ? 'error' : a.level === 'medium' ? 'warning' : 'default'} style={{ margin: 0 }}>{RISK_META[a.level]?.label ?? a.level}</Tag>
                 {a.boundary && <Tag style={{ margin: 0 }}>{BOUNDARY_META[a.boundary]}</Tag>}
-                <StatusBadge action={a.action} size="sm" />
+                <StampBadge kind={ACTION_STAMP[a.action]} size="sm" />
                 <span className="mono" style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--fg-text-3)' }}>T{a.turn}</span>
               </div>
               <div style={{ fontSize: 13, color: 'var(--fg-text-2)', lineHeight: 1.65, marginBottom: 8 }}>{a.reason}</div>

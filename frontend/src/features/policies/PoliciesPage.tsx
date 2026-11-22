@@ -10,7 +10,6 @@ import {
   PencilLine,
   ScrollText,
   GitBranch,
-  ChevronRight,
 } from 'lucide-react';
 import { instanceApi } from '@/services/api/resources';
 import { ApiClientError } from '@/services/api/client';
@@ -20,8 +19,11 @@ import { StatusBadge } from '@/components/common/StatusBadge';
 import { EmptyState } from '@/components/common/EmptyState';
 import { JsonViewer } from '@/components/common/JsonViewer';
 import { PresetTag } from '@/components/common/PresetTag';
+import { DossierNo } from '@/components/common/DossierNo';
+import { StatusLine } from '@/components/common/StatusLine';
 import { GuardIcon } from '@/components/icons/SecurityIcons';
 import { formatShort } from '@/utils/format';
+import { dossierFromId } from '@/utils/workspace';
 import type { Action, Policy } from '@/types/api';
 
 const LEVEL_META: Record<string, { name: string; desc: string; hue: string }> = {
@@ -29,6 +31,9 @@ const LEVEL_META: Record<string, { name: string; desc: string; hue: string }> = 
   L2: { name: 'L2 · 注入分类', desc: '注入概率打分，高危短路、灰区质询', hue: '#176b63' },
   L3: { name: 'L3 · 语义判定', desc: '对照基线摘要的语义越权判定，输出固定 JSON', hue: '#64748b' },
 };
+
+// 三级案卷的档号式编号：卷一 / 卷二 / 卷三。
+const CN_NUM: Record<string, string> = { L1: '卷一', L2: '卷二', L3: '卷三' };
 
 const ACTION_OPTIONS: { value: Action; label: string }[] = [
   { value: 'allow', label: '放行 allow' },
@@ -141,44 +146,68 @@ export default function PoliciesPage() {
         }
       />
 
-      {/* 三级结构图 */}
+      {/* 三级案卷叠放 */}
       <div data-tour="policies-levels" style={{ marginBottom: 16 }}>
       <SectionCard padding={0}>
-        <div style={{ display: 'flex', alignItems: 'stretch', gap: 0, flexWrap: 'wrap' }}>
-          {(['L1', 'L2', 'L3'] as const).map((lv, idx) => {
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          {(['L1', 'L2', 'L3'] as const).map((lv) => {
             const meta = LEVEL_META[lv];
+            const active = levelFilter === lv;
+            const dim = levelFilter !== 'all' && !active;
             return (
-              <div key={lv} style={{ display: 'flex', alignItems: 'stretch', flex: '1 1 240px', minWidth: 240 }}>
-                <button
-                  onClick={() => setLevelFilter(levelFilter === lv ? 'all' : lv)}
+              <button
+                key={lv}
+                onClick={() => setLevelFilter(levelFilter === lv ? 'all' : lv)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'stretch',
+                  width: '100%',
+                  textAlign: 'left',
+                  background: active ? 'var(--fg-allow-bg)' : 'transparent',
+                  border: 'none',
+                  borderLeft: active ? '3px solid var(--fg-allow)' : '3px solid transparent',
+                  borderBottom: lv !== 'L3' ? '1px solid var(--fg-border)' : 'none',
+                  cursor: 'pointer',
+                  opacity: dim ? 0.6 : 1,
+                  transition: 'background-color 160ms ease, opacity 160ms ease',
+                }}
+              >
+                {/* 档号式编号 */}
+                <div
                   style={{
-                    flex: 1,
-                    textAlign: 'left',
-                    padding: '16px 18px',
-                    background: levelFilter === lv ? 'var(--fg-bg-subtle)' : 'transparent',
-                    border: 'none',
-                    borderBottom: `2px solid ${levelFilter === lv ? meta.hue : 'transparent'}`,
-                    cursor: 'pointer',
-                    transition: 'background-color 160ms ease, border-color 160ms ease',
+                    width: 56,
+                    flexShrink: 0,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRight: '1px solid var(--fg-border)',
+                    background: active ? 'var(--fg-allow-bg)' : 'var(--fg-bg-subtle)',
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: active ? 'var(--fg-allow)' : 'var(--fg-text-2)' }}>{CN_NUM[lv]}</span>
+                  <span className="mono" style={{ fontSize: 10.5, color: 'var(--fg-text-3)', marginTop: 2 }}>{lv}</span>
+                </div>
+                <div style={{ flex: 1, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                       <span style={{ width: 6, height: 6, borderRadius: '50%', background: meta.hue, flexShrink: 0 }} />
                       <span style={{ fontSize: 14.5, fontWeight: 600, color: 'var(--fg-text-1)' }}>{meta.name}</span>
-                    </span>
+                    </div>
+                    <div style={{ fontSize: 12.5, color: 'var(--fg-text-2)', lineHeight: 1.5 }}>{meta.desc}</div>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, flexShrink: 0 }}>
                     <span className="mono" style={{ fontSize: 18, fontWeight: 600, color: 'var(--fg-text-1)' }}>
                       {counts[lv] ?? 0}
                     </span>
+                    <StatusLine
+                      variant={active ? 'solid' : 'dashed'}
+                      color={active ? 'var(--fg-allow)' : 'var(--fg-text-3)'}
+                      label={active ? '当前' : '未触发'}
+                    />
                   </div>
-                  <div style={{ fontSize: 12.5, color: 'var(--fg-text-2)', lineHeight: 1.5 }}>{meta.desc}</div>
-                </button>
-                {idx < 2 && (
-                  <div style={{ display: 'flex', alignItems: 'center', color: 'var(--fg-text-3)', padding: '0 2px' }}>
-                    <ChevronRight size={18} />
-                  </div>
-                )}
-              </div>
+                </div>
+              </button>
             );
           })}
         </div>
@@ -369,6 +398,9 @@ function PolicyRow({ policy, active, onSelect }: { policy: Policy; active: boole
               人工
             </Tag>
           )}
+        </span>
+        <span style={{ display: 'block', marginTop: 2, marginBottom: 2 }}>
+          <DossierNo no={dossierFromId(policy.policy_id)} />
         </span>
         <span
           style={{

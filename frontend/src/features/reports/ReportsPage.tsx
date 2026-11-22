@@ -18,9 +18,18 @@ import { PageHeader } from '@/components/common/PageHeader';
 import { SectionCard } from '@/components/common/SectionCard';
 import { EmptyState } from '@/components/common/EmptyState';
 import { RiskRing } from '@/components/common/RiskRing';
+import { DossierNo } from '@/components/common/DossierNo';
 import { RISK_META } from '@/utils/constants';
 import { formatShort, fromNow, truncate } from '@/utils/format';
+import { dossierFromId } from '@/utils/workspace';
 import type { Report } from '@/types/api';
+
+// 最高风险等级 → 卷宗条目左侧语义色条。
+const RISK_BAR_COLOR: Record<string, string> = {
+  high: 'var(--fg-block)',
+  medium: 'var(--fg-observe)',
+  low: 'var(--fg-allow)',
+};
 
 export default function ReportsPage() {
   const navigate = useNavigate();
@@ -136,7 +145,13 @@ function ReportCard({ report, onOpen }: { report: Report; onOpen: () => void }) 
   const s = report.summary;
   const high = s.max_risk === 'high';
   return (
-    <button onClick={onOpen} style={reportCardStyle}>
+    <button
+      onClick={onOpen}
+      style={{
+        ...reportCardStyle,
+        borderLeft: `3px solid ${RISK_BAR_COLOR[s.max_risk] ?? 'var(--fg-border)'}`,
+      }}
+    >
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
         <RiskRing score={high ? 0.9 : s.max_risk === 'medium' ? 0.5 : 0.15} maxRisk={s.max_risk} size={46} stroke={5} />
         <div style={{ flex: 1, minWidth: 0 }}>
@@ -144,6 +159,7 @@ function ReportCard({ report, onOpen }: { report: Report; onOpen: () => void }) 
             {s.instance_name}
           </div>
           <div className="mono" style={{ fontSize: 11, color: 'var(--fg-text-3)', marginTop: 2 }}>{report.report_id}</div>
+          <div style={{ marginTop: 2 }}><DossierNo no={dossierFromId(report.report_id)} /></div>
         </div>
         <Tag color={high ? 'error' : s.max_risk === 'medium' ? 'warning' : 'success'} style={{ margin: 0 }}>
           {RISK_META[s.max_risk]?.label ?? s.max_risk}
@@ -187,9 +203,10 @@ function ReportTable({ reports, onOpen }: { reports: Report[]; onOpen: (id: stri
         <tbody>
           {reports.map((r) => (
             <tr key={r.report_id} style={{ borderBottom: '1px solid var(--fg-border)', cursor: 'pointer' }} onClick={() => onOpen(r.report_id)}>
-              <td style={tdStyle}>
+              <td style={{ ...tdStyle, borderLeft: `3px solid ${RISK_BAR_COLOR[r.summary.max_risk] ?? 'var(--fg-border)'}` }}>
                 <div style={{ fontWeight: 600, color: 'var(--fg-text-1)' }}>{r.summary.instance_name}</div>
                 <div className="mono" style={{ fontSize: 11, color: 'var(--fg-text-3)' }}>{r.report_id}</div>
+                <div style={{ marginTop: 2 }}><DossierNo no={dossierFromId(r.report_id)} /></div>
               </td>
               <td style={tdStyle}>
                 <Tag color={r.summary.max_risk === 'high' ? 'error' : r.summary.max_risk === 'medium' ? 'warning' : 'success'} style={{ margin: 0 }}>

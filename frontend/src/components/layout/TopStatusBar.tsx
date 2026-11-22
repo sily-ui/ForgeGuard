@@ -8,6 +8,7 @@ import { GuardIcon } from '@/components/icons/SecurityIcons';
 import { useSessionStore } from '@/stores/sessionStore';
 import { useQuotaStore } from '@/stores/quotaStore';
 import { percent } from '@/utils/format';
+import { dossierFromId } from '@/utils/workspace';
 
 interface Props {
   preset?: string;
@@ -64,8 +65,15 @@ export function TopStatusBar({ preset = 'standard', onToggleGuard, guardDisabled
           <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--fg-text-1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 260 }}>
             {session?.instance_name || '攻防控制台'}
           </div>
-          <div className="mono" style={{ fontSize: 12.5, color: 'var(--fg-text-3)' }}>
-            {session?.session_id || '—'}
+          <div className="mono" style={{ fontSize: 12.5, color: 'var(--fg-text-3)', display: 'flex', gap: 8, alignItems: 'center' }}>
+            {session?.session_id ? (
+              <>
+                <span>档号 {dossierFromId(session.session_id)}</span>
+                <span style={{ opacity: 0.65 }}>{session.session_id.slice(0, 8)}</span>
+              </>
+            ) : (
+              '—'
+            )}
           </div>
         </div>
       </div>

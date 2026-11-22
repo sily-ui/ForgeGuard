@@ -17,10 +17,21 @@ import { GuardIcon } from '@/components/icons/SecurityIcons';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { JudgeBadge } from '@/components/common/JudgeBadge';
 import { JsonViewer } from '@/components/common/JsonViewer';
+import { StampBadge, StampInk, type StampKind } from '@/components/common/StampBadge';
+import { DossierNo } from '@/components/common/DossierNo';
 import { useSessionStore } from '@/stores/sessionStore';
 import { BOUNDARY_META, RISK_META, TOOL_META } from '@/utils/constants';
 import { formatDuration, formatShort } from '@/utils/format';
+import { dossierFromId } from '@/utils/workspace';
 import type { Alert, CallRecord, GuardJudgementEvent } from '@/types/api';
+
+// 处置动作 → 判定章类别与墨色。
+const ACTION_STAMP: Record<string, { kind: StampKind; color: string }> = {
+  allow: { kind: 'allow', color: 'var(--fg-allow)' },
+  block: { kind: 'block', color: 'var(--fg-block)' },
+  challenge: { kind: 'challenge', color: 'var(--fg-observe)' },
+  degrade: { kind: 'degrade', color: 'var(--fg-observe)' },
+};
 
 type Tab = 'judge' | 'alerts' | 'challenges';
 
@@ -90,7 +101,7 @@ function JudgeDetail({ live, full }: { live: ReturnType<typeof useSessionStore.g
 
   return (
     <div style={{ padding: 14, display: 'flex', flexDirection: 'column', gap: 14 }}>
-      {/* 结论 */}
+      {/* 结论：判定以盖章留证为核心呈现 */}
       <div style={verdictCardStyle}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
           <span className="mono" style={{ fontSize: 14, fontWeight: 600, color: 'var(--fg-text-1)' }}>{tool}</span>
@@ -99,6 +110,15 @@ function JudgeDetail({ live, full }: { live: ReturnType<typeof useSessionStore.g
             <StatusBadge action={action} size="sm" />
           </span>
         </div>
+        {ACTION_STAMP[action] && (
+          <div
+            key={`${live?.call_id ?? ''}-${action}`}
+            style={{ position: 'relative', display: 'inline-flex', marginBottom: 10 }}
+          >
+            <StampInk color={ACTION_STAMP[action].color} />
+            <StampBadge kind={ACTION_STAMP[action].kind} size="lg" animate />
+          </div>
+        )}
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
           <Tag color={risk === 'high' ? 'error' : risk === 'medium' ? 'warning' : 'success'} style={{ margin: 0 }}>
             风险 {RISK_META[risk]?.label ?? risk}
@@ -261,14 +281,15 @@ function AlertCard({ alert, onFeedback }: { alert: Alert; onFeedback: Props['onF
   const levelColor = alert.level === 'high' ? 'var(--fg-block)' : alert.level === 'medium' ? 'var(--fg-observe)' : 'var(--fg-info)';
   return (
     <div style={{ ...alertCardStyle, borderLeft: `3px solid ${levelColor}` }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 6 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 6, flexWrap: 'wrap' }}>
         <AlertTriangle size={13} style={{ color: levelColor }} />
         <span style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--fg-text-1)' }}>{alert.label}</span>
         <Tag style={{ margin: 0, fontSize: 10.5, lineHeight: '15px', padding: '0 5px' }} color={alert.level === 'high' ? 'error' : alert.level === 'medium' ? 'warning' : 'default'}>
           {RISK_META[alert.level]?.label ?? alert.level}
         </Tag>
         {alert.session_level && <span style={miniTagStyle}>会话级</span>}
-        <span className="mono" style={{ marginLeft: 'auto', fontSize: 10.5, color: 'var(--fg-text-3)' }}>T{alert.turn}</span>
+        <DossierNo no={dossierFromId(alert.alert_id)} style={{ marginLeft: 'auto' }} />
+        <span className="mono" style={{ fontSize: 10.5, color: 'var(--fg-text-3)' }}>T{alert.turn}</span>
       </div>
       <div style={{ fontSize: 12.5, color: 'var(--fg-text-2)', lineHeight: 1.6, marginBottom: 6 }}>{alert.reason}</div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
@@ -325,9 +346,10 @@ function ChallengeList({ challenges, onResolve }: { challenges: GuardJudgementEv
     <div style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
       {challenges.map((c) => (
         <div key={c.call_id} style={challengeCardStyle}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 6 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 6, flexWrap: 'wrap' }}>
             <HelpCircle size={14} style={{ color: 'var(--fg-observe)' }} />
             <span className="mono" style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--fg-text-1)' }}>{c.tool}</span>
+            <StampBadge kind="challenge" size="sm" />
             <Tag color="warning" style={{ margin: 0, fontSize: 10.5 }}>待裁决</Tag>
             {c.risk && <Tag style={{ margin: 0, fontSize: 10.5 }}>{RISK_META[c.risk]?.label ?? c.risk}</Tag>}
           </div>

@@ -4,6 +4,7 @@ import { Network, ListTree, ArrowRight } from 'lucide-react';
 import { TopologyGraph, type TopologyState } from '@/components/visualization/TopologyGraph';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { JudgeBadge } from '@/components/common/JudgeBadge';
+import { StampBadge } from '@/components/common/StampBadge';
 import { useSessionStore, type LiveCall } from '@/stores/sessionStore';
 import { TOOL_META } from '@/utils/constants';
 import { formatDuration, paramsSummaryText, truncate } from '@/utils/format';
@@ -140,7 +141,11 @@ function CallRow({ call, index, active, onSelect }: { call: LiveCall; index: num
         ) : unresolved ? (
           <span style={{ ...pendingBadgeStyle, color: 'var(--fg-text-3)', background: 'var(--fg-bg-subtle)', borderColor: 'var(--fg-border)' }}>判定中</span>
         ) : (
-          <StatusBadge action={call.action || 'unknown'} size="sm" />
+          call.action === 'block' || call.action === 'limit_block' ? (
+            <StampBadge kind="block" size="sm" />
+          ) : (
+            <StatusBadge action={call.action || 'unknown'} size="sm" />
+          )
         )}
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
           {call.judged_by && <JudgeBadge judgedBy={call.judged_by} size="sm" />}

@@ -5,12 +5,13 @@ import { Logo } from '@/components/common/Logo';
 import { AttackIcon, GuardIcon, ForensicsIcon } from '@/components/icons/SecurityIcons';
 import { useAuthStore } from '@/stores/authStore';
 import { SimBadge } from '@/components/common/SimBadge';
-import { getWorkspaceId, workspaceShort } from '@/utils/workspace';
+import { DossierNo } from '@/components/common/DossierNo';
+import { dossierNo, getWorkspaceId, workspaceShort } from '@/utils/workspace';
 
 const FEATURES = [
-  { icon: AttackIcon, title: '自适应红队测评', desc: '提示注入 / 越狱 / 越权 / 链式攻击样本库，一键载入复现' },
-  { icon: GuardIcon, title: '动态旁路监护', desc: 'L1 规则 → L2 分类 → L3 语义三级判定，实时阻断越界调用' },
-  { icon: ForensicsIcon, title: '根因与加固报告', desc: '六部分取证报告，配置缺陷归因与可执行加固建议' },
+  { no: '01', icon: AttackIcon, title: '自适应红队测评', desc: '提示注入 / 越狱 / 越权 / 链式攻击样本库，一键载入复现' },
+  { no: '02', icon: GuardIcon, title: '动态旁路监护', desc: 'L1 规则 → L2 分类 → L3 语义三级判定，实时阻断越界调用' },
+  { no: '03', icon: ForensicsIcon, title: '根因与加固报告', desc: '六部分取证报告，配置缺陷归因与可执行加固建议' },
 ];
 
 const ENTRY_NOTES = [
@@ -25,6 +26,7 @@ export default function PortalPage() {
   const status = useAuthStore((s) => s.status);
   const error = useAuthStore((s) => s.error);
   const wsId = getWorkspaceId();
+  const dossier = dossierNo(wsId);
 
   const submit = async () => {
     const ok = await enter();
@@ -50,13 +52,34 @@ export default function PortalPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <Logo size={34} />
           <div>
-            <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--fg-text-1)' }}>Agent Security Lab</div>
-            <div style={{ fontSize: 12.5, color: 'var(--fg-text-3)', marginTop: 1 }}>智能体安全实验室 · ForgeGuard</div>
+            <div
+              style={{
+                fontSize: 16,
+                fontWeight: 700,
+                color: 'var(--fg-text-1)',
+                fontFamily: 'var(--fg-font-display)',
+                letterSpacing: 0.2,
+              }}
+            >
+              白盒 Whitebox
+            </div>
+            <div style={{ fontSize: 12.5, color: 'var(--fg-text-3)', marginTop: 1 }}>Agent 安全实验室</div>
+            <DossierNo no={dossier} label="本工作区案卷档号" style={{ marginTop: 3 }} />
           </div>
         </div>
 
         <div style={{ maxWidth: 520 }}>
-          <h1 style={{ fontSize: 30, lineHeight: 1.3, fontWeight: 600, margin: '0 0 14px', color: 'var(--fg-text-1)' }}>
+          <h1
+            style={{
+              fontSize: 34,
+              lineHeight: 1.28,
+              fontWeight: 700,
+              margin: '0 0 14px',
+              color: 'var(--fg-text-1)',
+              fontFamily: 'var(--fg-font-display)',
+              letterSpacing: 0.3,
+            }}
+          >
             为可编排 Agent 构建
             <br />
             自适应红队与旁路监护
@@ -68,6 +91,12 @@ export default function PortalPage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {FEATURES.map((f) => (
               <div key={f.title} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                <span
+                  className="mono"
+                  style={{ fontSize: 11, color: 'var(--fg-brand-primary)', fontWeight: 600, marginTop: 4, flexShrink: 0, width: 18, textAlign: 'right' }}
+                >
+                  {f.no}
+                </span>
                 <span style={{ display: 'inline-flex', color: 'var(--fg-text-3)', marginTop: 2, flexShrink: 0 }}>
                   <f.icon size={16} strokeWidth={1.5} />
                 </span>
@@ -133,7 +162,7 @@ export default function PortalPage() {
           <div style={{ marginTop: 28, paddingTop: 16, borderTop: '1px solid var(--fg-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
             <SimBadge />
             <span className="mono" style={{ fontSize: 12, color: 'var(--fg-text-3)' }} title={`当前工作区 ${wsId}`}>
-              工作区 {workspaceShort(wsId)}
+              工作区 {workspaceShort(wsId)} · 案卷 {dossier}
             </span>
           </div>
         </div>

@@ -16,8 +16,10 @@ import { StatusBadge } from '@/components/common/StatusBadge';
 import { RiskRing } from '@/components/common/RiskRing';
 import { Logo } from '@/components/common/Logo';
 import { SimBadge } from '@/components/common/SimBadge';
+import { DossierSpine } from '@/components/common/DossierSpine';
 import { RISK_META, TOOL_META } from '@/utils/constants';
 import { formatDuration, formatShort, paramsSummaryText, truncate } from '@/utils/format';
+import { dossierFromId } from '@/utils/workspace';
 import type { ExperimentCall, ExperimentRun, Session } from '@/types/api';
 
 export default function ExperimentPage() {
@@ -170,39 +172,42 @@ export default function ExperimentPage() {
 
 function RunSummary({ label, run, session, loading, accent, onOpen }: { label: string; run: ExperimentRun; session?: Session; loading: boolean; accent: string; onOpen: () => void }) {
   return (
-    <div style={{ ...cardStyle, borderTop: `3px solid ${accent}` }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-        <span style={{ fontSize: 14, fontWeight: 600, color: accent }}>{label}</span>
-        <span className="mono" style={{ fontSize: 11, color: 'var(--fg-text-3)' }}>{run.session_id}</span>
-        <Button size="small" type="text" icon={<ExternalLink size={13} />} onClick={onOpen} style={{ marginLeft: 'auto', color: accent }}>
-          控制台
-        </Button>
-      </div>
-      {loading || !session ? (
-        <div style={{ padding: '16px 0', textAlign: 'center' }}><Spin size="small" /></div>
-      ) : (
-        <>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-            <RiskRing score={session.risk_score} maxRisk={session.max_risk} size={48} stroke={5} />
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14.5, fontWeight: 600, color: 'var(--fg-text-1)' }}>{session.instance_name}</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
-                {session.guard_enabled ? (
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'var(--fg-allow-text)' }}><GuardIcon size={12} /> 防护开启</span>
-                ) : (
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'var(--fg-block-text)' }}><GuardIcon size={12} /> 防护关闭</span>
-                )}
+    <div style={{ ...cardStyle, borderTop: `3px solid ${accent}`, display: 'flex', alignItems: 'stretch' }}>
+      <DossierSpine no={dossierFromId(run.session_id)} style={{ alignSelf: 'stretch' }} />
+      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 14, fontWeight: 600, color: accent }}>{label}</span>
+          <span className="mono" style={{ fontSize: 11, color: 'var(--fg-text-3)' }}>{run.session_id}</span>
+          <Button size="small" type="text" icon={<ExternalLink size={13} />} onClick={onOpen} style={{ marginLeft: 'auto', color: accent }}>
+            控制台
+          </Button>
+        </div>
+        {loading || !session ? (
+          <div style={{ padding: '16px 0', textAlign: 'center' }}><Spin size="small" /></div>
+        ) : (
+          <>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <RiskRing score={session.risk_score} maxRisk={session.max_risk} size={48} stroke={5} />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 14.5, fontWeight: 600, color: 'var(--fg-text-1)' }}>{session.instance_name}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
+                  {session.guard_enabled ? (
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'var(--fg-allow-text)' }}><GuardIcon size={12} /> 防护开启</span>
+                  ) : (
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'var(--fg-block-text)' }}><GuardIcon size={12} /> 防护关闭</span>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
-            <Metric label="调用" value={session.call_count} />
-            <Metric label="拦截" value={session.block_count} color="var(--fg-block-text)" />
-            <Metric label="质询" value={session.challenge_count} color="var(--fg-observe-text)" />
-            <Metric label="最高风险" value={RISK_META[session.max_risk]?.label ?? session.max_risk} small />
-          </div>
-        </>
-      )}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+              <Metric label="调用" value={session.call_count} />
+              <Metric label="拦截" value={session.block_count} color="var(--fg-block-text)" />
+              <Metric label="质询" value={session.challenge_count} color="var(--fg-observe-text)" />
+              <Metric label="最高风险" value={RISK_META[session.max_risk]?.label ?? session.max_risk} small />
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }
