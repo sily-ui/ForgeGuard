@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Tooltip } from 'antd';
 import { Network, ListTree, ArrowRight } from 'lucide-react';
-import { TopologyGraph, type TopologyState } from '@/components/visualization/TopologyGraph';
+import { TopologyFlow, type TopologyState } from '@/components/visualization/TopologyFlow';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { JudgeBadge } from '@/components/common/JudgeBadge';
 import { StampBadge } from '@/components/common/StampBadge';
@@ -42,7 +42,7 @@ export function ChainPanel({ topology, onSelectCall }: Props) {
         <span style={{ fontSize: 11.5, color: 'var(--fg-text-3)' }}>红队 → 业务 → 网关 → 沙盒 · 监护旁路镜像</span>
       </div>
       <div style={{ padding: '6px 10px 2px', borderBottom: '1px solid var(--fg-border)' }}>
-        <TopologyGraph state={topology} height={236} />
+        <TopologyFlow state={topology} height={236} />
       </div>
 
       <div style={panelHeaderStyle}>
@@ -112,8 +112,12 @@ function CallRow({ call, index, active, onSelect }: { call: LiveCall; index: num
         textAlign: 'left',
         padding: '9px 11px',
         background: active ? 'var(--fg-bg-subtle)' : 'var(--fg-bg-page)',
-        border: `1px solid ${active ? 'var(--fg-brand-primary)' : 'var(--fg-border)'}`,
-        borderLeft: `3px solid ${statusBorderColor(call)}`,
+        borderStyle: 'solid',
+        borderWidth: '1px 1px 1px 3px',
+        borderTopColor: active ? 'var(--fg-brand-primary)' : 'var(--fg-border)',
+        borderRightColor: active ? 'var(--fg-brand-primary)' : 'var(--fg-border)',
+        borderBottomColor: active ? 'var(--fg-brand-primary)' : 'var(--fg-border)',
+        borderLeftColor: statusBorderColor(call),
         borderRadius: 10,
         cursor: 'pointer',
         transition: 'background-color 140ms ease, border-color 140ms ease',

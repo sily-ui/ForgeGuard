@@ -17,6 +17,7 @@ import { GuardIcon } from '@/components/icons/SecurityIcons';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { JudgeBadge } from '@/components/common/JudgeBadge';
 import { JsonViewer } from '@/components/common/JsonViewer';
+import { CallChainDag } from '@/components/visualization/CallChainDag';
 import { StampBadge, StampInk, type StampKind } from '@/components/common/StampBadge';
 import { DossierNo } from '@/components/common/DossierNo';
 import { useSessionStore } from '@/stores/sessionStore';
@@ -102,6 +103,15 @@ function JudgeDetail({ live, full }: { live: ReturnType<typeof useSessionStore.g
 
   return (
     <div style={{ padding: 14, display: 'flex', flexDirection: 'column', gap: 14 }}>
+      {/* 调用链 DAG：X6 呈现消息→工具→三级判定→裁决的取证链路 */}
+      <div>
+        <div style={{ ...microLabelStyle, display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+          <Layers size={12} /> 调用链 DAG
+        </div>
+        <div style={{ border: '1px solid var(--fg-border)', borderRadius: 10, overflow: 'hidden', background: 'var(--fg-bg-subtle)' }}>
+          <CallChainDag live={live} full={full} />
+        </div>
+      </div>
       {/* 结论：判定以盖章留证为核心呈现 */}
       <div style={verdictCardStyle}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>

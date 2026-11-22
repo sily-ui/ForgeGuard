@@ -73,6 +73,7 @@ interface SessionState {
   selectedCallId: string | null;
   mode: Mode;
   lastActivity: { tool?: string; action?: string; at: number } | null;
+  fxEvent: { kind: 'call' | 'judge' | 'resolve' | 'alert' | 'redteam'; tool?: string; action?: string; callId?: string; at: number } | null;
 
   reset: (sessionId: string) => void;
   hydrate: (session: Session, calls: CallRecord[], alerts: Alert[], turns?: TurnMessage[]) => void;
@@ -138,6 +139,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   selectedCallId: null,
   mode: 'live',
   lastActivity: null,
+  fxEvent: null,
 
   reset: (sessionId) =>
     set({
@@ -155,6 +157,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       selectedCallId: null,
       mode: 'live',
       lastActivity: null,
+      fxEvent: null,
     }),
 
   hydrate: (session, calls, alerts, turns = []) => {
@@ -319,6 +322,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
           calls: { ...s.calls, [d.call_id]: call },
           callOrder: [...s.callOrder, d.call_id],
           lastActivity: { tool: d.tool, at: Date.now() },
+          fxEvent: { kind: 'call', tool: d.tool, callId: d.call_id, at: Date.now() },
         }));
         break;
       }
@@ -356,6 +360,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
           callOrder: s.callOrder.includes(call_id) ? s.callOrder : [...s.callOrder, call_id],
           challenges,
           lastActivity: { tool, action: challenge_pending ? 'challenge' : judgement.action, at: Date.now() },
+          fxEvent: { kind: 'judge', tool, action: challenge_pending ? 'challenge' : judgement.action, callId: call_id, at: Date.now() },
         }));
         break;
       }
@@ -379,13 +384,14 @@ export const useSessionStore = create<SessionState>((set, get) => ({
           calls: { ...s.calls, [d.call_id]: merged },
           challenges,
           lastActivity: { tool: d.tool, action: d.action, at: Date.now() },
+          fxEvent: { kind: 'resolve', tool: d.tool, action: d.action, callId: d.call_id, at: Date.now() },
         }));
         break;
       }
       case 'alert.created': {
         const d = data as unknown as Alert;
         if (state.alerts.some((a) => a.alert_id === d.alert_id)) break;
-        set((s) => ({ alerts: [...s.alerts, d] }));
+        set((s) => ({ alerts: [...s.alerts, d], fxEvent: { kind: 'alert', callId: d.call_id ?? undefined, at: Date.now() } }));
         break;
       }
       case 'session.status': {
@@ -405,7 +411,11 @@ export const useSessionStore = create<SessionState>((set, get) => ({
           result: d.result as string | undefined,
           created_at: new Date().toISOString(),
         };
-        set((s) => ({ redteamSteps: [...s.redteamSteps, step], redteamRunning: d.status !== 'finished' && d.status !== 'stopped' }));
+        set((s) => ({
+          redteamSteps: [...s.redteamSteps, step],
+          redteamRunning: d.status !== 'finished' && d.status !== 'stopped',
+          fxEvent: { kind: 'redteam', action: d.status as string | undefined, at: Date.now() },
+        }));
         break;
       }
     }

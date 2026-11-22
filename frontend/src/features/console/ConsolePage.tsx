@@ -27,7 +27,7 @@ import { confirmAction } from '@/components/common/confirmAction';
 import { ChatPanel } from './ChatPanel';
 import { ChainPanel } from './ChainPanel';
 import { JudgePanel } from './JudgePanel';
-import type { TopologyState } from '@/components/visualization/TopologyGraph';
+import type { TopologyState } from '@/components/visualization/TopologyFlow';
 import type { CallRecord } from '@/types/api';
 import { SESSION_STATUS_META } from '@/utils/constants';
 
