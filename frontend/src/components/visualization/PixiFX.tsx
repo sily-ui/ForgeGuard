@@ -1,10 +1,10 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
-import { Application, Container, Graphics, Sprite, Texture } from 'pixi.js';
+import { Application, Color, Container, Graphics, Sprite, Texture } from 'pixi.js';
+import { theme } from 'antd';
 import gsap from 'gsap';
 import { MotionPathPlugin } from 'gsap/MotionPathPlugin';
-import { PixiPlugin } from 'gsap/PixiPlugin';
 
-gsap.registerPlugin(MotionPathPlugin, PixiPlugin);
+gsap.registerPlugin(MotionPathPlugin);
 
 export interface PixiFXHandle {
   /** 屏幕坐标（相对特效层容器）处的阻断/告警爆发：火花 + 扩散环 */
@@ -19,23 +19,20 @@ interface Props {
   className?: string;
 }
 
-const DUST_COLORS = [0x176b63, 0x4f7ba6, 0xc2892b, 0x8d97a1];
-
-function dotTexture(app: Application): Texture {
+function dotTexture(color: string): Texture {
   const c = document.createElement('canvas');
   c.width = c.height = 64;
   const ctx = c.getContext('2d')!;
-  const g = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
-  g.addColorStop(0, 'rgba(255,255,255,1)');
-  g.addColorStop(0.35, 'rgba(255,255,255,0.55)');
-  g.addColorStop(1, 'rgba(255,255,255,0)');
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, 64, 64);
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.arc(32, 32, 32, 0, Math.PI * 2);
+  ctx.fill();
   return Texture.from(c);
 }
 
 // WebGL 特效层：氛围粒子 + 周期扫光 + 事件数据包/爆发。WebGL 不可用或 reduced-motion 时静默退化为空层。
 export const PixiFX = forwardRef<PixiFXHandle, Props>(function PixiFX({ className }, ref) {
+  const { token } = theme.useToken();
   const hostRef = useRef<HTMLDivElement>(null);
   const apiRef = useRef<PixiFXHandle | null>(null);
 
@@ -79,7 +76,8 @@ export const PixiFX = forwardRef<PixiFXHandle, Props>(function PixiFX({ classNam
         a.canvas.style.inset = '0';
         a.canvas.style.pointerEvents = 'none';
 
-        const tex = dotTexture(a);
+        const tex = dotTexture(token.colorTextLightSolid);
+        const dustColors = [token.colorPrimary, token.colorInfo, token.colorWarning, token.colorTextTertiary].map((color) => new Color(color).toNumber());
         const layer = new Container();
         a.stage.addChild(layer);
 
@@ -88,7 +86,7 @@ export const PixiFX = forwardRef<PixiFXHandle, Props>(function PixiFX({ classNam
           s.anchor.set(0.5);
           const size = 2 + Math.random() * 5;
           s.width = s.height = size;
-          s.tint = DUST_COLORS[i % DUST_COLORS.length];
+          s.tint = dustColors[i % dustColors.length];
           s.alpha = 0.05 + Math.random() * 0.16;
           s.x = Math.random() * host.clientWidth;
           s.y = Math.random() * host.clientHeight;
@@ -97,8 +95,8 @@ export const PixiFX = forwardRef<PixiFXHandle, Props>(function PixiFX({ classNam
         }
 
         sweep = new Graphics();
-        sweep.rect(0, 0, 4096, 46).fill({ color: 0x176b63, alpha: 0.05 });
-        sweep.rect(0, 44, 4096, 2).fill({ color: 0x176b63, alpha: 0.14 });
+        sweep.rect(0, 0, 4096, 46).fill({ color: token.colorPrimary, alpha: 0.05 });
+        sweep.rect(0, 44, 4096, 2).fill({ color: token.colorPrimary, alpha: 0.14 });
         sweep.y = -60;
         a.stage.addChildAt(sweep, 0);
         const sweepLoop = () => {
@@ -130,7 +128,7 @@ export const PixiFX = forwardRef<PixiFXHandle, Props>(function PixiFX({ classNam
         };
         gsap.ticker.add(tickerFn);
 
-        const hex = (c: string) => parseInt(c.replace('#', ''), 16);
+        const hex = (color: string) => new Color(color).toNumber();
 
         apiRef.current = {
           setActivity: (level) => { activity = Math.max(0, Math.min(1, level)); },
@@ -142,7 +140,8 @@ export const PixiFX = forwardRef<PixiFXHandle, Props>(function PixiFX({ classNam
               ring.circle(0, 0, 10).stroke({ width: 2, color: tint, alpha: 0.9 });
               ring.x = x; ring.y = y;
               app!.stage.addChild(ring);
-              gsap.to(ring, { pixi: { scale: 3.4, alpha: 0 }, duration: 0.65, ease: 'power2.out', onComplete: () => ring.destroy() });
+              gsap.to(ring.scale, { x: 3.4, y: 3.4, duration: 0.65, ease: 'power2.out' });
+              gsap.to(ring, { alpha: 0, duration: 0.65, ease: 'power2.out', onComplete: () => ring.destroy() });
               for (let i = 0; i < 16; i++) {
                 const sp = new Sprite(tex);
                 sp.anchor.set(0.5);
@@ -205,13 +204,14 @@ export const PixiFX = forwardRef<PixiFXHandle, Props>(function PixiFX({ classNam
       destroyed = true;
       apiRef.current = null;
       if (tickerFn) gsap.ticker.remove(tickerFn);
-      ctx.revert();
+      // 粒子在动画完成时已销毁，卸载只停止补间，不能回写已释放的对象。
+      ctx.kill(false);
       if (app) {
         app.destroy(true, { children: true });
         app = null;
       }
     };
-  }, []);
+  }, [token.colorPrimary, token.colorInfo, token.colorWarning, token.colorTextTertiary, token.colorTextLightSolid]);
 
   return <div ref={hostRef} className={className} style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }} />;
 });

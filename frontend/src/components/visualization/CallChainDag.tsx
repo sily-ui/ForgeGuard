@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { Tooltip, theme } from 'antd';
 import { Graph } from '@antv/x6';
 import { register } from '@antv/x6-react-shape';
 import type { CallRecord } from '@/types/api';
@@ -14,12 +15,12 @@ interface DagData {
 }
 
 const TONE_COLOR: Record<Tone, string> = {
-  idle: '#c2cad0',
-  allow: '#2e7d5b',
-  block: '#b5484d',
-  observe: '#c2892b',
-  info: '#4f7ba6',
-  dim: '#dfe3e7',
+  idle: 'var(--ant-color-text-tertiary)',
+  allow: 'var(--ant-color-success)',
+  block: 'var(--ant-color-error)',
+  observe: 'var(--ant-color-warning)',
+  info: 'var(--ant-color-info)',
+  dim: 'var(--ant-color-text-disabled)',
 };
 
 function DagNode({ node }: { node?: { getData: () => DagData } }) {
@@ -27,31 +28,32 @@ function DagNode({ node }: { node?: { getData: () => DagData } }) {
   const color = TONE_COLOR[data.tone];
   const dim = data.tone === 'dim';
   return (
-    <div
-      style={{
-        width: '100%',
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        padding: '0 10px',
-        borderRadius: 8,
-        background: dim ? 'var(--bb-bg-subtle)' : 'var(--bb-bg-card)',
-        border: '1px solid var(--bb-border)',
-        borderLeft: `3px solid ${color}`,
-        opacity: dim ? 0.6 : 1,
-        overflow: 'hidden',
-      }}
-    >
-      <div className="mono" style={{ fontSize: 12, fontWeight: 600, color: 'var(--bb-text-1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-        {data.label}
-      </div>
-      {data.sub && (
-        <div style={{ fontSize: 10, color: dim ? 'var(--bb-text-3)' : color, marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-          {data.sub}
+    <Tooltip title={`${data.label}${data.sub ? ` · ${data.sub}` : ''}`}>
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          padding: '0 8px',
+          borderRadius: 8,
+          background: dim ? 'var(--bb-bg-subtle)' : 'var(--bb-bg-card)',
+          border: '1px solid var(--bb-border)',
+          opacity: dim ? 0.6 : 1,
+          overflow: 'hidden',
+        }}
+      >
+        <div className="mono" style={{ fontSize: 12, fontWeight: 600, color: 'var(--bb-text-1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {data.label}
         </div>
-      )}
-    </div>
+        {data.sub && (
+          <div style={{ fontSize: 10, color: dim ? 'var(--bb-text-3)' : color, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {data.sub}
+          </div>
+        )}
+      </div>
+    </Tooltip>
   );
 }
 
@@ -137,6 +139,7 @@ interface Props {
 
 // X6 调用链 DAG：消息 → Agent → 工具 → L1/L2/L3 → 裁决；选中调用切换时重建，数据变化局部更新。
 export function CallChainDag({ live, full }: Props) {
+  const { token } = theme.useToken();
   const containerRef = useRef<HTMLDivElement>(null);
   const graphRef = useRef<Graph | null>(null);
   const callId = live?.call_id ?? full?.call_id ?? null;
@@ -146,17 +149,20 @@ export function CallChainDag({ live, full }: Props) {
     const graph = new Graph({
       container: containerRef.current,
       height: 148,
-      autoResize: true,
+      autoResize: false,
       background: { color: 'transparent' },
-      grid: { visible: true, type: 'dot', size: 18, args: { color: '#eef1f3', thickness: 1 } },
+      grid: { visible: true, type: 'dot', size: 18, args: { color: token.colorBorderSecondary, thickness: 1 } },
       interacting: false,
       panning: false,
       mousewheel: false,
     });
     graphRef.current = graph;
     const fit = () => {
+      if (!containerRef.current) return;
       try {
-        graph.zoomToFit({ padding: 10, maxScale: 1 });
+        // 折叠容器高度由内容决定，不能让 X6 跟随父级高度形成递增回路。
+        graph.resize(containerRef.current.clientWidth, 148);
+        graph.zoomToFit({ padding: 8, maxScale: 1 });
       } catch {
         /* 容器尚未布局 */
       }
@@ -191,16 +197,16 @@ export function CallChainDag({ live, full }: Props) {
         id: `${source}-${target}`,
         source: { cell: source, anchor: elbow ? 'bottom' : 'right' },
         target: { cell: target, anchor: target === 'l1' ? 'top' : 'left' },
-        attrs: { line: { stroke: '#b9c2c9', strokeWidth: 1.4, targetMarker: { name: 'classic', width: 7, height: 5 } } },
+        attrs: { line: { stroke: token.colorBorder, strokeWidth: 1.4, targetMarker: { name: 'classic', width: 7, height: 5 } } },
         connector: { name: 'rounded', args: { radius: 8 } },
         // 水平间距仅 22px，manhattan 的 padding 会撑出绕行环；水平直连、仅 tool→L1 走折线
-        router: elbow ? { name: 'manhattan', args: { padding: 6 } } : undefined,
+        router: elbow ? { name: 'manhattan', args: { padding: 8 } } : undefined,
         zIndex: 0,
       });
     }
     requestAnimationFrame(() => {
       try {
-        graph.zoomToFit({ padding: 10, maxScale: 1 });
+        graph.zoomToFit({ padding: 8, maxScale: 1 });
       } catch {
         /* ignore */
       }

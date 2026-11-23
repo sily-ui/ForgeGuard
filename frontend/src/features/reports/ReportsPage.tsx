@@ -1,35 +1,23 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Button, Input, Segmented, Spin, Tag, Tooltip } from 'antd';
+import { Button, Card, Descriptions, Empty, Flex, Input, Segmented, Space, Spin, Table, Tag, Tooltip, Typography } from 'antd';
 import {
   FileBarChart,
   Search,
-  Clock,
   Share2,
   ArrowRight,
   LayoutGrid,
   List,
   FileText,
 } from 'lucide-react';
-import { GuardIcon } from '@/components/icons/SecurityIcons';
 import { reportApi } from '@/services/api/resources';
 import { PageHeader } from '@/components/common/PageHeader';
-import { SectionCard } from '@/components/common/SectionCard';
-import { EmptyState } from '@/components/common/EmptyState';
-import { RiskRing } from '@/components/common/RiskRing';
 import { DossierNo } from '@/components/common/DossierNo';
 import { RISK_META } from '@/utils/constants';
 import { formatShort, fromNow, truncate } from '@/utils/format';
 import { dossierFromId } from '@/utils/workspace';
 import type { Report } from '@/types/api';
-
-// 最高风险等级 → 卷宗条目左侧语义色条。
-const RISK_BAR_COLOR: Record<string, string> = {
-  high: 'var(--bb-block)',
-  medium: 'var(--bb-observe)',
-  low: 'var(--bb-allow)',
-};
 
 export default function ReportsPage() {
   const navigate = useNavigate();
@@ -64,33 +52,41 @@ export default function ReportsPage() {
         title="测评报告"
         subtitle="只读快照报告：测评概要 / 靶标基线 / 攻击序列 / 风险分析 / 加固建议 / 局限性说明"
         extra={
-          <div data-tour="reports-header" style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+          <Flex data-tour="reports-header" gap={8} align="center" wrap>
             <Button type="primary" icon={<FileText size={15} />} onClick={() => navigate('/instances')}>
               从会话生成报告
             </Button>
-          </div>
+          </Flex>
         }
       />
 
-      <div data-tour="reports-stats" className="bb-stats-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 18 }}>
-        <StatCard label="报告总数" value={stats.total} />
-        <StatCard label="累计拦截" value={stats.blocked} color="var(--bb-allow-text)" />
-        <StatCard label="高危报告" value={stats.high} color="var(--bb-block-text)" />
-      </div>
+      <Card data-tour="reports-stats" size="small" variant="borderless" style={{ borderRadius: 8, marginBottom: 16 }} styles={{ body: { padding: 16 } }}>
+        <Descriptions bordered={false} size="small" column={1}>
+          <Descriptions.Item label="报告总数">{stats.total}</Descriptions.Item>
+          <Descriptions.Item label="累计拦截">{stats.blocked}</Descriptions.Item>
+          <Descriptions.Item label="高危报告">{stats.high}</Descriptions.Item>
+        </Descriptions>
+      </Card>
 
-      <div data-tour="reports-list">
-      <SectionCard
+      <Card
+        data-tour="reports-list"
+        size="small"
+        variant="borderless"
         title={`报告列表 · ${filtered.length}`}
-        extra={
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+        style={{ borderRadius: 8 }}
+        styles={{ header: { padding: '8px 16px' }, body: { padding: 16 } }}
+      >
+        <Flex vertical gap={16}>
+          <Flex gap={8} align="center" wrap>
             <Input
               allowClear
               size="small"
+              aria-label="搜索报告"
               placeholder="搜索靶标 / 结论 / 编号"
               prefix={<Search size={13} style={{ color: 'var(--bb-text-3)' }} />}
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
-              style={{ width: 200 }}
+              style={{ width: 240, maxWidth: '100%' }}
             />
             <Segmented
               size="small"
@@ -108,142 +104,124 @@ export default function ReportsPage() {
               value={view}
               onChange={(v) => setView(v as 'card' | 'table')}
               options={[
-                { label: <LayoutGrid size={14} />, value: 'card' },
-                { label: <List size={14} />, value: 'table' },
+                { label: <LayoutGrid size={14} aria-label="卡片视图" />, title: '卡片视图', value: 'card' },
+                { label: <List size={14} aria-label="表格视图" />, title: '表格视图', value: 'table' },
               ]}
             />
-          </div>
-        }
-        padding={view === 'card' ? 16 : 0}
-      >
-        {reportsQuery.isLoading ? (
-          <div style={{ padding: 48, textAlign: 'center' }}><Spin /></div>
-        ) : filtered.length === 0 ? (
-          <EmptyState
-            icon={<FileBarChart size={22} />}
-            title={reports.length === 0 ? '还没有测评报告' : '没有匹配的报告'}
-            description={reports.length === 0 ? '进入攻防控制台完成一轮测评后，点击「生成报告」即可产出只读快照报告。' : '调整搜索或筛选条件'}
-            actionLabel={reports.length === 0 ? '前往实例管理' : undefined}
-            onAction={reports.length === 0 ? () => navigate('/instances') : undefined}
-          />
-        ) : view === 'card' ? (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(320px, 100%), 1fr))', gap: 14 }}>
-            {filtered.map((r) => (
-              <ReportCard key={r.report_id} report={r} onOpen={() => navigate(`/reports/${r.report_id}`)} />
-            ))}
-          </div>
-        ) : (
-          <ReportTable reports={filtered} onOpen={(id) => navigate(`/reports/${id}`)} />
-        )}
-      </SectionCard>
-      </div>
+          </Flex>
+          {reportsQuery.isLoading ? (
+            <div style={{ padding: 32, textAlign: 'center' }}><Spin /></div>
+          ) : filtered.length === 0 ? (
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description={
+                <Flex vertical gap={8}>
+                  <Typography.Text>{reports.length === 0 ? '还没有测评报告' : '没有匹配的报告'}</Typography.Text>
+                  <Typography.Text type="secondary">{reports.length === 0 ? '进入攻防控制台完成一轮测评后，点击「生成报告」即可产出只读快照报告。' : '调整搜索或筛选条件'}</Typography.Text>
+                </Flex>
+              }
+            >
+              {reports.length === 0 && <Button type="primary" onClick={() => navigate('/instances')}>前往实例管理</Button>}
+            </Empty>
+          ) : view === 'card' ? (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(320px, 100%), 1fr))', gap: 16 }}>
+              {filtered.map((r) => <ReportCard key={r.report_id} report={r} onOpen={() => navigate(`/reports/${r.report_id}`)} />)}
+            </div>
+          ) : (
+            <ReportTable reports={filtered} onOpen={(id) => navigate(`/reports/${id}`)} />
+          )}
+        </Flex>
+      </Card>
     </div>
   );
 }
 
 function ReportCard({ report, onOpen }: { report: Report; onOpen: () => void }) {
   const s = report.summary;
-  const high = s.max_risk === 'high';
   return (
-    <button
+    <Card
+      size="small"
+      variant="borderless"
+      hoverable
+      role="button"
+      tabIndex={0}
+      aria-label={`查看报告：${s.instance_name}`}
       onClick={onOpen}
-      style={{
-        ...reportCardStyle,
-        borderLeft: `3px solid ${RISK_BAR_COLOR[s.max_risk] ?? 'var(--bb-border)'}`,
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onOpen();
+        }
       }}
+      style={{ borderRadius: 8, minWidth: 0 }}
+      styles={{ body: { padding: 16 } }}
     >
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-        <RiskRing score={high ? 0.9 : s.max_risk === 'medium' ? 0.5 : 0.15} maxRisk={s.max_risk} size={46} stroke={5} />
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--bb-text-1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {s.instance_name}
-          </div>
-          <div className="mono" style={{ fontSize: 11, color: 'var(--bb-text-3)', marginTop: 2 }}>{report.report_id}</div>
-          <div style={{ marginTop: 2 }}><DossierNo no={dossierFromId(report.report_id)} /></div>
-        </div>
-        <Tag color={high ? 'error' : s.max_risk === 'medium' ? 'warning' : 'success'} style={{ margin: 0 }}>
-          {RISK_META[s.max_risk]?.label ?? s.max_risk}
-        </Tag>
-      </div>
-      <div style={{ fontSize: 13, color: 'var(--bb-text-2)', lineHeight: 1.6, margin: '12px 0', minHeight: 38 }}>
-        {truncate(s.conclusion, 76)}
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14, fontSize: 12, color: 'var(--bb-text-3)' }}>
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-          <GuardIcon size={12} style={{ color: 'var(--bb-allow-text)' }} /> 拦截 <b className="mono" style={{ color: 'var(--bb-text-2)' }}>{s.block_count}</b>
-        </span>
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-          <Clock size={12} /> {s.turns} 回合
-        </span>
-        <span style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-          {report.share_expires_at && (
-            <Tooltip title={`分享链接有效期至 ${formatShort(report.share_expires_at)}`}>
-              <Share2 size={12} style={{ color: 'var(--bb-brand-primary)' }} />
-            </Tooltip>
-          )}
-          {fromNow(report.created_at)}
-          <ArrowRight size={13} />
-        </span>
-      </div>
-    </button>
+      <Flex vertical gap={16}>
+        <Flex align="start" justify="space-between" gap={8}>
+          <Flex vertical gap={8} style={{ minWidth: 0 }}>
+            <Typography.Text strong style={{ overflowWrap: 'anywhere' }}>{s.instance_name}</Typography.Text>
+            <Typography.Text type="secondary" className="mono" style={{ overflowWrap: 'anywhere' }}>{report.report_id}</Typography.Text>
+            <DossierNo no={dossierFromId(report.report_id)} />
+          </Flex>
+          <Tag color={s.max_risk === 'high' ? 'error' : s.max_risk === 'medium' ? 'warning' : 'success'} style={{ margin: 0 }}>
+            {RISK_META[s.max_risk]?.label ?? s.max_risk}
+          </Tag>
+        </Flex>
+        <Typography.Paragraph style={{ margin: 0 }}>{truncate(s.conclusion, 76)}</Typography.Paragraph>
+        <Descriptions bordered={false} column={1} size="small">
+          <Descriptions.Item label="拦截">{s.block_count}</Descriptions.Item>
+          <Descriptions.Item label="回合">{s.turns}</Descriptions.Item>
+        </Descriptions>
+        <Flex gap={8} justify="space-between" align="center" wrap>
+          <Typography.Text type="secondary">{fromNow(report.created_at)}</Typography.Text>
+          <Space size={8}>
+            {report.share_expires_at && (
+              <Tooltip title={`分享链接有效期至 ${formatShort(report.share_expires_at)}`}>
+                <Typography.Text type="secondary"><Space size={8}><Share2 size={14} />已分享</Space></Typography.Text>
+              </Tooltip>
+            )}
+            <ArrowRight size={14} aria-hidden />
+          </Space>
+        </Flex>
+      </Flex>
+    </Card>
   );
 }
 
 function ReportTable({ reports, onOpen }: { reports: Report[]; onOpen: (id: string) => void }) {
   return (
-    <div style={{ overflowX: 'auto' }}>
-      <table style={{ width: '100%', minWidth: 720, borderCollapse: 'collapse', fontSize: 13.5 }}>
-        <thead>
-          <tr style={{ background: 'var(--bb-bg-subtle)', textAlign: 'left' }}>
-            {['靶标', '最高风险', '拦截', '回合', '结论', '生成时间', ''].map((h) => (
-              <th key={h} style={thStyle}>{h}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {reports.map((r) => (
-            <tr key={r.report_id} style={{ borderBottom: '1px solid var(--bb-border)', cursor: 'pointer' }} onClick={() => onOpen(r.report_id)}>
-              <td style={{ ...tdStyle, borderLeft: `3px solid ${RISK_BAR_COLOR[r.summary.max_risk] ?? 'var(--bb-border)'}` }}>
-                <div style={{ fontWeight: 600, color: 'var(--bb-text-1)' }}>{r.summary.instance_name}</div>
-                <div className="mono" style={{ fontSize: 11, color: 'var(--bb-text-3)' }}>{r.report_id}</div>
-                <div style={{ marginTop: 2 }}><DossierNo no={dossierFromId(r.report_id)} /></div>
-              </td>
-              <td style={tdStyle}>
-                <Tag color={r.summary.max_risk === 'high' ? 'error' : r.summary.max_risk === 'medium' ? 'warning' : 'success'} style={{ margin: 0 }}>
-                  {RISK_META[r.summary.max_risk]?.label ?? r.summary.max_risk}
-                </Tag>
-              </td>
-              <td style={tdStyle}><span className="mono" style={{ color: 'var(--bb-allow-text)', fontWeight: 600 }}>{r.summary.block_count}</span></td>
-              <td style={tdStyle}><span className="mono">{r.summary.turns}</span></td>
-              <td style={{ ...tdStyle, maxWidth: 320, color: 'var(--bb-text-2)' }}>{truncate(r.summary.conclusion, 50)}</td>
-              <td style={{ ...tdStyle, color: 'var(--bb-text-3)', whiteSpace: 'nowrap' }}>{formatShort(r.created_at)}</td>
-              <td style={tdStyle}><ArrowRight size={14} style={{ color: 'var(--bb-text-3)' }} /></td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <Table<Report>
+      size="small"
+      rowKey="report_id"
+      dataSource={reports}
+      pagination={false}
+      scroll={{ x: 960 }}
+      onRow={(report) => ({ onClick: () => onOpen(report.report_id), style: { cursor: 'pointer' } })}
+      columns={[
+        {
+          title: '靶标',
+          key: 'instance',
+          width: 240,
+          render: (_, r) => (
+            <Flex vertical gap={8}>
+              <Button type="link" style={{ padding: 0, height: 'auto', whiteSpace: 'normal', textAlign: 'left', justifyContent: 'flex-start' }} onClick={(event) => { event.stopPropagation(); onOpen(r.report_id); }}>{r.summary.instance_name}</Button>
+              <Typography.Text type="secondary" className="mono" style={{ overflowWrap: 'anywhere' }}>{r.report_id}</Typography.Text>
+              <DossierNo no={dossierFromId(r.report_id)} />
+            </Flex>
+          ),
+        },
+        {
+          title: '最高风险',
+          key: 'risk',
+          width: 120,
+          render: (_, r) => <Tag color={r.summary.max_risk === 'high' ? 'error' : r.summary.max_risk === 'medium' ? 'warning' : 'success'} style={{ margin: 0 }}>{RISK_META[r.summary.max_risk]?.label ?? r.summary.max_risk}</Tag>,
+        },
+        { title: '拦截', key: 'blocks', width: 88, sorter: (a, b) => a.summary.block_count - b.summary.block_count, render: (_, r) => r.summary.block_count },
+        { title: '回合', key: 'turns', width: 88, sorter: (a, b) => a.summary.turns - b.summary.turns, render: (_, r) => r.summary.turns },
+        { title: '结论', key: 'conclusion', render: (_, r) => <Typography.Text title={r.summary.conclusion}>{truncate(r.summary.conclusion, 50)}</Typography.Text> },
+        { title: '生成时间', dataIndex: 'created_at', key: 'created_at', width: 160, sorter: (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(), render: (value: string) => <Typography.Text type="secondary">{formatShort(value)}</Typography.Text> },
+        { title: '操作', key: 'open', width: 64, render: (_, r) => <Button type="text" aria-label={`查看报告：${r.summary.instance_name}`} icon={<ArrowRight size={14} />} onClick={(event) => { event.stopPropagation(); onOpen(r.report_id); }} /> },
+      ]}
+    />
   );
 }
-
-function StatCard({ label, value, color }: { label: string; value: number; color?: string }) {
-  return (
-    <div className="bb-card" style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '16px 18px' }}>
-      <span style={{ fontSize: 13, color: 'var(--bb-text-3)' }}>{label}</span>
-      <span className="mono" style={{ fontSize: 28, fontWeight: 600, color: color ?? 'var(--bb-text-1)', lineHeight: 1 }}>{value}</span>
-    </div>
-  );
-}
-
-const reportCardStyle: React.CSSProperties = {
-  textAlign: 'left',
-  padding: 16,
-  background: 'var(--bb-bg-card)',
-  border: '1px solid var(--bb-border)',
-  borderRadius: 12,
-  cursor: 'pointer',
-  transition: 'border-color 160ms ease, background-color 160ms ease',
-  width: '100%',
-};
-const thStyle: React.CSSProperties = { padding: '10px 14px', fontSize: 12, fontWeight: 500, color: 'var(--bb-text-3)', borderBottom: '1px solid var(--bb-border)' };
-const tdStyle: React.CSSProperties = { padding: '11px 14px', verticalAlign: 'middle' };

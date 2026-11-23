@@ -22,7 +22,7 @@ interface Props {
 // Monaco 编辑器：系统提示词 / JSON 编排。
 export function PromptEditor({ value, onChange, language = 'markdown', height = 220, readOnly = false }: Props) {
   return (
-    <div style={{ border: '1px solid var(--bb-border)', borderRadius: 10, overflow: 'hidden' }}>
+    <div style={{ border: '1px solid var(--bb-border)', borderRadius: 8, overflow: 'hidden' }}>
       <Editor
         height={height}
         language={language}
@@ -37,14 +37,14 @@ export function PromptEditor({ value, onChange, language = 'markdown', height = 
           lineNumbers: 'on',
           scrollBeyondLastLine: false,
           wordWrap: 'on',
-          padding: { top: 12, bottom: 12 },
+          padding: { top: 16, bottom: 16 },
           renderLineHighlight: 'line',
           automaticLayout: true,
           tabSize: 2,
           scrollbar: { verticalScrollbarSize: 8, horizontalScrollbarSize: 8 },
           overviewRulerLanes: 0,
         }}
-        loading={<div style={{ padding: 20, color: 'var(--bb-text-3)', fontSize: 14 }}>编辑器加载中…</div>}
+        loading={<div style={{ padding: 24, color: 'var(--bb-text-3)', fontSize: 14 }}>编辑器加载中…</div>}
       />
     </div>
   );

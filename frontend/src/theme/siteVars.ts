@@ -1,4 +1,4 @@
-// Nudge 可调项：业务样式以 --site-* 根变量为准，未提供时回落到日档设计 Token 原值。
+import { theme } from 'antd';
 
 const FONT_STACK =
   "'IBM Plex Sans', 'Inter', 'PingFang SC', 'Microsoft YaHei', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
@@ -30,17 +30,18 @@ export interface SiteVars {
 }
 
 export function readSiteVars(): SiteVars {
+  const token = theme.getDesignToken();
   return {
-    bg: rootVar('--site-bg', '#f4f5f2'),
-    fg: rootVar('--site-fg', '#1c1f24'),
-    accent: rootVar('--site-accent', '#1f6b5e'),
-    onAccent: rootVar('--site-on-accent', '#ffffff'),
-    surface: rootVar('--site-surface', '#ffffff'),
-    muted: rootVar('--site-muted', '#5a6168'),
-    border: rootVar('--site-border', '#d9dcd7'),
+    bg: token.colorBgLayout,
+    fg: token.colorText,
+    accent: token.colorPrimary,
+    onAccent: token.colorTextLightSolid,
+    surface: token.colorBgContainer,
+    muted: token.colorTextSecondary,
+    border: token.colorBorderSecondary,
     font: rootVar('--site-font', FONT_STACK),
-    radius: rootNum('--site-radius', 8),
-    space: rootNum('--site-space', 1),
+    radius: Math.min(8, rootNum('--site-radius', 8)),
+    space: 1,
     type: rootNum('--site-type', 1),
     motion: rootNum('--site-motion', 1),
   };

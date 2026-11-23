@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react';
+import { Card } from 'antd';
 
 interface Props {
   title?: ReactNode;
@@ -11,37 +12,17 @@ interface Props {
 }
 
 export function SectionCard({ title, extra, children, padding = 16, style, bodyStyle, noBorder }: Props) {
+  const spacing = typeof padding === 'number' ? Math.min(32, Math.max(0, Math.round(padding / 8) * 8)) : 16;
   return (
-    <section
-      className="bb-card"
-      style={{
-        border: noBorder ? 'none' : undefined,
-        boxShadow: noBorder ? 'none' : undefined,
-        background: noBorder ? 'transparent' : undefined,
-        overflow: 'hidden',
-        ...style,
-      }}
+    <Card
+      size="small"
+      variant="borderless"
+      title={title}
+      extra={extra}
+      style={{ ...style, ...(noBorder ? { background: 'transparent' } : {}) }}
+      styles={{ body: { padding: spacing, ...bodyStyle } }}
     >
-      {(title || extra) && (
-        <header
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: 12,
-            rowGap: 8,
-            padding: '12px 16px',
-            borderBottom: '1px solid var(--bb-border)',
-          }}
-        >
-          <div style={{ fontSize: 14.5, fontWeight: 600, color: 'var(--bb-text-1)', display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
-            {title}
-          </div>
-          {extra && <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', minWidth: 0, maxWidth: '100%' }}>{extra}</div>}
-        </header>
-      )}
-      <div style={{ padding, ...bodyStyle }}>{children}</div>
-    </section>
+      {children}
+    </Card>
   );
 }

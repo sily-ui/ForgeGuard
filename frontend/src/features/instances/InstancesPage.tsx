@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { App, Button, Segmented, Table, Tag, Tooltip, Modal, Radio, Input, Spin } from 'antd';
+import { App, Button, Card, Descriptions, Empty, Form, Segmented, Statistic, Table, Tag, Tooltip, Modal, Radio, Input, Spin, Typography } from 'antd';
+import { InfoCircleOutlined } from '@ant-design/icons';
 import { Boxes, LayoutGrid, Table2, Plus, Copy, RefreshCw, Trash2, Clock } from 'lucide-react';
 import { AttackIcon, GuardIcon } from '@/components/icons/SecurityIcons';
 import { PageHeader } from '@/components/common/PageHeader';
 import { SectionCard } from '@/components/common/SectionCard';
 import { SimBadge } from '@/components/common/SimBadge';
-import { EmptyState } from '@/components/common/EmptyState';
 import { PresetTag } from '@/components/common/PresetTag';
 import { DossierNo } from '@/components/common/DossierNo';
 import { StatusLine } from '@/components/common/StatusLine';
@@ -20,9 +20,9 @@ import { ApiClientError } from '@/services/api/client';
 import type { Instance } from '@/types/api';
 
 const STATUS_COLOR: Record<string, string> = {
-  ready: 'green',
-  creating: 'blue',
-  pending_retry: 'orange',
+  ready: 'success',
+  creating: 'processing',
+  pending_retry: 'warning',
   frozen: 'default',
   destroyed: 'default',
 };
@@ -95,7 +95,7 @@ export default function InstancesPage() {
       />
 
       {/* 统计 */}
-      <div data-tour="instances-stats" className="bb-stats-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 18 }}>
+      <div data-tour="instances-stats" className="bb-stats-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 16 }}>
         <StatCard label="存活实例" value={alive.length} accent="var(--bb-brand-primary)" />
         <StatCard label="就绪" value={instances.filter((i) => i.status === 'ready').length} />
         <StatCard label="累计调用" value={instances.reduce((s, i) => s + (i.stats?.call_count || 0), 0)} />
@@ -113,17 +113,11 @@ export default function InstancesPage() {
 
       <div data-tour="instances-list">
       {instancesQuery.isLoading ? (
-        <div style={{ padding: 60, textAlign: 'center' }}><Spin size="large" /></div>
+        <div style={{ padding: 32, textAlign: 'center' }}><Spin size="large" /></div>
       ) : filtered.length === 0 ? (
-        <SectionCard>
-          <EmptyState
-            icon={<Boxes size={26} strokeWidth={1.5} />}
-            title="暂无实例"
-            description="前往编排中心配置靶标 Agent 并创建实例，或在工作台使用一键演示。"
-            actionLabel="去编排"
-            onAction={() => navigate('/orchestration')}
-          />
-        </SectionCard>
+        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={<><div>暂无实例</div><Typography.Text type="secondary">前往编排中心配置靶标 Agent 并创建实例，或在工作台使用一键演示。</Typography.Text></>}>
+          <Button type="primary" onClick={() => navigate('/orchestration')}>去编排</Button>
+        </Empty>
       ) : view === 'card' ? (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(340px, 100%), 1fr))', gap: 16 }}>
           {filtered.map((inst) => (
@@ -154,7 +148,7 @@ export default function InstancesPage() {
             pagination={{ pageSize: 10, showSizeChanger: false }}
             scroll={{ x: 860 }}
             columns={[
-              { title: '名称', dataIndex: 'name', render: (v, r) => <span style={{ fontWeight: 600 }}>{v}<div className="mono" style={{ fontSize: 11, color: 'var(--bb-text-3)' }}>{r.instance_id}</div><div style={{ marginTop: 2 }}><DossierNo no={dossierFromId(r.instance_id)} /></div></span> },
+              { title: '名称', dataIndex: 'name', render: (v, r) => <span style={{ fontWeight: 600 }}>{v}<div className="mono" style={{ fontSize: 11, color: 'var(--bb-text-3)' }}>{r.instance_id}</div><div style={{ marginTop: 8 }}><DossierNo no={dossierFromId(r.instance_id)} /></div></span> },
               { title: '状态', dataIndex: 'status', render: (v) => (
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
                   <StatusLine variant={STATUS_LINE[v]?.variant ?? 'solid'} color={STATUS_LINE[v]?.color} thickness={3} />
@@ -168,7 +162,7 @@ export default function InstancesPage() {
               {
                 title: '操作', key: 'action', width: 200,
                 render: (_, r) => (
-                  <div style={{ display: 'flex', gap: 6 }}>
+                  <div style={{ display: 'flex', gap: 8 }}>
                     <Button size="small" type="primary" ghost disabled={r.status === 'destroyed'} onClick={() => enterSession.mutate(r.instance_id)}>会话</Button>
                     <Button size="small" disabled={r.status === 'destroyed'} onClick={() => setCloneTarget(r)}>克隆</Button>
                     <Button size="small" onClick={() => navigate(`/policies/${r.instance_id}`)}>策略</Button>
@@ -188,10 +182,9 @@ export default function InstancesPage() {
 
 function StatCard({ label, value, accent }: { label: string; value: number; accent?: string }) {
   return (
-    <div className="bb-card" style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 6 }}>
-      <span style={{ fontSize: 13, color: 'var(--bb-text-3)' }}>{label}</span>
-      <span className="mono" style={{ fontSize: 28, fontWeight: 600, color: accent ?? 'var(--bb-text-1)', lineHeight: 1 }}>{value}</span>
-    </div>
+    <Card size="small" variant="borderless">
+      <Statistic title={label} value={value} valueStyle={{ color: accent ?? 'var(--bb-text-1)' }} />
+    </Card>
   );
 }
 
@@ -206,50 +199,42 @@ function InstanceCard({ instance, onEnter, entering, onClone, onPolicies, onRene
 }) {
   const destroyed = instance.status === 'destroyed';
   return (
-    <div className="bb-card" style={{ padding: 18, opacity: destroyed ? 0.6 : 1, display: 'flex', flexDirection: 'column', gap: 14 }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
-        <div style={{ minWidth: 0 }}>
-          <div style={{ fontSize: 16.5, fontWeight: 600, color: 'var(--bb-text-1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{instance.name}</div>
-          <div className="mono" style={{ fontSize: 11.5, color: 'var(--bb-text-3)', marginTop: 2 }}>{instance.instance_id}</div>
-          <div style={{ marginTop: 2 }}><DossierNo no={dossierFromId(instance.instance_id)} /></div>
-        </div>
-        <span style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-end', gap: 5 }}>
-          <Tag color={STATUS_COLOR[instance.status]} style={{ margin: 0 }}>{INSTANCE_STATUS_META[instance.status]?.label}</Tag>
-          <StatusLine variant={STATUS_LINE[instance.status]?.variant ?? 'solid'} color={STATUS_LINE[instance.status]?.color} thickness={3} />
-        </span>
-      </div>
-
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-        <PresetTag preset={instance.guard.preset} size="sm" />
-        <SimBadge compact />
-        {instance.clone_source_id && <span style={{ fontSize: 11.5, padding: '1px 8px', borderRadius: 4, border: '1px solid var(--bb-border)', color: 'var(--bb-text-2)' }}>克隆体</span>}
-      </div>
-
-      <div>
-        <div style={{ fontSize: 12, color: 'var(--bb-text-3)', marginBottom: 6 }}>启用工具</div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
-          {instance.enabled_tools.length === 0 && <span style={{ fontSize: 13, color: 'var(--bb-text-3)' }}>无</span>}
+    <Card
+      size="small"
+      variant="borderless"
+      title={instance.name}
+      extra={<Tag color={STATUS_COLOR[instance.status]} style={{ margin: 0 }}>{INSTANCE_STATUS_META[instance.status]?.label}</Tag>}
+      style={{ opacity: destroyed ? 0.6 : 1, display: 'flex', flexDirection: 'column' }}
+      styles={{ body: { display: 'flex', flexDirection: 'column', flex: 1, gap: 16 } }}
+    >
+      <Descriptions bordered={false} column={1} size="small" styles={{ content: { minWidth: 0, wordBreak: 'break-word' } }} items={[
+        { key: 'id', label: '实例', children: <span className="mono">{instance.instance_id}</span> },
+        { key: 'dossier', label: '案卷档号', children: <DossierNo no={dossierFromId(instance.instance_id)} /> },
+        { key: 'status', label: '状态', children: <StatusLine variant={STATUS_LINE[instance.status]?.variant ?? 'solid'} color={STATUS_LINE[instance.status]?.color} thickness={3} /> },
+        { key: 'guard', label: '防护档位', children: <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+          <PresetTag preset={instance.guard.preset} size="sm" />
+          <SimBadge compact />
+          {instance.clone_source_id && <Tag style={{ margin: 0 }}>克隆体</Tag>}
+        </div> },
+        { key: 'tools', label: '启用工具', children: <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+          {instance.enabled_tools.length === 0 && <Typography.Text type="secondary">无</Typography.Text>}
           {instance.enabled_tools.map((t) => (
             <Tooltip key={t} title={TOOL_META[t]?.desc}>
-              <span className="mono" style={{ fontSize: 11.5, padding: '2px 8px', borderRadius: 6, background: 'var(--bb-bg-subtle)', border: '1px solid var(--bb-border)', color: 'var(--bb-text-2)' }}>{t}</span>
+              <Tag className="mono" style={{ margin: 0 }}>{t}</Tag>
             </Tooltip>
           ))}
-        </div>
-      </div>
-
-      <div style={{ display: 'flex', gap: 18, fontSize: 13, color: 'var(--bb-text-2)' }}>
-        <span>调用 <b className="mono" style={{ color: 'var(--bb-text-1)' }}>{instance.stats?.call_count || 0}</b></span>
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Clock size={12} /> {fromNow(instance.expires_at)}过期</span>
-      </div>
-
-      <div style={{ display: 'flex', gap: 8, marginTop: 'auto', paddingTop: 4, borderTop: '1px solid var(--bb-border)' }}>
+        </div> },
+        { key: 'calls', label: '调用', children: <span className="mono">{instance.stats?.call_count || 0}</span> },
+        { key: 'expires', label: '过期', children: <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}><Clock size={12} /> {fromNow(instance.expires_at)}过期</span> },
+      ]} />
+      <div style={{ display: 'flex', gap: 8, marginTop: 'auto', paddingTop: 8, borderTop: '1px solid var(--bb-border)' }}>
         <Button type="primary" size="small" icon={<AttackIcon size={13} />} disabled={destroyed} loading={entering} onClick={onEnter} style={{ flex: 1 }}>进入会话</Button>
-        <Tooltip title="克隆比对"><Button size="small" icon={<Copy size={13} />} disabled={destroyed} onClick={onClone} /></Tooltip>
-        <Tooltip title="查看策略"><Button size="small" icon={<GuardIcon size={13} />} onClick={onPolicies} /></Tooltip>
-        <Tooltip title="续期"><Button size="small" icon={<RefreshCw size={13} />} disabled={destroyed} onClick={onRenew} /></Tooltip>
-        <Tooltip title="回收"><Button size="small" danger icon={<Trash2 size={13} />} disabled={destroyed} onClick={onRecycle} /></Tooltip>
+        <Tooltip title="克隆比对"><Button aria-label="克隆比对" size="small" icon={<Copy size={13} />} disabled={destroyed} onClick={onClone} /></Tooltip>
+        <Tooltip title="查看策略"><Button aria-label="查看策略" size="small" icon={<GuardIcon size={13} />} onClick={onPolicies} /></Tooltip>
+        <Tooltip title="续期"><Button aria-label="续期" size="small" icon={<RefreshCw size={13} />} disabled={destroyed} onClick={onRenew} /></Tooltip>
+        <Tooltip title="回收"><Button aria-label="回收" size="small" danger icon={<Trash2 size={13} />} disabled={destroyed} onClick={onRecycle} /></Tooltip>
       </div>
-    </div>
+    </Card>
   );
 }
 
@@ -290,29 +275,28 @@ function CloneModal({ instance, onClose, onDone }: { instance: Instance | null; 
       cancelText="取消"
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: '8px 0' }}>
-        <div>
-          <div style={{ fontSize: 13.5, fontWeight: 600, marginBottom: 8 }}>克隆模式</div>
+        <Form.Item
+          layout="vertical"
+          label="克隆模式"
+          help={<Typography.Text type="secondary"><InfoCircleOutlined /> {mode === 'verbatim' ? '完整复制源实例配置，用于复现与回归。' : '在源配置基础上调整防护档位，用于对照实验。'}</Typography.Text>}
+          style={{ marginBottom: 0 }}
+        >
           <Radio.Group value={mode} onChange={(e) => setMode(e.target.value)}>
             <Radio.Button value="verbatim">原样克隆</Radio.Button>
             <Radio.Button value="modified">修改克隆</Radio.Button>
           </Radio.Group>
-          <div style={{ fontSize: 12.5, color: 'var(--bb-text-3)', marginTop: 8, lineHeight: 1.5 }}>
-            {mode === 'verbatim' ? '完整复制源实例配置，用于复现与回归。' : '在源配置基础上调整防护档位，用于对照实验。'}
-          </div>
-        </div>
-        <div>
-          <div style={{ fontSize: 13.5, fontWeight: 600, marginBottom: 8 }}>克隆名称（可选）</div>
+        </Form.Item>
+        <Form.Item layout="vertical" label="克隆名称（可选）" style={{ marginBottom: 0 }}>
           <Input value={name} onChange={(e) => setName(e.target.value)} placeholder={`${instance?.name ?? ''}-克隆`} />
-        </div>
+        </Form.Item>
         {mode === 'modified' && (
-          <div>
-            <div style={{ fontSize: 13.5, fontWeight: 600, marginBottom: 8 }}>调整防护档位</div>
+          <Form.Item layout="vertical" label="调整防护档位" style={{ marginBottom: 0 }}>
             <Radio.Group value={guardPreset} onChange={(e) => setGuardPreset(e.target.value)}>
               {['loose', 'standard', 'strict'].map((p) => (
                 <Radio.Button key={p} value={p}>{PRESET_META[p].label}</Radio.Button>
               ))}
             </Radio.Group>
-          </div>
+          </Form.Item>
         )}
       </div>
     </Modal>

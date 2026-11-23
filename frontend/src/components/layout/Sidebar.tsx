@@ -18,9 +18,9 @@ const NAV = [
 const rowStyle = (active: boolean): React.CSSProperties => ({
   display: 'flex',
   alignItems: 'center',
-  gap: 10,
+  gap: 8,
   height: 36,
-  padding: '0 12px',
+  padding: '0 8px',
   borderRadius: 8,
   textDecoration: 'none',
   color: active ? 'var(--bb-brand-primary)' : 'var(--bb-text-2)',
@@ -82,7 +82,7 @@ export function Sidebar() {
         style={{
           display: 'flex',
           alignItems: 'center',
-          gap: 10,
+          gap: 8,
           padding: 16,
           background: 'none',
           border: 'none',
@@ -96,7 +96,7 @@ export function Sidebar() {
 
       <div
         style={{
-          padding: '10px 18px 0',
+          padding: '8px 16px 0',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -109,8 +109,8 @@ export function Sidebar() {
         </span>
       </div>
 
-      <nav className="bb-sider-nav" style={{ flex: 1, padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: 2, overflowY: 'auto' }}>
-        <div className="bb-sider-label" style={{ fontSize: 12, fontWeight: 500, color: 'var(--bb-text-3)', padding: '8px 12px 6px' }}>
+      <nav className="bb-sider-nav" style={{ flex: 1, padding: '8px 16px', display: 'flex', flexDirection: 'column', gap: 8, overflowY: 'auto' }}>
+        <div className="bb-sider-label" style={{ fontSize: 12, fontWeight: 500, color: 'var(--bb-text-3)', padding: 8 }}>
           案卷导航
         </div>
         {NAV.map((item) => (
@@ -120,7 +120,7 @@ export function Sidebar() {
           </NavLink>
         ))}
 
-        <div className="bb-sider-label" style={{ fontSize: 12, fontWeight: 500, color: 'var(--bb-text-3)', padding: '20px 12px 6px' }}>
+        <div className="bb-sider-label" style={{ fontSize: 12, fontWeight: 500, color: 'var(--bb-text-3)', padding: '24px 8px 8px' }}>
           攻防阅档舱
         </div>
         <button onClick={() => navigate('/workspace')} style={{ ...rowStyle(false), border: 'none', cursor: 'pointer', textAlign: 'left', width: '100%' }}>
@@ -129,9 +129,9 @@ export function Sidebar() {
         </button>
       </nav>
 
-      <div style={{ padding: 12, borderTop: '1px solid var(--bb-border)', display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <div style={{ padding: '0 4px', display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 20 }}>
+      <div style={{ padding: 16, borderTop: '1px solid var(--bb-border)', display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div style={{ padding: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, height: 20 }}>
             <span style={{ fontSize: 12, color: 'var(--bb-text-3)' }}>工作区</span>
             <button
               onClick={copyWorkspace}
@@ -139,8 +139,8 @@ export function Sidebar() {
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: 4,
-                padding: '0 4px',
+                gap: 8,
+                padding: 0,
                 height: 20,
                 background: 'none',
                 border: 'none',
@@ -159,9 +159,9 @@ export function Sidebar() {
             style={{
               display: 'inline-flex',
               alignItems: 'center',
-              gap: 6,
+              gap: 8,
               alignSelf: 'flex-start',
-              padding: '0 4px',
+              padding: 0,
               height: 20,
               background: 'none',
               border: 'none',
@@ -175,7 +175,7 @@ export function Sidebar() {
             切换到新工作区
           </button>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 4px', height: 20 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: 0, height: 20 }}>
           <span style={{ fontSize: 12, color: 'var(--bb-text-3)' }}>今日调用</span>
           <span
             className="mono"
@@ -185,7 +185,7 @@ export function Sidebar() {
             {guestMax ? `${guestUsed}/${guestMax}` : '—'}
           </span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 4px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: 0 }}>
           <SimBadge compact />
           <span style={{ fontSize: 12, color: 'var(--bb-text-3)' }}>游客</span>
         </div>
@@ -199,7 +199,7 @@ export function Sidebar() {
             alignItems: 'center',
             gap: 8,
             height: 32,
-            padding: '0 12px',
+            padding: '0 8px',
             borderRadius: 8,
             border: '1px solid var(--bb-border)',
             background: 'transparent',

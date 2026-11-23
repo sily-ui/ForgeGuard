@@ -1,5 +1,5 @@
+import { Progress, Space, Tooltip, Typography, theme } from 'antd';
 import { riskToStatus } from '@/utils/constants';
-import { status } from '@/theme/tokens';
 import type { RiskLevel } from '@/types/api';
 
 interface Props {
@@ -12,54 +12,48 @@ interface Props {
 
 // 风险环：累计风险分 + 最高风险等级，颜色随风险语义变化。
 export function RiskRing({ score, maxRisk = 'none', size = 44, stroke = 4, label }: Props) {
+  const { token } = theme.useToken();
   const kind = riskToStatus(maxRisk);
-  const c = status(kind);
-  const r = (size - stroke) / 2;
-  const circ = 2 * Math.PI * r;
+  const color = {
+    allow: token.colorSuccess,
+    block: token.colorError,
+    observe: token.colorWarning,
+    disabled: token.colorTextDisabled,
+  }[kind];
+  const textColor = {
+    allow: token.colorSuccessText,
+    block: token.colorErrorText,
+    observe: token.colorWarningText,
+    disabled: token.colorTextSecondary,
+  }[kind];
   const clamped = Math.max(0, Math.min(1, score));
-  const offset = circ * (1 - clamped);
+
   return (
-    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }} title={`累计风险分 ${score.toFixed(2)}`}>
-      <div style={{ position: 'relative', width: size, height: size }}>
-        <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
-          <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#e2e5e8" strokeWidth={stroke} />
-          <circle
-            cx={size / 2}
-            cy={size / 2}
-            r={r}
-            fill="none"
-            stroke={c.color}
-            strokeWidth={stroke}
-            strokeLinecap="round"
-            strokeDasharray={circ}
-            strokeDashoffset={offset}
-            style={{ transition: 'stroke-dashoffset 400ms ease, stroke 300ms ease' }}
-          />
-        </svg>
-        <span
-          className="mono"
-          style={{
-            position: 'absolute',
-            inset: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: Math.max(12, size * 0.3),
-            fontWeight: 600,
-            color: c.text,
-          }}
-        >
-          {score.toFixed(1)}
-        </span>
-      </div>
-      {label && (
-        <div style={{ lineHeight: 1.2 }}>
-          <div style={{ fontSize: 13, color: 'var(--bb-text-3)' }}>{label}</div>
-          <div className="mono" style={{ fontSize: 14, fontWeight: 600, color: c.text }}>
-            {String(maxRisk).toUpperCase()}
-          </div>
-        </div>
-      )}
-    </div>
+    <Tooltip title={`累计风险分 ${score.toFixed(2)}`}>
+      <Space size={8}>
+        <Progress
+          type="circle"
+          status="normal"
+          size={size}
+          percent={clamped * 100}
+          strokeWidth={(stroke / size) * 100}
+          strokeColor={color}
+          trailColor={token.colorBorderSecondary}
+          format={() => (
+            <Typography.Text className="mono" style={{ fontSize: Math.max(12, size * 0.3), fontWeight: 600, color: textColor }}>
+              {score.toFixed(1)}
+            </Typography.Text>
+          )}
+        />
+        {label && (
+          <Space direction="vertical" size={0}>
+            <Typography.Text type="secondary" style={{ fontSize: 13 }}>{label}</Typography.Text>
+            <Typography.Text style={{ fontSize: 14, fontWeight: 600, color: textColor }}>
+              {String(maxRisk).toUpperCase()}
+            </Typography.Text>
+          </Space>
+        )}
+      </Space>
+    </Tooltip>
   );
 }

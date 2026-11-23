@@ -44,7 +44,7 @@ export function StampBadge({ kind, label, size = 'md', animate = false, style }:
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 4,
+        gap: 8,
         height: dim,
         padding: '0 8px',
         border: `2px solid ${color}`,

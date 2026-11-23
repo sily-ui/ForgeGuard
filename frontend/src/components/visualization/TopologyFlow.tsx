@@ -19,6 +19,7 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import gsap from 'gsap';
+import { Tag, theme } from 'antd';
 import { Bot, Network, Box, AlertCircle } from 'lucide-react';
 import { AttackIcon, GuardIcon } from '@/components/icons/SecurityIcons';
 import { PixiFX, type PixiFXHandle } from './PixiFX';
@@ -54,27 +55,27 @@ const ICONS = {
 };
 
 const ACCENT: Record<string, string> = {
-  redteam: '#b5484d',
-  agent: '#176b63',
-  guard: '#4f7ba6',
-  gateway: '#176b63',
-  sandbox: '#8d97a1',
-  alert: '#b5484d',
+  redteam: 'var(--ant-color-error)',
+  agent: 'var(--ant-color-primary)',
+  guard: 'var(--ant-color-info)',
+  gateway: 'var(--ant-color-primary)',
+  sandbox: 'var(--ant-color-text-tertiary)',
+  alert: 'var(--ant-color-error)',
 };
 
 const STATE_COLOR: Record<string, string> = {
-  allow: '#2e7d5b',
-  block: '#b5484d',
-  observe: '#c2892b',
-  idle: '#c2cad0',
+  allow: 'var(--ant-color-success)',
+  block: 'var(--ant-color-error)',
+  observe: 'var(--ant-color-warning)',
+  idle: 'var(--ant-color-text-tertiary)',
 };
 
 const EDGE_COLOR: Record<string, string> = {
-  normal: '#176b63',
-  attack: '#c2892b',
-  mirror: '#4f7ba6',
-  block: '#b5484d',
-  degrade: '#c2892b',
+  normal: 'var(--ant-color-primary)',
+  attack: 'var(--ant-color-warning)',
+  mirror: 'var(--ant-color-info)',
+  block: 'var(--ant-color-error)',
+  degrade: 'var(--ant-color-warning)',
 };
 
 const W = 168;
@@ -101,7 +102,7 @@ const POS: Record<string, { x: number; y: number }> = {
 
 function LabFlowNode({ data }: NodeProps<Node<NodeData>>) {
   const Icon = ICONS[data.kind] || Bot;
-  const accent = ACCENT[data.kind] || '#176b63';
+  const accent = ACCENT[data.kind] || ACCENT.agent;
   const stateColor = data.state ? STATE_COLOR[data.state] : accent;
   const active = !!data.active;
   return (
@@ -112,24 +113,23 @@ function LabFlowNode({ data }: NodeProps<Node<NodeData>>) {
         height: H,
         display: 'flex',
         alignItems: 'center',
-        gap: 10,
-        padding: '0 12px',
-        borderRadius: 10,
-        background: active ? '#ffffff' : 'rgba(250,251,251,0.92)',
-        border: `1px solid ${active ? stateColor : '#dfe3e7'}`,
-        boxShadow: active ? `0 0 0 3px ${stateColor}1e, 0 4px 14px ${stateColor}26` : '0 1px 3px rgba(30,36,41,0.06)',
-        transition: 'background-color 200ms ease, border-color 200ms ease, box-shadow 200ms ease',
+        gap: 8,
+        padding: '0 8px',
+        borderRadius: 8,
+        background: 'var(--ant-color-bg-container)',
+        border: `1px solid ${active ? stateColor : 'var(--ant-color-border-secondary)'}`,
+        transition: 'background-color 200ms ease, border-color 200ms ease',
         position: 'relative',
         overflow: 'hidden',
       }}
     >
-      <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 30, height: 30, borderRadius: 8, background: `${accent}14`, color: accent, flexShrink: 0 }}>
+      <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 30, height: 30, borderRadius: 8, background: 'var(--ant-color-fill-quaternary)', color: accent, flexShrink: 0 }}>
         <Icon size={16} strokeWidth={1.6} />
       </span>
       <div style={{ minWidth: 0, lineHeight: 1.2, flex: 1 }}>
-        <div style={{ fontSize: 13.5, fontWeight: 600, color: '#1e2429', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{data.label}</div>
+        <div style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--ant-color-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{data.label}</div>
         {data.sub && (
-          <div className="mono" style={{ fontSize: 10.5, color: '#8d97a1', marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{data.sub}</div>
+          <div className="mono" style={{ fontSize: 10.5, color: 'var(--ant-color-text-tertiary)', marginTop: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{data.sub}</div>
         )}
       </div>
       {data.count != null && data.count > 0 && (
@@ -137,7 +137,7 @@ function LabFlowNode({ data }: NodeProps<Node<NodeData>>) {
       )}
       <span
         className={active ? 'bb-breathe' : undefined}
-        style={{ position: 'absolute', top: 6, right: 6, width: 6, height: 6, borderRadius: '50%', background: active ? stateColor : '#dfe3e7' }}
+        style={{ position: 'absolute', top: 8, right: 8, width: 6, height: 6, borderRadius: '50%', background: active ? stateColor : 'var(--ant-color-border-secondary)' }}
       />
       <Handle id="l" type="target" position={Position.Left} style={{ opacity: 0 }} />
       <Handle id="t" type="target" position={Position.Top} style={{ opacity: 0 }} />
@@ -155,7 +155,7 @@ interface FlowEdgeData extends Record<string, unknown> {
 function LabFlowEdge({ id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, data }: EdgeProps<Edge<FlowEdgeData>>) {
   const kind = data?.kind ?? 'normal';
   const color = EDGE_COLOR[kind] || EDGE_COLOR.normal;
-  const [path] = getSmoothStepPath({ sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, borderRadius: 10 });
+  const [path] = getSmoothStepPath({ sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, borderRadius: 8 });
   const dashed = kind === 'attack' || kind === 'mirror';
   const runClass = data?.active ? (kind === 'attack' ? 'bb-flow-run-attack' : kind === 'mirror' ? 'bb-flow-run-mirror' : kind === 'block' ? 'bb-flow-run-block' : 'bb-flow-run-normal') : '';
   return (
@@ -212,6 +212,7 @@ export function TopologyFlow(props: Props) {
 }
 
 function TopologyInner({ state, height = 268 }: Props) {
+  const { token } = theme.useToken();
   const fxRef = useRef<PixiFXHandle>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const stampRef = useRef<HTMLDivElement>(null);
@@ -329,34 +330,34 @@ function TopologyInner({ state, height = 268 }: Props) {
 
     switch (fxEvent.kind) {
       case 'call':
-        fx.packet([pt('redteam', 'r'), pt('agent', 'l')], '#c2892b', 0.4);
-        later(() => fx.packet([pt('agent', 'r'), pt('gateway', 'l')], '#176b63', 0.4), 200);
+        fx.packet([pt('redteam', 'r'), pt('agent', 'l')], token.colorWarning, 0.4);
+        later(() => fx.packet([pt('agent', 'r'), pt('gateway', 'l')], token.colorPrimary, 0.4), 200);
         break;
       case 'judge':
-        fx.packet([pt('gateway', 'b'), pt('guard', 't')], '#4f7ba6', 0.4);
-        if (fxEvent.action === 'challenge') later(() => fx.burst(pt('guard', 'c').x, pt('guard', 'c').y, '#c2892b'), 380);
+        fx.packet([pt('gateway', 'b'), pt('guard', 't')], token.colorInfo, 0.4);
+        if (fxEvent.action === 'challenge') later(() => fx.burst(pt('guard', 'c').x, pt('guard', 'c').y, token.colorWarning), 380);
         break;
       case 'resolve':
         if (fxEvent.action === 'block' || fxEvent.action === 'limit_block') {
-          fx.packet([gwR, mid], '#b5484d', 0.28);
+          fx.packet([gwR, mid], token.colorError, 0.28);
           later(() => {
-            fx.burst(mid.x, mid.y, '#b5484d');
+            fx.burst(mid.x, mid.y, token.colorError);
             shake('gateway');
             shake('sandbox');
             setStamp({ key: fxEvent.at, x: mid.x, y: mid.y - 34 * z });
           }, 280);
         } else if (fxEvent.action === 'degrade') {
-          fx.packet([gwR, sbL], '#c2892b', 0.45);
+          fx.packet([gwR, sbL], token.colorWarning, 0.45);
         } else {
-          fx.packet([gwR, sbL], '#2e7d5b', 0.45);
+          fx.packet([gwR, sbL], token.colorSuccess, 0.45);
         }
         break;
       case 'alert':
-        fx.packet([pt('guard', 'r'), pt('alert', 'l')], '#b5484d', 0.4);
-        later(() => fx.burst(pt('alert', 'c').x, pt('alert', 'c').y, '#b5484d'), 380);
+        fx.packet([pt('guard', 'r'), pt('alert', 'l')], token.colorError, 0.4);
+        later(() => fx.burst(pt('alert', 'c').x, pt('alert', 'c').y, token.colorError), 380);
         break;
       case 'redteam':
-        fx.packet([pt('redteam', 'r'), pt('agent', 'l')], '#c2892b', 0.4);
+        fx.packet([pt('redteam', 'r'), pt('agent', 'l')], token.colorWarning, 0.4);
         break;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -405,16 +406,16 @@ function TopologyInner({ state, height = 268 }: Props) {
         maxZoom={1.6}
         proOptions={{ hideAttribution: false }}
       >
-        <Background variant={BackgroundVariant.Dots} gap={22} size={1} color="#e2e5e8" />
+        <Background variant={BackgroundVariant.Dots} gap={24} size={1} color={token.colorBorderSecondary} />
         <Controls showInteractive={false} position="top-right" />
       </ReactFlow>
       <PixiFX ref={fxRef} />
       {stamp && (
         <div style={{ left: stamp.x, top: stamp.y, position: 'absolute', transform: 'translate(-50%, -50%)', pointerEvents: 'none' }}>
-          <div ref={stampRef} className="bb-flow-stamp">已拦截</div>
+          <div ref={stampRef}><Tag color="error" style={{ margin: 0 }}>已拦截</Tag></div>
         </div>
       )}
-      <div style={{ position: 'absolute', top: 6, left: 10, display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'var(--bb-text-3)', pointerEvents: 'none' }}>
+      <div style={{ position: 'absolute', top: 8, left: 8, display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 11, color: 'var(--bb-text-3)', pointerEvents: 'none' }}>
         <span className="bb-blink" style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--bb-allow)' }} />
         <span className="mono" style={{ fontWeight: 600, letterSpacing: 0.4 }}>LIVE</span>
         {fxEvent && (
@@ -425,11 +426,11 @@ function TopologyInner({ state, height = 268 }: Props) {
           </span>
         )}
       </div>
-      <div style={{ position: 'absolute', bottom: 6, left: 12, display: 'flex', gap: 14, fontSize: 12, color: 'var(--bb-text-3)', pointerEvents: 'none' }}>
-        <Legend color="#176b63" label="正常调用" />
-        <Legend color="#c2892b" label="攻击 / 降级" dash />
-        <Legend color="#4f7ba6" label="旁路镜像" dash />
-        <Legend color="#b5484d" label="阻断" />
+      <div style={{ position: 'absolute', bottom: 8, left: 8, display: 'flex', flexWrap: 'wrap', gap: 8, fontSize: 12, color: 'var(--bb-text-3)', pointerEvents: 'none' }}>
+        <Legend color={token.colorPrimary} label="正常调用" />
+        <Legend color={token.colorWarning} label="攻击 / 降级" dash />
+        <Legend color={token.colorInfo} label="旁路镜像" dash />
+        <Legend color={token.colorError} label="阻断" />
       </div>
     </div>
   );
@@ -437,7 +438,7 @@ function TopologyInner({ state, height = 268 }: Props) {
 
 function Legend({ color, label, dash }: { color: string; label: string; dash?: boolean }) {
   return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
       <svg width="20" height="6">
         <line x1="0" y1="3" x2="20" y2="3" stroke={color} strokeWidth="2" strokeDasharray={dash ? '3 3' : undefined} />
       </svg>

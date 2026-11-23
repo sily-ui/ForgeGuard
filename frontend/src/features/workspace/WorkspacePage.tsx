@@ -1,16 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { App, Button, Spin } from 'antd';
-import { Play, LayoutGrid, Boxes, FileBarChart, ArrowRight, Clock, Check } from 'lucide-react';
+import { App, Button, Card, Descriptions, Empty, Spin, Steps, Tag, Typography } from 'antd';
+import { InfoCircleOutlined } from '@ant-design/icons';
+import { Play, LayoutGrid, Boxes, FileBarChart, ArrowRight, Clock } from 'lucide-react';
 import { PageHeader } from '@/components/common/PageHeader';
 import { SectionCard } from '@/components/common/SectionCard';
 import { SimBadge } from '@/components/common/SimBadge';
 import { ModeBadge } from '@/components/common/ModeBadge';
 import { StatusBadge } from '@/components/common/StatusBadge';
-import { EmptyState } from '@/components/common/EmptyState';
 import { PresetTag } from '@/components/common/PresetTag';
-import { DossierSpine } from '@/components/common/DossierSpine';
 import { DossierNo } from '@/components/common/DossierNo';
 import { AttackIcon, GuardIcon } from '@/components/icons/SecurityIcons';
 import { templateApi, instanceApi, sessionApi, sampleApi, reportApi } from '@/services/api/resources';
@@ -30,9 +29,9 @@ const DEMO_TIMEOUT_MS = 120000;
 class DemoCancelled extends Error {}
 
 const CAPABILITIES = [
-  { no: '01', icon: LayoutGrid, title: '编排中心', desc: '配置靶标 Agent 的身份、工具、约束与防护档位', to: '/orchestration' },
-  { no: '02', icon: Boxes, title: '实例管理', desc: '运行、克隆、比对与回收靶标实例', to: '/instances' },
-  { no: '03', icon: FileBarChart, title: '测评报告', desc: '根因归因与可执行加固建议', to: '/reports' },
+  { icon: LayoutGrid, title: '编排中心', desc: '配置靶标 Agent 的身份、工具、约束与防护档位', to: '/orchestration' },
+  { icon: Boxes, title: '实例管理', desc: '运行、克隆、比对与回收靶标实例', to: '/instances' },
+  { icon: FileBarChart, title: '测评报告', desc: '根因归因与可执行加固建议', to: '/reports' },
 ];
 
 interface DemoPhase {
@@ -156,87 +155,21 @@ export default function WorkspacePage() {
     <div>
       <PageHeader title="案卷工作台" extra={<><ModeBadge mode={mode} /><SimBadge /></>} />
 
-      {/* 演示案卷：骑缝条 + 一键演示流程，步骤状态以线形推进 */}
-      <div
+      {/* 演示进度与实际创建、载入阶段同步 */}
+      <Card
         data-tour="demo-banner"
-        style={{
-          marginBottom: 16,
-          display: 'flex',
-          borderRadius: 10,
-          overflow: 'hidden',
-          border: '1px solid var(--bb-border)',
-          boxShadow: 'var(--bb-shadow-1)',
-          background: 'var(--bb-bg-card)',
-        }}
+        size="small"
+        variant="borderless"
+        title={<span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}><AttackIcon size={16} strokeWidth={1.5} /> 一键演示</span>}
+        extra={<DossierNo no={dossier} />}
+        style={{ marginBottom: 16 }}
       >
-        <DossierSpine no={dossier} />
-        <div style={{ flex: 1, padding: 20, display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap', minWidth: 0 }}>
-          <div style={{ flex: 1, minWidth: 280 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <AttackIcon size={16} strokeWidth={1.5} style={{ color: 'var(--bb-text-3)' }} />
-              <span style={{ fontSize: 16, fontWeight: 600, color: 'var(--bb-text-1)' }}>一键演示</span>
-            </div>
-            <p style={{ margin: '4px 0 0', fontSize: 13.5, color: 'var(--bb-text-2)', lineHeight: 1.6 }}>
-              自动选用预置模板创建靶标实例与会话，载入攻击样本后进入实时控制台，全程内存仿真，演示走快速链路秒级完成
-            </p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 12, flexWrap: 'wrap' }}>
-              {DEMO_STEPS.map((label, i) => {
-                const state = bannerPending ? (i < activeStep ? 'done' : i === activeStep ? 'run' : 'idle') : 'idle';
-                const active = state === 'run';
-                const done = state === 'done';
-                // 墨线状态：已过步骤为实线品牌色；下一个步骤进行中，线随数据流动。
-                const nextRunning = bannerPending && i + 1 === activeStep;
-                return (
-                  <span key={label} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                    <span
-                      className="mono"
-                      style={{
-                        fontSize: 12,
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 3,
-                        color: active || done ? 'var(--bb-brand-primary)' : 'var(--bb-text-3)',
-                      }}
-                    >
-                      {done ? <Check size={11} strokeWidth={2.5} /> : String(i + 1).padStart(2, '0')}
-                    </span>
-                    <span
-                      style={{
-                        fontSize: 13,
-                        fontWeight: active ? 600 : 400,
-                        color: active ? 'var(--bb-brand-primary)' : done ? 'var(--bb-text-2)' : 'var(--bb-text-3)',
-                      }}
-                    >
-                      {label}
-                    </span>
-                    {i < DEMO_STEPS.length - 1 && (
-                      <span
-                        style={
-                          nextRunning
-                            ? {
-                                width: 20,
-                                height: 2,
-                                marginLeft: 10,
-                                backgroundImage:
-                                  'repeating-linear-gradient(90deg, var(--bb-brand-primary) 0 5px, transparent 5px 10px)',
-                                backgroundSize: '20px 100%',
-                                backgroundRepeat: 'repeat',
-                                animation: 'bb-flow-bg 800ms linear infinite',
-                                borderRadius: 2,
-                              }
-                            : {
-                                width: 16,
-                                height: 1,
-                                marginLeft: 10,
-                                background: done ? 'var(--bb-brand-primary)' : 'var(--bb-border)',
-                              }
-                        }
-                      />
-                    )}
-                  </span>
-                );
-              })}
-            </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap', minWidth: 0 }}>
+          <div style={{ flex: '1 1 280px', minWidth: 0 }}>
+            <Typography.Text type="secondary">
+              <InfoCircleOutlined /> 自动选用预置模板创建靶标实例与会话，载入攻击样本后进入实时控制台，全程内存仿真，演示走快速链路秒级完成
+            </Typography.Text>
+            <Steps size="small" current={bannerPending ? activeStep : -1} items={DEMO_STEPS.map((title) => ({ title }))} style={{ marginTop: 16 }} />
           </div>
           {bannerPending && (
             <Button
@@ -259,11 +192,11 @@ export default function WorkspacePage() {
             {bannerPending ? activeLabel : '开始演示'}
           </Button>
         </div>
-      </div>
+      </Card>
 
       {/* 能力入口：文书索引条目，不用等大卡片行 */}
       <div data-tour="capabilities" style={{ marginBottom: 16 }}>
-        <div className="bb-card" style={{ padding: '4px 18px' }}>
+        <Card size="small" variant="borderless">
           {CAPABILITIES.map((c, i) => (
             <button
               key={c.title}
@@ -271,9 +204,9 @@ export default function WorkspacePage() {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: 14,
+                gap: 16,
                 width: '100%',
-                padding: '13px 4px',
+                padding: '16px 0',
                 border: 'none',
                 background: 'transparent',
                 cursor: 'pointer',
@@ -284,16 +217,13 @@ export default function WorkspacePage() {
               onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bb-bg-subtle)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
             >
-              <span className="mono" style={{ fontSize: 12, fontWeight: 600, color: 'var(--bb-brand-primary)', width: 20, textAlign: 'right', flexShrink: 0 }}>
-                {c.no}
-              </span>
               <c.icon size={16} strokeWidth={1.5} style={{ color: 'var(--bb-text-3)', flexShrink: 0 }} />
               <span style={{ fontSize: 14.5, fontWeight: 600, color: 'var(--bb-text-1)', flexShrink: 0 }}>{c.title}</span>
               <span style={{ fontSize: 13, color: 'var(--bb-text-2)', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.desc}</span>
               <ArrowRight size={14} style={{ color: 'var(--bb-text-3)', flexShrink: 0 }} />
             </button>
           ))}
-        </div>
+        </Card>
       </div>
 
       <div className="bb-workspace-grid" style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 16, alignItems: 'start' }}>
@@ -302,31 +232,29 @@ export default function WorkspacePage() {
         <SectionCard
           title={<><GuardIcon size={15} strokeWidth={1.5} /> 当前可测靶标</>}
           extra={<Button size="small" type="link" onClick={() => navigate('/orchestration')}>去编排 <ArrowRight size={13} /></Button>}
-          padding={12}
+          padding={16}
         >
           {templatesQuery.isLoading ? (
-            <div style={{ padding: 30, textAlign: 'center' }}><Spin /></div>
+            <div style={{ padding: 32, textAlign: 'center' }}><Spin /></div>
           ) : templates.length === 0 ? (
-            <EmptyState compact title="暂无模板" description="后端未返回预置模板" />
+            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={<><div>暂无模板</div><Typography.Text type="secondary">后端未返回预置模板</Typography.Text></>} />
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {templates.slice(0, 4).map((t) => (
                 <div
                   key={t.id}
-                  style={{ display: 'flex', alignItems: 'center', gap: 14, padding: 12, borderRadius: 8, border: '1px solid var(--bb-border)' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 16, padding: 16, borderBottom: '1px solid var(--bb-border)' }}
                 >
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
                       <DossierNo no={dossierFromId(t.id)} />
                       <span style={{ fontSize: 14.5, fontWeight: 600, color: 'var(--bb-text-1)' }}>{t.name}</span>
                       <PresetTag preset={t.suggested_guard} size="sm" />
                     </div>
-                    <div style={{ fontSize: 13, color: 'var(--bb-text-2)', lineHeight: 1.5 }}>{t.description}</div>
-                    <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
+                    <Typography.Text type="secondary"><InfoCircleOutlined /> {t.description}</Typography.Text>
+                    <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
                       {t.suggested_tools.slice(0, 5).map((tool) => (
-                        <span key={tool} className="mono" style={{ fontSize: 11, padding: '1px 7px', borderRadius: 4, background: 'var(--bb-bg-subtle)', color: 'var(--bb-text-2)' }}>
-                          {TOOL_META[tool]?.label || tool}
-                        </span>
+                        <Tag key={tool} style={{ margin: 0 }}>{TOOL_META[tool]?.label || tool}</Tag>
                       ))}
                     </div>
                   </div>
@@ -352,14 +280,14 @@ export default function WorkspacePage() {
         <div data-tour="recent" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <SectionCard title={<><Clock size={15} strokeWidth={1.5} /> 最近会话</>} padding={8}>
             {sessions.length === 0 ? (
-              <EmptyState compact title="暂无会话" description="从实例或一键演示开始" />
+              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={<><div>暂无会话</div><Typography.Text type="secondary">从实例或一键演示开始</Typography.Text></>} />
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 {sessions.map((s) => (
                   <button
                     key={s.session_id}
                     onClick={() => navigate(`/console/${s.session_id}`)}
-                    style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 8, border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left', width: '100%', transition: 'background-color 150ms ease' }}
+                    style={{ display: 'flex', alignItems: 'center', gap: 8, padding: 8, borderRadius: 8, border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left', width: '100%', transition: 'background-color 150ms ease' }}
                     onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bb-bg-subtle)'; }}
                     onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
                   >
@@ -379,14 +307,14 @@ export default function WorkspacePage() {
 
           <SectionCard title="最近报告" padding={8}>
             {reports.length === 0 ? (
-              <EmptyState compact title="暂无报告" description="在控制台生成测评报告" />
+              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={<><div>暂无报告</div><Typography.Text type="secondary">在控制台生成测评报告</Typography.Text></>} />
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 {reports.map((r) => (
                   <button
                     key={r.report_id}
                     onClick={() => navigate(`/reports/${r.report_id}`)}
-                    style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 8, border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left', width: '100%', transition: 'background-color 150ms ease' }}
+                    style={{ display: 'flex', alignItems: 'center', gap: 8, padding: 8, borderRadius: 8, border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left', width: '100%', transition: 'background-color 150ms ease' }}
                     onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bb-bg-subtle)'; }}
                     onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
                   >
@@ -407,13 +335,13 @@ export default function WorkspacePage() {
       </div>
 
       {quota && (
-        <div className="mono" style={{ marginTop: 16, fontSize: 12.5, color: 'var(--bb-text-3)', display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-          <span>
-            今日模型调用 {quota.guest_used_calls ?? quota.global_used_calls}/{quota.guest_max_calls ?? quota.global_max_calls}
-          </span>
-          <span>存活实例 {instances.filter((i) => i.status !== 'destroyed').length}</span>
+        <div style={{ marginTop: 16 }}>
+          <Descriptions bordered={false} column={1} size="small" items={[
+            { key: 'quota', label: '今日模型调用', children: `${quota.guest_used_calls ?? quota.global_used_calls}/${quota.guest_max_calls ?? quota.global_max_calls}` },
+            { key: 'instances', label: '存活实例', children: instances.filter((i) => i.status !== 'destroyed').length },
+          ]} />
           {(quota.guest_max_calls ?? 0) > 0 && (quota.guest_used_calls ?? 0) >= (quota.guest_max_calls ?? 0) && (
-            <span style={{ color: 'var(--bb-block-text)' }}>今日额度已用尽，明日恢复</span>
+            <Typography.Text type="secondary"><InfoCircleOutlined /> 今日额度已用尽，明日恢复</Typography.Text>
           )}
         </div>
       )}

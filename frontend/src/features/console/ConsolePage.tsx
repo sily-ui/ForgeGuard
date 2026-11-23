@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { App, Button, Input, Modal, Segmented, Select, Spin, Tag, Tooltip } from 'antd';
+import { App, Button, Input, Modal, Segmented, Select, Spin, Steps, Tag, Tooltip, Typography } from 'antd';
+import { InfoCircleOutlined } from '@ant-design/icons';
 import {
   ArrowLeft,
   Pause,
@@ -16,7 +17,6 @@ import {
   Boxes,
   X,
 } from 'lucide-react';
-import { AttackIcon } from '@/components/icons/SecurityIcons';
 import { useConsoleSession } from '@/hooks/useConsoleSession';
 import { sessionApi, experimentApi, instanceApi } from '@/services/api/resources';
 import { ApiClientError } from '@/services/api/client';
@@ -124,7 +124,7 @@ export default function ConsolePage() {
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
         <Logo size={48} />
         <Spin />
-        <div style={{ color: 'var(--bb-text-3)', fontSize: 14 }}>正在接入攻防控制台…</div>
+        <Typography.Text type="secondary">正在接入攻防控制台…</Typography.Text>
       </div>
     );
   }
@@ -133,7 +133,7 @@ export default function ConsolePage() {
     <>
       {/* 实验舱导航 */}
       <div className="bb-lab-nav" style={labNavStyle}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, minWidth: 0 }}>
           <Button size="small" icon={<ArrowLeft size={14} />} onClick={() => navigate('/instances')} style={{ flexShrink: 0 }}>
             实例管理
           </Button>
@@ -143,7 +143,7 @@ export default function ConsolePage() {
             <b style={{ color: 'var(--bb-text-1)' }}>{session?.instance_name ?? '—'}</b>
           </span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <ConnectionBadge connection={connection} />
           <span data-tour="compare-btn" style={{ display: 'inline-flex' }}>
             <Button size="small" icon={<GitCompare size={14} />} onClick={() => setCompareOpen(true)} disabled={terminated}>
@@ -178,7 +178,7 @@ export default function ConsolePage() {
 
       {/* 底部控制条 */}
       <div className="bb-lab-controlbar" style={controlBarStyle}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', rowGap: 6, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', rowGap: 8, minWidth: 0 }}>
           <Tag color={status === 'active' ? 'success' : status === 'paused' ? 'warning' : 'default'} style={{ margin: 0 }}>
             {SESSION_STATUS_META[status]?.label ?? status}
           </Tag>
@@ -248,47 +248,14 @@ function ConsoleHintBar() {
   if (dismissed) return null;
   const steps = ['左侧载入攻击样本或直接发送消息', '中间点击任一工具调用，查看调用链与攻防拓扑', '右侧查看 L1/L2/L3 三级判定证据'];
   return (
-    <div
-      style={{
-        flexShrink: 0,
-        display: 'flex',
-        alignItems: 'center',
-        gap: 10,
-        padding: '7px 12px',
-        margin: '10px 12px 0',
-        fontSize: 13,
-        color: 'var(--bb-text-2)',
-        background: 'var(--bb-brand-light)',
-        border: '1px solid var(--bb-border)',
-        borderRadius: 9,
-      }}
-    >
-      <span style={{ fontWeight: 600, color: 'var(--bb-brand-primary)', flexShrink: 0 }}>使用方式</span>
-      {steps.map((t, i) => (
-        <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
-          {i > 0 && <span style={{ color: 'var(--bb-text-3)' }}>→</span>}
-          <span
-            className="mono"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: 18,
-              height: 18,
-              borderRadius: '50%',
-              fontSize: 11,
-              fontWeight: 600,
-              color: 'var(--bb-brand-primary)',
-              background: 'var(--bb-bg-card)',
-              border: '1px solid var(--bb-border)',
-              flexShrink: 0,
-            }}
-          >
-            {i + 1}
-          </span>
-          <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t}</span>
-        </span>
-      ))}
+    <div style={{ flexShrink: 0, display: 'flex', alignItems: 'flex-start', gap: 16, margin: '16px 16px 0' }}>
+      <Steps
+        size="small"
+        current={-1}
+        aria-label="控制台使用方式"
+        style={{ flex: 1, minWidth: 0 }}
+        items={steps.map((title) => ({ title }))}
+      />
       <Button
         type="text"
         size="small"
@@ -317,10 +284,9 @@ function ConnectionBadge({ connection }: { connection: string }) {
   };
   const m = map[connection] ?? map.closed;
   return (
-    <span className="mono" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11.5, fontWeight: 600, color: m.color, padding: '3px 9px', borderRadius: 4, background: 'var(--bb-bg-subtle)', border: '1px solid var(--bb-border)' }}>
-      {m.icon}
+    <Tag icon={m.icon} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, margin: 0, color: m.color }}>
       {m.label}
-    </span>
+    </Tag>
   );
 }
 
@@ -392,18 +358,16 @@ function CompareModal({
           ]}
         />
         {dimension === 'guard' ? (
-          <div style={compareHintStyle}>
-            <AttackIcon size={15} style={{ color: 'var(--bb-observe)', flexShrink: 0, marginTop: 2 }} />
-            <span>
-              以当前会话为起点（A 组，防护<b>{guardEnabled ? '开启' : '关闭'}</b>），创建同实例的 B 组会话并
-              <b>取消防护开关</b>（防护{guardEnabled ? '关闭' : '开启'}），重放同一输入，逐步对比判定差异。
-            </span>
-          </div>
+          <Typography.Text type="secondary">
+            <InfoCircleOutlined style={{ marginRight: 8 }} />
+            以当前会话为起点（A 组，防护<b>{guardEnabled ? '开启' : '关闭'}</b>），创建同实例的 B 组会话并
+            <b>取消防护开关</b>（防护{guardEnabled ? '关闭' : '开启'}），重放同一输入，逐步对比判定差异。
+          </Typography.Text>
         ) : (
           <div>
-            <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Typography.Text strong style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
               <Boxes size={13} /> 选择对照实例（B 组）
-            </div>
+            </Typography.Text>
             <Select
               value={targetId}
               onChange={setTargetId}
@@ -416,7 +380,7 @@ function CompareModal({
           </div>
         )}
         <div>
-          <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>对照输入（可选）</div>
+          <Typography.Text strong style={{ display: 'block', marginBottom: 8 }}>对照输入（可选）</Typography.Text>
           <Input.TextArea
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -436,7 +400,7 @@ const labNavStyle: React.CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  gap: 12,
+  gap: 16,
   padding: '0 16px',
   borderBottom: '1px solid var(--bb-border)',
   background: 'var(--bb-bg-subtle)',
@@ -446,8 +410,8 @@ const bodyStyle: React.CSSProperties = {
   minHeight: 0,
   display: 'grid',
   gridTemplateColumns: 'minmax(280px, 30fr) minmax(360px, 42fr) minmax(280px, 28fr)',
-  gap: 12,
-  padding: 12,
+  gap: 16,
+  padding: 16,
   overflow: 'hidden',
 };
 const controlBarStyle: React.CSSProperties = {
@@ -456,19 +420,8 @@ const controlBarStyle: React.CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  gap: 12,
+  gap: 16,
   padding: '0 16px',
   borderTop: '1px solid var(--bb-border)',
   background: 'var(--bb-bg-subtle)',
-};
-const compareHintStyle: React.CSSProperties = {
-  display: 'flex',
-  gap: 10,
-  fontSize: 13.5,
-  color: 'var(--bb-text-2)',
-  lineHeight: 1.7,
-  background: 'var(--bb-bg-subtle)',
-  border: '1px solid var(--bb-border)',
-  borderRadius: 9,
-  padding: 12,
 };

@@ -1,4 +1,5 @@
 import { useEffect, useId, useState } from 'react';
+import { theme } from 'antd';
 import { useTourStore } from './tourStore';
 import { TOURS } from './definitions';
 
@@ -52,8 +53,9 @@ export function TourMask() {
     };
   }, [activeTour, current]);
 
+  const { token } = theme.useToken();
   if (!activeTour) return null;
-  const color = 'rgba(21, 40, 37, 0.48)';
+  const color = token.colorBgMask;
   const vw = window.innerWidth;
   const vh = window.innerHeight;
 

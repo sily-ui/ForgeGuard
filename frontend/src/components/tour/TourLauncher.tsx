@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { App, Button, Popover } from 'antd';
+import { App, Button, List, Popover, Space, Tag, Typography } from 'antd';
 import { Compass, LifeBuoy, Check, Play, RotateCcw } from 'lucide-react';
 import { useTourStore, type TourId } from './tourStore';
 import { TOUR_META, tourForPath } from './definitions';
@@ -39,51 +39,54 @@ export function TourLauncher() {
   };
 
   const menu = (
-    <div className="bb-tour-menu">
-      <div className="bb-tour-menu-head">
-        <div className="bb-tour-menu-title">
-          <LifeBuoy size={15} strokeWidth={1.5} /> 新手引导中心
-        </div>
-        <div className="bb-tour-menu-sub">每个页面首次进入自动播放，也可随时重看</div>
-      </div>
-      <div className="bb-tour-menu-list">
-        {TOUR_META.map((m) => {
+    <Space direction="vertical" size={8} style={{ width: 'min(320px, calc(100vw - 64px))' }}>
+      <Typography.Text type="secondary">每个页面首次进入自动播放，也可随时重看</Typography.Text>
+      <List
+        split={false}
+        dataSource={TOUR_META}
+        style={{ maxHeight: 'min(344px, calc(100dvh - 224px))', overflowY: 'auto' }}
+        renderItem={(m) => {
           const here = m.id === tourId;
           const done = !!seen[m.id];
           return (
-            <button key={m.id} type="button" className={here ? 'bb-tour-menu-item here' : 'bb-tour-menu-item'} onClick={() => play(m.id)}>
-              <span className="bb-tour-menu-icon">
-                <m.icon size={15} strokeWidth={1.5} />
-              </span>
-              <span className="bb-tour-menu-text">
-                <span className="bb-tour-menu-label">
-                  {m.label}
-                  {here && <em>本页</em>}
-                </span>
-                <span className="bb-tour-menu-desc">
-                  {m.desc}
-                  {m.contextual && !here ? ' · 进入页面后播放' : ''}
-                </span>
-              </span>
-              <span className="bb-tour-menu-state">{done ? <Check size={13} /> : <Play size={12} />}</span>
-            </button>
+            <List.Item key={m.id} style={{ padding: 0 }}>
+              <Button
+                block
+                type={here ? 'default' : 'text'}
+                icon={<m.icon size={16} strokeWidth={1.5} />}
+                aria-label={`${done ? '重播' : '播放'}${m.label}引导`}
+                onClick={() => play(m.id)}
+                style={{ height: 'auto', padding: 8, textAlign: 'left', whiteSpace: 'normal' }}
+              >
+                <Space direction="vertical" size={0} style={{ flex: 1, minWidth: 0 }}>
+                  <Space size={8} wrap>
+                    <Typography.Text strong>{m.label}</Typography.Text>
+                    {here && <Tag color="processing">本页</Tag>}
+                    {done && <Tag icon={<Check size={12} />}>已看</Tag>}
+                  </Space>
+                  <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                    {m.desc}
+                    {m.contextual && !here ? ' · 进入页面后播放' : ''}
+                  </Typography.Text>
+                </Space>
+                <Play size={16} style={{ flexShrink: 0 }} />
+              </Button>
+            </List.Item>
           );
-        })}
-      </div>
-      <div className="bb-tour-menu-foot">
-        <Button
-          size="small"
-          type="text"
-          icon={<RotateCcw size={13} />}
-          onClick={() => {
-            resetSeen();
-            message.success('已重置，各页面首次进入将重新自动播放');
-          }}
-        >
-          重置全部自动播放
-        </Button>
-      </div>
-    </div>
+        }}
+      />
+      <Button
+        block
+        type="text"
+        icon={<RotateCcw size={16} />}
+        onClick={() => {
+          resetSeen();
+          message.success('已重置，各页面首次进入将重新自动播放');
+        }}
+      >
+        重置全部自动播放
+      </Button>
+    </Space>
   );
 
   return (
@@ -93,18 +96,24 @@ export function TourLauncher() {
       trigger="click"
       placement="topRight"
       arrow={false}
-      overlayClassName="bb-tour-popover"
+      title={
+        <Space size={8}>
+          <LifeBuoy size={16} strokeWidth={1.5} />
+          <Typography.Text strong>新手引导中心</Typography.Text>
+        </Space>
+      }
       content={menu}
     >
-      <button
-        type="button"
+      <Button
+        type="primary"
         aria-label="打开新手引导"
+        aria-expanded={open}
         className="bb-tour-fab"
-        style={{ bottom: 24 }}
+        style={{ width: 46, height: 46 }}
+        icon={<Compass size={20} strokeWidth={1.5} />}
       >
-        <Compass size={20} strokeWidth={1.5} />
         {pending && <span className="bb-tour-fab-dot" />}
-      </button>
+      </Button>
     </Popover>
   );
 }

@@ -3,7 +3,7 @@
 // 墨线描边、品牌墨绿点睛，深浅底通用（取当前空间的 Token）。
 export function Logo({ size = 32, withText = false }: { size?: number; withText?: boolean }) {
   return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
       <svg width={size} height={size} viewBox="0 0 32 32" fill="none" aria-hidden>
         {/* 被监护的 Agent：机器方体 + 目光 */}
         <rect x="5.8" y="12.8" width="6.4" height="6.4" rx="1.9" stroke="var(--bb-text-1)" strokeWidth="1.8" />
@@ -49,7 +49,7 @@ export function Logo({ size = 32, withText = false }: { size?: number; withText?
           >
             越界之前 BeforeBound
           </span>
-          <span style={{ display: 'block', fontSize: 12, color: 'var(--bb-text-3)', marginTop: 1 }}>
+          <span style={{ display: 'block', fontSize: 12, color: 'var(--bb-text-3)', marginTop: 8 }}>
             Agent 安全实验室
           </span>
         </span>

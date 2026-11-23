@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
-import { Alert, Button } from 'antd';
-import { ArrowRight, FlaskConical, Gauge, UserRound, Boxes } from 'lucide-react';
+import { App, Button, Descriptions, Typography, theme } from 'antd';
+import { InfoCircleOutlined } from '@ant-design/icons';
+import { ArrowRight, Gauge, UserRound, Boxes } from 'lucide-react';
 import { Logo } from '@/components/common/Logo';
 import { AttackIcon, GuardIcon, ForensicsIcon } from '@/components/icons/SecurityIcons';
 import { useAuthStore } from '@/stores/authStore';
@@ -9,9 +10,9 @@ import { DossierNo } from '@/components/common/DossierNo';
 import { dossierNo, getWorkspaceId, workspaceShort } from '@/utils/workspace';
 
 const FEATURES = [
-  { no: '01', icon: AttackIcon, title: '自适应红队测评', desc: '提示注入 / 越狱 / 越权 / 链式攻击样本库，一键载入复现' },
-  { no: '02', icon: GuardIcon, title: '动态旁路监护', desc: 'L1 规则 → L2 分类 → L3 语义三级判定，实时阻断越界调用' },
-  { no: '03', icon: ForensicsIcon, title: '根因与加固报告', desc: '六部分取证报告，配置缺陷归因与可执行加固建议' },
+  { icon: AttackIcon, title: '自适应红队测评', desc: '提示注入 / 越狱 / 越权 / 链式攻击样本库，一键载入复现' },
+  { icon: GuardIcon, title: '动态旁路监护', desc: 'L1 规则 → L2 分类 → L3 语义三级判定，实时阻断越界调用' },
+  { icon: ForensicsIcon, title: '根因与加固报告', desc: '六部分取证报告，配置缺陷归因与可执行加固建议' },
 ];
 
 const ENTRY_NOTES = [
@@ -22,6 +23,7 @@ const ENTRY_NOTES = [
 
 export default function PortalPage() {
   const navigate = useNavigate();
+  const { message } = App.useApp();
   const enter = useAuthStore((s) => s.enter);
   const status = useAuthStore((s) => s.status);
   const error = useAuthStore((s) => s.error);
@@ -31,6 +33,7 @@ export default function PortalPage() {
   const submit = async () => {
     const ok = await enter();
     if (ok) navigate('/workspace', { replace: true });
+    else message.error(`暂时无法进入：${useAuthStore.getState().error ?? '游客准入失败'}`);
   };
 
   return (
@@ -43,13 +46,13 @@ export default function PortalPage() {
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
-          gap: 40,
-          padding: '48px 56px',
+          gap: 32,
+          padding: 32,
           background: 'var(--bb-bg-card)',
           borderRight: '1px solid var(--bb-border)',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <Logo size={34} />
           <div>
             <div
@@ -64,8 +67,8 @@ export default function PortalPage() {
             >
               越界之前 BeforeBound
             </div>
-            <div style={{ fontSize: 12.5, color: 'var(--bb-text-3)', marginTop: 1 }}>Agent 安全实验室</div>
-            <DossierNo no={dossier} label="本工作区案卷档号" style={{ marginTop: 3 }} />
+            <div style={{ fontSize: 12.5, color: 'var(--bb-text-3)', marginTop: 8 }}>Agent 安全实验室</div>
+            <DossierNo no={dossier} label="本工作区案卷档号" style={{ marginTop: 8 }} />
           </div>
         </div>
 
@@ -75,7 +78,7 @@ export default function PortalPage() {
               // 字号交给 nudge.css 的 .bb-portal-hero h1，便于站点字号变量生效。
               lineHeight: 1.28,
               fontWeight: 700,
-              margin: '0 0 14px',
+              margin: '0 0 16px',
               color: 'var(--bb-text-1)',
               fontFamily: 'var(--bb-font-display)',
               letterSpacing: 0.3,
@@ -85,25 +88,19 @@ export default function PortalPage() {
             <br />
             自适应红队与旁路监护
           </h1>
-          <p style={{ fontSize: 15, lineHeight: 1.7, color: 'var(--bb-text-2)', margin: '0 0 28px', maxWidth: 460 }}>
-            在内存仿真沙盒中编排靶标 Agent，载入真实攻击样本，观测三级判定网关如何实时拦截越界调用，并生成可追溯的根因加固报告。
-          </p>
+          <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 32, maxWidth: 460 }}>
+            <InfoCircleOutlined /> 在内存仿真沙盒中编排靶标 Agent，载入真实攻击样本，观测三级判定网关如何实时拦截越界调用，并生成可追溯的根因加固报告。
+          </Typography.Text>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {FEATURES.map((f) => (
-              <div key={f.title} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-                <span
-                  className="mono"
-                  style={{ fontSize: 11, color: 'var(--bb-brand-primary)', fontWeight: 600, marginTop: 4, flexShrink: 0, width: 18, textAlign: 'right' }}
-                >
-                  {f.no}
-                </span>
-                <span style={{ display: 'inline-flex', color: 'var(--bb-text-3)', marginTop: 2, flexShrink: 0 }}>
+              <div key={f.title} style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
+                <span style={{ display: 'inline-flex', color: 'var(--bb-text-3)', marginTop: 0, flexShrink: 0 }}>
                   <f.icon size={16} strokeWidth={1.5} />
                 </span>
                 <div>
                   <div style={{ fontSize: 14.5, fontWeight: 600, color: 'var(--bb-text-1)' }}>{f.title}</div>
-                  <div style={{ fontSize: 13.5, color: 'var(--bb-text-2)', lineHeight: 1.5, marginTop: 2 }}>{f.desc}</div>
+                  <Typography.Text type="secondary" style={{ display: 'block', marginTop: 8 }}><InfoCircleOutlined /> {f.desc}</Typography.Text>
                 </div>
               </div>
             ))}
@@ -114,16 +111,15 @@ export default function PortalPage() {
       </div>
 
       {/* 右侧门户区：单一进入动作 */}
-      <div className="bb-portal-panel" style={{ flex: '0 0 45%', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 40 }}>
+      <div className="bb-portal-panel" style={{ flex: '0 0 45%', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 32 }}>
         <div style={{ width: '100%', maxWidth: 380 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--bb-text-2)', fontSize: 13.5, marginBottom: 16 }}>
-            <FlaskConical size={14} strokeWidth={1.5} style={{ color: 'var(--bb-info-text)' }} />
-            全内存仿真 · 不触及真实系统
-          </div>
           <h2 style={{ fontSize: 22, fontWeight: 600, margin: '0 0 8px', color: 'var(--bb-text-1)' }}>进入实验室</h2>
-          <p style={{ fontSize: 14, color: 'var(--bb-text-2)', margin: '0 0 24px', lineHeight: 1.6 }}>
-            以游客身份直接开始，无需注册。平台为每个浏览器分配独立工作区，并对模型调用按日限量。
-          </p>
+          <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
+            <InfoCircleOutlined /> 全内存仿真 · 不触及真实系统
+          </Typography.Text>
+          <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 24 }}>
+            <InfoCircleOutlined /> 以游客身份直接开始，无需注册。平台为每个浏览器分配独立工作区，并对模型调用按日限量。
+          </Typography.Text>
 
           <Button
             type="primary"
@@ -136,35 +132,26 @@ export default function PortalPage() {
             {error ? '重试进入' : '进入实验室'} <ArrowRight size={16} strokeWidth={1.5} />
           </Button>
 
-          {error && (
-            <Alert
-              type="error"
-              showIcon
-              message="暂时无法进入"
-              description={error}
-              style={{ marginTop: 12 }}
-            />
-          )}
-
-          <div style={{ marginTop: 28, display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ marginTop: 32, display: 'flex', flexDirection: 'column', gap: 16 }}>
             {ENTRY_NOTES.map((n) => (
-              <div key={n.title} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-                <span style={{ display: 'inline-flex', color: 'var(--bb-text-3)', marginTop: 2, flexShrink: 0 }}>
+              <div key={n.title} style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
+                <span style={{ display: 'inline-flex', color: 'var(--bb-text-3)', marginTop: 0, flexShrink: 0 }}>
                   <n.icon size={16} strokeWidth={1.5} />
                 </span>
                 <div>
                   <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--bb-text-1)' }}>{n.title}</div>
-                  <div style={{ fontSize: 13, color: 'var(--bb-text-2)', lineHeight: 1.5, marginTop: 2 }}>{n.desc}</div>
+                  <Typography.Text type="secondary" style={{ display: 'block', marginTop: 8 }}><InfoCircleOutlined /> {n.desc}</Typography.Text>
                 </div>
               </div>
             ))}
           </div>
 
-          <div style={{ marginTop: 28, paddingTop: 16, borderTop: '1px solid var(--bb-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+          <div style={{ marginTop: 32, paddingTop: 16, borderTop: '1px solid var(--bb-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
             <SimBadge />
-            <span className="mono" style={{ fontSize: 12, color: 'var(--bb-text-3)' }} title={`当前工作区 ${wsId}`}>
-              工作区 {workspaceShort(wsId)} · 案卷 {dossier}
-            </span>
+            <Descriptions bordered={false} column={1} size="small" items={[
+              { key: 'workspace', label: '工作区', children: <span className="mono" title={`当前工作区 ${wsId}`}>{workspaceShort(wsId)}</span> },
+              { key: 'dossier', label: '案卷', children: dossier },
+            ]} />
           </div>
         </div>
       </div>
@@ -176,6 +163,7 @@ export default function PortalPage() {
 // 6s 剧情循环：攻击注入 → Agent 发起工具调用 → 网关三级判定 → 阻断落印；
 // 镜像/判定数据包持续流动。动效仅用 transform/opacity，reduced-motion 下退化为静态拓扑。
 function LabDiagram() {
+  const { token } = theme.useToken();
   return (
     <figure className="bb-diagram" style={{ margin: 0, maxWidth: 520 }}>
       <svg viewBox="0 0 520 264" width="100%" role="img" aria-label="实验链路：红队攻击源注入靶标 Agent，工具调用被旁路监护网关三级判定并实时阻断，镜像流量持续观测仿真沙盒">
@@ -183,10 +171,6 @@ function LabDiagram() {
           <pattern id="bb-portal-grid" width="32" height="32" patternUnits="userSpaceOnUse">
             <path d="M32 0H0V32" fill="none" stroke="var(--bb-border)" strokeWidth="0.5" />
           </pattern>
-          <radialGradient id="bb-portal-glow" cx="50%" cy="55%" r="60%">
-            <stop offset="0%" stopColor="var(--bb-brand-primary)" stopOpacity="0.1" />
-            <stop offset="100%" stopColor="var(--bb-brand-primary)" stopOpacity="0" />
-          </radialGradient>
           <marker id="bb-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
             <path d="M0 0 8 4 0 8Z" fill="var(--bb-text-3)" />
           </marker>
@@ -198,7 +182,6 @@ function LabDiagram() {
           </marker>
         </defs>
         <rect width="520" height="264" fill="url(#bb-portal-grid)" opacity="0.6" />
-        <rect width="520" height="264" fill="url(#bb-portal-glow)" />
 
         {/* 攻击路径 */}
         <path className="bb-dash-attack" d="M106 84H234" stroke="var(--bb-block)" strokeWidth="1.5" strokeDasharray="5 5" markerEnd="url(#bb-arrow-block)" />
@@ -216,13 +199,8 @@ function LabDiagram() {
         {/* 拦截落印 */}
         <g className="bb-chip">
           <rect x="322" y="40" width="56" height="20" rx="5" fill="var(--bb-block)" />
-          <text x="350" y="54" textAnchor="middle" fontSize="10.5" fontWeight="700" fill="#fff">已拦截</text>
+          <text x="350" y="54" textAnchor="middle" fontSize="10.5" fontWeight="700" fill={token.colorTextLightSolid}>已拦截</text>
         </g>
-
-        {/* 节点呼吸环 */}
-        <circle className="bb-ring bb-ring-red" cx="80" cy="84" r="30" fill="none" stroke="var(--bb-block)" strokeWidth="1" />
-        <circle className="bb-ring bb-ring-agent" cx="260" cy="84" r="30" fill="none" stroke="var(--bb-brand-primary)" strokeWidth="1" />
-        <circle className="bb-ring bb-ring-guard" cx="260" cy="200" r="32" fill="none" stroke="var(--bb-info)" strokeWidth="1" />
 
         {/* 流动数据包 */}
         <circle className="bb-pk bb-pk-attack" r="4" fill="var(--bb-block)" />
@@ -232,7 +210,7 @@ function LabDiagram() {
 
         {/* 红队攻击源 */}
         <g className="bb-node" style={{ animationDelay: '0ms' }}>
-          <rect x="54" y="58" width="52" height="52" rx="12" fill="var(--bb-bg-card)" stroke="var(--bb-border)" strokeWidth="1.5" />
+          <rect x="54" y="58" width="52" height="52" rx="8" fill="var(--bb-bg-card)" stroke="var(--bb-border)" strokeWidth="1.5" />
           <g stroke="var(--bb-block)" strokeWidth="1.6" fill="none" strokeLinecap="round">
             <circle cx="80" cy="84" r="7.5" />
             <path d="M80 72v5M80 91v5M68 84h5M87 84h5" />
@@ -242,7 +220,7 @@ function LabDiagram() {
         </g>
         {/* 靶标 Agent */}
         <g className="bb-node" style={{ animationDelay: '70ms' }}>
-          <rect x="234" y="58" width="52" height="52" rx="12" fill="var(--bb-bg-card)" stroke="var(--bb-border)" strokeWidth="1.5" />
+          <rect x="234" y="58" width="52" height="52" rx="8" fill="var(--bb-bg-card)" stroke="var(--bb-border)" strokeWidth="1.5" />
           <g stroke="var(--bb-brand-primary)" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round">
             <rect x="251" y="78" width="18" height="13" rx="3" />
             <path d="M260 78v-4M256 95h8" />
@@ -253,7 +231,7 @@ function LabDiagram() {
         </g>
         {/* 仿真沙盒 */}
         <g className="bb-node" style={{ animationDelay: '140ms' }}>
-          <rect x="414" y="58" width="52" height="52" rx="12" fill="var(--bb-bg-card)" stroke="var(--bb-border)" strokeWidth="1.5" />
+          <rect x="414" y="58" width="52" height="52" rx="8" fill="var(--bb-bg-card)" stroke="var(--bb-border)" strokeWidth="1.5" />
           <g className="bb-sandbox-icon" stroke="var(--bb-brand-primary)" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round">
             <path d="M440 74l10 5v10l-10 5-10-5V79z" />
             <path d="M430 79l10 5 10-5M440 84v10" />
@@ -262,7 +240,7 @@ function LabDiagram() {
         </g>
         {/* 旁路监护网关 */}
         <g className="bb-node" style={{ animationDelay: '210ms' }}>
-          <rect x="234" y="174" width="52" height="52" rx="12" fill="var(--bb-bg-card)" stroke="var(--bb-info)" strokeWidth="1.5" />
+          <rect x="234" y="174" width="52" height="52" rx="8" fill="var(--bb-bg-card)" stroke="var(--bb-info)" strokeWidth="1.5" />
           <path d="M260 182l10 4v7c0 7-10 12-10 12s-10-5-10-12v-7z" stroke="var(--bb-info)" strokeWidth="1.6" fill="none" strokeLinejoin="round" />
           <path d="M256 194l3 3 6-6" stroke="var(--bb-info)" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round" />
           {/* 三级判定指示灯：L1 → L2 → L3 依次点亮 */}
@@ -273,13 +251,13 @@ function LabDiagram() {
         </g>
       </svg>
       <figcaption className="mono" style={{ fontSize: 11.5, color: 'var(--bb-text-3)', marginTop: 8, display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
           <span style={{ width: 18, borderTop: '2px dashed var(--bb-block)' }} /> 攻击路径
         </span>
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
           <span style={{ width: 18, borderTop: '2px dashed var(--bb-info)' }} /> 旁路镜像
         </span>
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
           <span style={{ width: 3, height: 12, background: 'var(--bb-block)', borderRadius: 2 }} /> 实时阻断
         </span>
       </figcaption>

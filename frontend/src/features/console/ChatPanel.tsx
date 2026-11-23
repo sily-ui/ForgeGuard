@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { App, Button, Empty, Input, InputNumber, Select, Spin, Switch, Tag, Tooltip } from 'antd';
+import { App, Badge, Button, Collapse, Empty, Input, InputNumber, Select, Spin, Switch, Segmented, Tag, Timeline, Tooltip, Typography, theme } from 'antd';
+import { InfoCircleOutlined } from '@ant-design/icons';
 import {
   Send,
   Bot,
@@ -10,9 +11,6 @@ import {
   Square,
   HelpCircle,
   Loader2,
-  ChevronDown,
-  ChevronRight,
-  Info,
   Sparkles,
   RefreshCw,
 } from 'lucide-react';
@@ -59,21 +57,21 @@ export function ChatPanel({
 
   return (
     <div data-tour="chat-panel" style={colStyle}>
-      <div style={tabStripStyle}>
-        <TabButton active={tab === 'chat'} onClick={() => setTab('chat')} icon={<Bot size={14} />} label="对话" />
-        <TabButton active={tab === 'samples'} onClick={() => setTab('samples')} icon={<FlaskConical size={14} />} label="样本库" />
-        <TabButton
-          active={tab === 'redteam'}
-          onClick={() => setTab('redteam')}
-          icon={<AttackIcon size={14} />}
-          label="红队"
-          dot={redteamRunning}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: 8, flexWrap: 'wrap' }}>
+        <Segmented
+          aria-label="对话面板视图"
+          size="small"
+          value={tab}
+          onChange={(key) => setTab(key as Tab)}
+          options={[
+            { value: 'chat', label: '对话', icon: <Bot size={14} /> },
+            { value: 'samples', label: '样本库', icon: <FlaskConical size={14} /> },
+            { value: 'redteam', label: <Badge dot={redteamRunning}>红队</Badge>, icon: <AttackIcon size={14} /> },
+          ]}
         />
         {challengeCount > 0 && (
           <Tooltip title={`${challengeCount} 个调用等待质询裁决，请在右侧「质询」处理`}>
-            <span style={pendingPillStyle}>
-              <HelpCircle size={11} /> {challengeCount}
-            </span>
+            <Tag color="warning" icon={<HelpCircle size={11} />} style={{ margin: 0 }}>{challengeCount}</Tag>
           </Tooltip>
         )}
       </div>
@@ -95,10 +93,8 @@ export function ChatPanel({
         )}
       </div>
       <div style={colFooterStyle}>
-        <span className="mono" style={{ fontSize: 11, color: 'var(--bb-text-3)' }}>
-          {sessionId}
-        </span>
-        <span style={{ fontSize: 11, color: 'var(--bb-text-3)' }}>内存仿真 · 不触及真实系统</span>
+        <Typography.Text type="secondary" className="mono" style={{ fontSize: 11, overflowWrap: 'anywhere' }}>{sessionId}</Typography.Text>
+        <Typography.Text type="secondary" style={{ fontSize: 11 }}>内存仿真 · 不触及真实系统</Typography.Text>
       </div>
     </div>
   );
@@ -198,37 +194,36 @@ function ChatTab({
     <>
       <div ref={scrollRef} style={scrollAreaStyle}>
         {messages.length === 0 ? (
-          <div style={{ padding: '32px 18px', textAlign: 'center', color: 'var(--bb-text-3)' }}>
-            <Bot size={28} strokeWidth={1.4} style={{ opacity: 0.5, marginBottom: 10 }} />
-            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--bb-text-2)' }}>开始一轮攻防对话</div>
-            <div style={{ fontSize: 12.5, lineHeight: 1.7, marginTop: 6 }}>
-              以业务用户或红队身份发送消息，
-              <br />
-              或从「样本库」载入预置攻击载荷。
-            </div>
-          </div>
+          <Empty
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+            style={{ margin: 32 }}
+            description={(
+              <>
+                <Typography.Text strong>开始一轮攻防对话</Typography.Text>
+                <Typography.Paragraph type="secondary" style={{ margin: '8px 0 0' }}>
+                  以业务用户或红队身份发送消息，或从「样本库」载入预置攻击载荷。
+                </Typography.Paragraph>
+              </>
+            )}
+          />
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '14px 14px 6px' }}>
-            {messages.map((m) => (
-              <MessageBubble key={m.id} message={m} />
-            ))}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: '16px 16px 8px' }}>
+            {messages.map((m) => <MessageBubble key={m.id} message={m} />)}
             {sending && !messages[messages.length - 1]?.pending && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--bb-text-3)', fontSize: 13, padding: '2px 4px' }}>
+              <Typography.Text type="secondary" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <Loader2 size={13} className="bb-spin" /> Agent 正在响应…
-              </div>
+              </Typography.Text>
             )}
           </div>
         )}
       </div>
       <div style={composerStyle}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
           <Select
             size="small"
+            aria-label="发送身份"
             value={actor}
-            onChange={(v) => {
-              setActor(v);
-              setSugIdx(0);
-            }}
+            onChange={(v) => { setActor(v); setSugIdx(0); }}
             style={{ width: 120 }}
             options={[
               { value: 'business', label: '业务用户' },
@@ -236,9 +231,9 @@ function ChatTab({
             ]}
           />
           <Tooltip title="本轮跳过旁路监护（对照演示），该轮结果不代表防护能力">
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12.5, color: skipGuard ? 'var(--bb-observe-text)' : 'var(--bb-text-3)' }}>
-              <Switch size="small" checked={skipGuard} onChange={setSkipGuard} />
-              跳过防护
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+              <Switch size="small" aria-label="跳过防护" checked={skipGuard} onChange={setSkipGuard} />
+              <Typography.Text type={skipGuard ? 'warning' : 'secondary'}>跳过防护</Typography.Text>
             </span>
           </Tooltip>
         </div>
@@ -256,57 +251,47 @@ function ChatTab({
                   textOverflow: 'ellipsis',
                   pointerEvents: 'none',
                   color: 'var(--bb-text-3)',
-                  opacity: 0.75,
                   boxSizing: 'border-box',
                 }}
               >
-                {isPrefix && <span style={{ color: 'transparent' }}>{content}</span>}
+                {isPrefix && <span style={{ visibility: 'hidden' }}>{content}</span>}
                 {isPrefix ? suggestion.slice(content.length) : suggestion}
               </div>
             )}
             <Input.TextArea
               value={content}
+              aria-label="对话消息"
               onChange={(e) => setContent(e.target.value)}
               placeholder={terminated ? '会话已终止' : tabTarget ? '' : '输入消息，Enter 发送 / Shift+Enter 换行'}
               autoSize={{ minRows: 1, maxRows: 4 }}
               disabled={terminated}
               onKeyDown={(e) => {
-                if (e.key === 'Tab' && tabTarget) {
-                  e.preventDefault();
-                  complete();
-                }
+                if (e.key === 'Tab' && tabTarget) { e.preventDefault(); complete(); }
               }}
               onPressEnter={(e) => {
-                if (!e.shiftKey) {
-                  e.preventDefault();
-                  submit();
-                }
+                if (!e.shiftKey) { e.preventDefault(); submit(); }
               }}
-              style={{ width: '100%', resize: 'none', background: 'transparent', position: 'relative' }}
+              style={{ width: '100%', resize: 'none', background: 'transparent', position: 'relative', padding: 8 }}
             />
           </div>
           <Button
             type="primary"
+            aria-label="发送消息"
             icon={sending ? <Loader2 size={15} className="bb-spin" /> : <Send size={15} />}
             onClick={submit}
             disabled={!content.trim() || sending || terminated}
-            style={{ height: 34 }}
           />
         </div>
         {!terminated && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 7, fontSize: 12, color: 'var(--bb-text-3)', lineHeight: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
             {tabTarget ? (
               <>
-                <Sparkles size={11} style={{ flexShrink: 0 }} />
-                <span>AI 推荐指令 · 按</span>
-                <kbd style={kbdStyle}>Tab</kbd>
-                <span>补全</span>
-                <button title="换一条推荐" onClick={() => setSugIdx((i) => i + 1)} style={rotateBtnStyle}>
-                  <RefreshCw size={11} />
-                </button>
+                <Sparkles size={11} style={{ flexShrink: 0, color: 'var(--bb-text-3)' }} />
+                <Typography.Text type="secondary" style={{ fontSize: 12 }}>AI 推荐指令 · 按 Tab 补全</Typography.Text>
+                <Button type="text" size="small" title="换一条推荐" aria-label="换一条推荐" onClick={() => setSugIdx((i) => i + 1)} icon={<RefreshCw size={11} />} style={{ marginLeft: 'auto' }} />
               </>
             ) : (
-              <span>Enter 发送 · Shift+Enter 换行</span>
+              <Typography.Text type="secondary" style={{ fontSize: 12 }}>Enter 发送 · Shift+Enter 换行</Typography.Text>
             )}
           </div>
         )}
@@ -316,56 +301,37 @@ function ChatTab({
 }
 
 function MessageBubble({ message }: { message: ReturnType<typeof useSessionStore.getState>['messages'][number] }) {
+  const { token } = theme.useToken();
   const isUser = message.role === 'user';
   const isSystem = message.role === 'system';
   if (isSystem) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <span
-          style={{
-            fontSize: 12,
-            color: 'var(--bb-text-3)',
-            background: 'var(--bb-bg-subtle)',
-            border: '1px solid var(--bb-border)',
-            borderRadius: 6,
-            padding: '3px 12px',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6,
-          }}
-        >
-          <Info size={11} /> {message.content}
-        </span>
-      </div>
+      <Typography.Text type="secondary" style={{ display: 'block', textAlign: 'center', fontSize: 12 }}>
+        <InfoCircleOutlined style={{ marginRight: 8 }} />{message.content}
+      </Typography.Text>
     );
   }
   const redteam = message.actor === 'redteam';
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: isUser ? 'flex-end' : 'flex-start', gap: 4 }}>
-      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11.5, color: 'var(--bb-text-3)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: isUser ? 'flex-end' : 'flex-start', gap: 8 }}>
+      <Typography.Text type="secondary" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 11.5 }}>
         {isUser ? (redteam ? <AttackIcon size={11} /> : <User size={11} />) : <Bot size={11} />}
         {isUser ? (redteam ? '红队' : '业务用户') : 'Agent'}
         {message.turn != null && <span className="mono">· T{message.turn}</span>}
-        {message.source_sample_id && (
-          <Tag style={{ margin: 0, fontSize: 10, lineHeight: '14px', padding: '0 4px' }} color="warning">
-            样本
-          </Tag>
-        )}
-      </span>
+        {message.source_sample_id && <Tag style={{ margin: 0 }} color="warning">样本</Tag>}
+      </Typography.Text>
       <div
         style={{
           maxWidth: '92%',
-          padding: '9px 12px',
-          borderRadius: 12,
+          padding: '8px 16px',
+          borderRadius: 8,
           fontSize: 13.5,
           lineHeight: 1.65,
           whiteSpace: 'pre-wrap',
           wordBreak: 'break-word',
-          background: isUser ? (redteam ? 'var(--bb-observe-bg)' : 'var(--bb-brand-primary)') : 'var(--bb-bg-card)',
-          color: isUser && !redteam ? '#fff' : 'var(--bb-text-1)',
-          border: isUser ? 'none' : '1px solid var(--bb-border)',
-          borderTopRightRadius: isUser ? 3 : 12,
-          borderTopLeftRadius: isUser ? 12 : 3,
+          background: isUser ? (redteam ? token.colorWarningBg : token.colorPrimary) : token.colorBgContainer,
+          color: isUser && !redteam ? token.colorTextLightSolid : token.colorText,
+          border: isUser ? 'none' : `1px solid ${token.colorBorder}`,
         }}
       >
         {message.content}
@@ -392,7 +358,6 @@ function SamplesTab({
     queryFn: () => sampleApi.list(instanceId, undefined, 1, 100),
     enabled: !!instanceId,
   });
-  const [openCat, setOpenCat] = useState<string | null>(null);
   const items = samplesQuery.data?.items ?? [];
   const grouped = useMemo(() => {
     const g: Record<string, Sample[]> = {};
@@ -401,40 +366,30 @@ function SamplesTab({
   }, [items]);
 
   if (samplesQuery.isLoading) {
-    return (
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <Spin />
-      </div>
-    );
+    return <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Spin /></div>;
   }
 
   return (
     <div style={scrollAreaStyle}>
-      <div style={{ padding: '10px 12px', fontSize: 12, color: 'var(--bb-text-3)', lineHeight: 1.6, borderBottom: '1px solid var(--bb-border)' }}>
+      <Typography.Paragraph type="secondary" style={{ padding: 16, margin: 0 }}>
         预置攻击样本库 · 共 {items.length} 条。载入将自动执行铺垫轮次与攻击载荷，实时观察监护判定。
-      </div>
+      </Typography.Paragraph>
       {Object.keys(grouped).length === 0 ? (
-        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无样本" style={{ marginTop: 40 }} />
+        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无样本" style={{ margin: 32 }} />
       ) : (
-        Object.entries(grouped).map(([cat, list]) => {
-          const open = openCat === cat || openCat === null;
-          return (
-            <div key={cat}>
-              <button
-                onClick={() => setOpenCat(openCat === cat ? '__none__' : cat)}
-                style={catHeaderStyle}
-              >
-                {open ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
-                {CATEGORY_NAMES[cat] ?? cat}
-                <span className="mono" style={{ marginLeft: 'auto', color: 'var(--bb-text-3)' }}>{list.length}</span>
-              </button>
-              {open &&
-                list.map((s) => (
-                  <SampleCard key={s.sample_id} sample={s} loading={loading} terminated={terminated} onLoad={onLoad} onWarn={(m) => message.warning(m)} />
-                ))}
-            </div>
-          );
-        })
+        <Collapse
+          ghost
+          defaultActiveKey={Object.keys(grouped)}
+          items={Object.entries(grouped).map(([cat, list]) => ({
+            key: cat,
+            label: CATEGORY_NAMES[cat] ?? cat,
+            extra: <Tag style={{ margin: 0 }}>{list.length}</Tag>,
+            styles: { header: { padding: '8px 16px' }, body: { padding: '0 16px 16px' } },
+            children: list.map((s) => (
+              <SampleCard key={s.sample_id} sample={s} loading={loading} terminated={terminated} onLoad={onLoad} onWarn={(m) => message.warning(m)} />
+            )),
+          }))}
+        />
       )}
     </div>
   );
@@ -453,20 +408,19 @@ function SampleCard({
   onLoad: Props['onLoadSample'];
   onWarn: (m: string) => void;
 }) {
-  const [expanded, setExpanded] = useState(false);
   return (
-    <div style={{ padding: '10px 14px', borderBottom: '1px solid var(--bb-border)' }}>
+    <div style={{ padding: '16px 0', borderBottom: '1px solid var(--bb-border)' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--bb-text-1)' }}>{sample.name}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <Typography.Text strong>{sample.name}</Typography.Text>
             {!sample.applicable && (
               <Tooltip title={sample.reason || '当前实例未启用相关工具，样本不适用'}>
-                <Tag color="default" style={{ margin: 0, fontSize: 10.5, lineHeight: '15px', padding: '0 5px' }}>不适用</Tag>
+                <Tag style={{ margin: 0 }}>不适用</Tag>
               </Tooltip>
             )}
           </div>
-          <div style={{ fontSize: 12, color: 'var(--bb-text-3)', marginTop: 2 }}>{sample.mechanism}</div>
+          <Typography.Paragraph type="secondary" style={{ margin: '8px 0 0' }}>{sample.mechanism}</Typography.Paragraph>
         </div>
         <Button
           size="small"
@@ -480,18 +434,23 @@ function SampleCard({
           {sample.applicable ? '载入' : '强制'}
         </Button>
       </div>
-      <button onClick={() => setExpanded((e) => !e)} style={linkBtnStyle}>
-        {expanded ? <ChevronDown size={11} /> : <ChevronRight size={11} />} 载荷预览
-      </button>
-      {expanded && (
-        <div style={{ marginTop: 6, display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <pre className="mono" style={payloadPreStyle}>{sample.payload_preview}</pre>
-          <div style={{ display: 'flex', gap: 10, fontSize: 11.5 }}>
-            <span style={{ color: 'var(--bb-block-text)' }}>关防护：{truncate(sample.expected_off, 40)}</span>
-            <span style={{ color: 'var(--bb-allow-text)' }}>开防护：{truncate(sample.expected_on, 40)}</span>
-          </div>
-        </div>
-      )}
+      <Collapse
+        ghost
+        items={[{
+          key: 'payload',
+          label: '载荷预览',
+          styles: { header: { padding: '8px 0' }, body: { padding: 0 } },
+          children: (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <pre className="mono" style={payloadPreStyle}>{sample.payload_preview}</pre>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <Typography.Text type="danger">关防护：{truncate(sample.expected_off, 40)}</Typography.Text>
+                <Typography.Text type="success">开防护：{truncate(sample.expected_on, 40)}</Typography.Text>
+              </div>
+            </div>
+          ),
+        }]}
+      />
     </div>
   );
 }
@@ -521,24 +480,20 @@ function RedteamTab({
 
   return (
     <>
-      <div style={{ padding: 14, borderBottom: '1px solid var(--bb-border)', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <div style={{ fontSize: 12.5, color: 'var(--bb-text-2)', lineHeight: 1.6 }}>
-          红队自动攻击：模型驱动的多轮渐进式注入，自动尝试越权并记录每步结果。
-        </div>
-        <div style={{ display: 'flex', gap: 12 }}>
+      <div style={{ padding: 16, borderBottom: '1px solid var(--bb-border)', display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <Typography.Text type="secondary">红队自动攻击：模型驱动的多轮渐进式注入，自动尝试越权并记录每步结果。</Typography.Text>
+        <div style={{ display: 'flex', gap: 16 }}>
           <div style={{ flex: 1 }}>
-            <div style={fieldLabelStyle}>最大轮次</div>
-            <InputNumber min={1} max={20} value={maxRounds} onChange={(v) => setMaxRounds(v ?? 5)} style={{ width: '100%' }} disabled={running} />
+            <label htmlFor="redteam-max-rounds" style={fieldLabelStyle}>最大轮次</label>
+            <InputNumber id="redteam-max-rounds" min={1} max={20} value={maxRounds} onChange={(v) => setMaxRounds(v ?? 5)} style={{ width: '100%' }} disabled={running} />
           </div>
           <div style={{ flex: 1 }}>
-            <div style={fieldLabelStyle}>时限（秒）</div>
-            <InputNumber min={30} max={600} step={30} value={timeLimit} onChange={(v) => setTimeLimit(v ?? 120)} style={{ width: '100%' }} disabled={running} />
+            <label htmlFor="redteam-time-limit" style={fieldLabelStyle}>时限（秒）</label>
+            <InputNumber id="redteam-time-limit" min={30} max={600} step={30} value={timeLimit} onChange={(v) => setTimeLimit(v ?? 120)} style={{ width: '100%' }} disabled={running} />
           </div>
         </div>
         {running ? (
-          <Button danger block icon={<Square size={14} />} onClick={onStop}>
-            停止红队
-          </Button>
+          <Button danger block icon={<Square size={14} />} onClick={onStop}>停止红队</Button>
         ) : (
           <Button
             type="primary"
@@ -550,48 +505,34 @@ function RedteamTab({
             启动红队自动攻击
           </Button>
         )}
-        {running && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12.5, color: 'var(--bb-observe-text)' }}>
-            <span className="bb-breathe" style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--bb-observe)' }} />
-            红队进行中…
-          </div>
-        )}
+        {running && <Badge status="processing" text="红队进行中…" />}
       </div>
       <div ref={scrollRef} style={scrollAreaStyle}>
         {steps.length === 0 ? (
-          <div style={{ padding: '28px 18px', textAlign: 'center', color: 'var(--bb-text-3)', fontSize: 13 }}>
-            <AttackIcon size={24} strokeWidth={1.4} style={{ opacity: 0.5, marginBottom: 8 }} />
-            <div>启动后，红队每一步将在此实时显示</div>
-          </div>
+          <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="启动后，红队每一步将在此实时显示" style={{ margin: 32 }} />
         ) : (
-          <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {steps.map((s) => (
-              <div key={s.id} style={stepCardStyle}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                  <span className="mono" style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--bb-text-2)' }}>
-                    {s.round != null ? `第 ${s.round} 轮` : '步骤'}
-                  </span>
-                  {s.status && <Tag style={{ margin: 0, fontSize: 10.5, lineHeight: '15px', padding: '0 5px' }}>{s.status}</Tag>}
-                  <span style={{ marginLeft: 'auto', fontSize: 10.5, color: 'var(--bb-text-3)' }}>{formatShort(s.created_at)}</span>
-                </div>
-                {s.payload && <div style={{ fontSize: 12.5, color: 'var(--bb-text-2)', lineHeight: 1.55, wordBreak: 'break-word' }}>{truncate(s.payload, 160)}</div>}
-                {s.result && <div style={{ fontSize: 12, color: 'var(--bb-text-3)', marginTop: 3, lineHeight: 1.5 }}>→ {truncate(s.result, 120)}</div>}
-              </div>
-            ))}
-          </div>
+          <Timeline
+            style={{ padding: 16, margin: 0 }}
+            items={steps.map((s, index) => ({
+              key: s.id,
+              color: 'var(--bb-brand-primary)',
+              dot: running && index === steps.length - 1 ? <Loader2 size={14} className="bb-spin" /> : undefined,
+              children: (
+                <>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
+                    <Typography.Text strong>{s.round != null ? `第 ${s.round} 轮` : '步骤'}</Typography.Text>
+                    {s.status && <Tag style={{ margin: 0 }}>{s.status}</Tag>}
+                    <Typography.Text type="secondary" style={{ marginLeft: 'auto', fontSize: 11 }}>{formatShort(s.created_at)}</Typography.Text>
+                  </div>
+                  {s.payload && <Typography.Paragraph style={{ margin: 0, overflowWrap: 'anywhere' }}>{truncate(s.payload, 160)}</Typography.Paragraph>}
+                  {s.result && <Typography.Paragraph type="secondary" style={{ margin: '8px 0 0', overflowWrap: 'anywhere' }}>结果：{truncate(s.result, 120)}</Typography.Paragraph>}
+                </>
+              ),
+            }))}
+          />
         )}
       </div>
     </>
-  );
-}
-
-function TabButton({ active, onClick, icon, label, dot }: { active: boolean; onClick: () => void; icon: React.ReactNode; label: string; dot?: boolean }) {
-  return (
-    <button onClick={onClick} style={{ ...tabBtnStyle, color: active ? 'var(--bb-brand-primary)' : 'var(--bb-text-2)', borderBottomColor: active ? 'var(--bb-brand-primary)' : 'transparent' }}>
-      {icon}
-      {label}
-      {dot && <span className="bb-breathe" style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--bb-observe)' }} />}
-    </button>
   );
 }
 
@@ -600,111 +541,30 @@ const colStyle: React.CSSProperties = {
   flexDirection: 'column',
   height: '100%',
   minHeight: 0,
+  minWidth: 0,
   background: 'var(--bb-bg-card)',
   border: '1px solid var(--bb-border)',
-  borderRadius: 14,
+  borderRadius: 8,
   overflow: 'hidden',
 };
-const tabStripStyle: React.CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: 2,
-  padding: '0 8px',
-  borderBottom: '1px solid var(--bb-border)',
-  background: 'var(--bb-bg-subtle)',
-  flexShrink: 0,
-};
-const tabBtnStyle: React.CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: 6,
-  padding: '11px 12px',
-  background: 'none',
-  border: 'none',
-  borderBottom: '2px solid transparent',
-  cursor: 'pointer',
-  fontSize: 13.5,
-  fontWeight: 600,
-  transition: 'color 140ms ease, border-color 140ms ease',
-};
-const pendingPillStyle: React.CSSProperties = {
-  marginLeft: 'auto',
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: 4,
-  fontSize: 11.5,
-  fontWeight: 600,
-  color: 'var(--bb-observe-text)',
-  background: 'var(--bb-observe-bg)',
-  border: '1px solid var(--bb-border)',
-  borderRadius: 4,
-  padding: '2px 8px',
-};
 const scrollAreaStyle: React.CSSProperties = { flex: 1, minHeight: 0, overflowY: 'auto' };
-const composerStyle: React.CSSProperties = { padding: 12, borderTop: '1px solid var(--bb-border)', background: 'var(--bb-bg-subtle)', flexShrink: 0 };
-const kbdStyle: React.CSSProperties = {
-  display: 'inline-block',
-  padding: '1px 5px',
-  borderRadius: 4,
-  border: '1px solid var(--bb-border)',
-  background: 'var(--bb-bg-card)',
-  fontSize: 10.5,
-  fontWeight: 600,
-  color: 'var(--bb-text-2)',
-  lineHeight: 1.4,
-};
-const rotateBtnStyle: React.CSSProperties = {
-  marginLeft: 'auto',
-  display: 'inline-flex',
-  alignItems: 'center',
-  background: 'none',
-  border: 'none',
-  cursor: 'pointer',
-  color: 'var(--bb-text-3)',
-  padding: 2,
-};
+const composerStyle: React.CSSProperties = { padding: 16, borderTop: '1px solid var(--bb-border)', background: 'var(--bb-bg-subtle)', flexShrink: 0 };
 const colFooterStyle: React.CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  padding: '6px 12px',
+  gap: 8,
+  flexWrap: 'wrap',
+  padding: '8px 16px',
   borderTop: '1px solid var(--bb-border)',
   flexShrink: 0,
 };
-const catHeaderStyle: React.CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: 6,
-  width: '100%',
-  padding: '8px 14px',
-  background: 'var(--bb-bg-subtle)',
-  border: 'none',
-  borderBottom: '1px solid var(--bb-border)',
-  cursor: 'pointer',
-  fontSize: 12.5,
-  fontWeight: 600,
-  color: 'var(--bb-text-2)',
-  position: 'sticky',
-  top: 0,
-};
-const linkBtnStyle: React.CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: 3,
-  marginTop: 6,
-  background: 'none',
-  border: 'none',
-  cursor: 'pointer',
-  fontSize: 11.5,
-  color: 'var(--bb-text-3)',
-  padding: 0,
-};
 const payloadPreStyle: React.CSSProperties = {
   margin: 0,
-  padding: '8px 10px',
+  padding: 8,
   background: 'var(--bb-bg-page)',
   border: '1px solid var(--bb-border)',
-  borderRadius: 7,
+  borderRadius: 8,
   fontSize: 11.5,
   lineHeight: 1.6,
   whiteSpace: 'pre-wrap',
@@ -713,10 +573,4 @@ const payloadPreStyle: React.CSSProperties = {
   maxHeight: 120,
   overflowY: 'auto',
 };
-const fieldLabelStyle: React.CSSProperties = { fontSize: 12, fontWeight: 500, color: 'var(--bb-text-3)', marginBottom: 5 };
-const stepCardStyle: React.CSSProperties = {
-  padding: '9px 11px',
-  background: 'var(--bb-bg-subtle)',
-  border: '1px solid var(--bb-border)',
-  borderRadius: 9,
-};
+const fieldLabelStyle: React.CSSProperties = { display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--bb-text-3)', marginBottom: 8 };

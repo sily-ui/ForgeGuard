@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Button } from 'antd';
+import { Button, Empty, Space, Typography } from 'antd';
 
 interface Props {
   icon?: ReactNode;
@@ -12,42 +12,17 @@ interface Props {
 
 export function EmptyState({ icon, title, description, actionLabel, onAction, compact }: Props) {
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        textAlign: 'center',
-        padding: compact ? '20px 16px' : '40px 24px',
-        gap: 10,
-        color: 'var(--bb-text-3)',
-      }}
+    <Empty
+      image={icon ?? Empty.PRESENTED_IMAGE_SIMPLE}
+      style={{ margin: compact ? 16 : 32 }}
+      description={
+        <Space direction="vertical" size={8}>
+          <Typography.Text>{title}</Typography.Text>
+          {description && <Typography.Text type="secondary">{description}</Typography.Text>}
+        </Space>
+      }
     >
-      {icon && (
-        <div
-          style={{
-            width: compact ? 40 : 56,
-            height: compact ? 40 : 56,
-            borderRadius: 16,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: 'var(--bb-bg-subtle)',
-            border: '1px solid var(--bb-border)',
-            color: 'var(--bb-text-2)',
-          }}
-        >
-          {icon}
-        </div>
-      )}
-      <div style={{ fontSize: compact ? 13 : 15, fontWeight: 600, color: 'var(--bb-text-2)' }}>{title}</div>
-      {description && <div style={{ fontSize: 13.5, maxWidth: 360, lineHeight: 1.6 }}>{description}</div>}
-      {actionLabel && onAction && (
-        <Button type="primary" size={compact ? 'small' : 'middle'} onClick={onAction} style={{ marginTop: 4 }}>
-          {actionLabel}
-        </Button>
-      )}
-    </div>
+      {actionLabel && onAction && <Button type="primary" onClick={onAction}>{actionLabel}</Button>}
+    </Empty>
   );
 }

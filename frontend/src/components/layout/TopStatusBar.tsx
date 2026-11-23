@@ -1,4 +1,4 @@
-import { Switch, Tooltip, Progress } from 'antd';
+import { Button, Space, Switch, Tooltip, Progress, Typography } from 'antd';
 import { AlertCircle } from 'lucide-react';
 import { ModeBadge } from '@/components/common/ModeBadge';
 import { SimBadge } from '@/components/common/SimBadge';
@@ -35,22 +35,22 @@ export function TopStatusBar({ preset = 'standard', onToggleGuard, guardDisabled
     <header
       className="bb-topbar"
       style={{
-        height: 60,
+        minHeight: 64,
         flexShrink: 0,
         display: 'flex',
+        flexWrap: 'wrap',
         alignItems: 'center',
         justifyContent: 'space-between',
         gap: 16,
-        padding: '0 20px',
+        padding: '8px 24px',
         background: 'var(--bb-topbar-bg)',
-        backdropFilter: 'blur(12px)',
         borderBottom: '1px solid var(--bb-border)',
         position: 'sticky',
         top: 0,
         zIndex: 20,
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
         <span
           style={{
             display: 'inline-flex',
@@ -78,22 +78,23 @@ export function TopStatusBar({ preset = 'standard', onToggleGuard, guardDisabled
         </div>
       </div>
 
-      <div className="bb-topbar-guard" style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+      <Space className="bb-topbar-guard" size={8} style={{ flexShrink: 0 }}>
         <Tooltip title={guardOn ? '旁路监护已启用，实时判定每次工具调用' : '防护已关闭（对照演示），调用不再被判定'}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 10px', borderRadius: 9, background: 'var(--bb-bg-subtle)', border: '1px solid var(--bb-border)', flexShrink: 0 }}>
-            <span style={{ fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap', color: guardOn ? 'var(--bb-allow-text)' : 'var(--bb-block-text)' }}>
+          <Space size={8}>
+            <Typography.Text strong style={{ whiteSpace: 'nowrap', color: guardOn ? 'var(--bb-allow-text)' : 'var(--bb-block-text)' }}>
               {guardOn ? '监护开启' : '监护关闭'}
-            </span>
+            </Typography.Text>
             <Switch
               size="small"
+              aria-label="旁路监护"
               checked={guardOn}
               disabled={guardDisabled || !onToggleGuard}
               onChange={(v) => onToggleGuard?.(v)}
             />
-          </div>
+          </Space>
         </Tooltip>
         <PresetTag preset={preset} />
-      </div>
+      </Space>
 
       <div className="bb-topbar-meta" style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
         <RiskRing score={session?.risk_score ?? 0} maxRisk={session?.max_risk ?? 'none'} size={40} stroke={4} />
@@ -105,7 +106,7 @@ export function TopStatusBar({ preset = 'standard', onToggleGuard, guardDisabled
           }
         >
           <div className="bb-topbar-quota" style={{ width: 104 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--bb-text-3)', marginBottom: 3 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--bb-text-3)', marginBottom: 0 }}>
               <span>今日额度</span>
               <span className="mono" style={{ color: maxCalls && leftCalls === 0 ? 'var(--bb-block-text)' : undefined }}>
                 {usedCalls}/{maxCalls || '—'}
@@ -116,27 +117,22 @@ export function TopStatusBar({ preset = 'standard', onToggleGuard, guardDisabled
               size="small"
               showInfo={false}
               strokeColor={usedPct > 85 ? 'var(--bb-block)' : usedPct > 60 ? 'var(--bb-observe)' : 'var(--bb-brand-primary)'}
-              trailColor="#e2e5e8"
+              trailColor="var(--bb-border)"
+              style={{ margin: 0 }}
             />
           </div>
         </Tooltip>
         {quotaError && (
           <Tooltip title={`配额加载失败：${quotaError}（点击重试）`}>
-            <button
+            <Button
+              type="text"
+              danger
+              size="small"
               onClick={() => refreshQuota()}
               aria-label="重试加载配额"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                padding: 4,
-                border: 'none',
-                background: 'none',
-                cursor: 'pointer',
-                color: 'var(--bb-block)',
-              }}
-            >
-              <AlertCircle size={15} />
-            </button>
+              icon={<AlertCircle size={16} />}
+              style={{ padding: 0 }}
+            />
           </Tooltip>
         )}
         <ModeBadge mode={mode} />

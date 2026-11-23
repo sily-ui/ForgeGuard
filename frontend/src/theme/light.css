@@ -1,70 +1,51 @@
-/* 越界之前 BeforeBound — 日档：冷调纸面工作台（纸白 + 墨色 + 墨绿品牌 + 墨色状态） */
-:root {
-  /* 纸墨基础：冷调纸白底、墨色文字、发丝线分层 */
-  --bb-bg-page: #f4f5f2;
-  --bb-bg-card: #ffffff;
-  --bb-bg-subtle: #ecede8;
-  --bb-text-1: #1c1f24;
-  --bb-text-2: #5a6168;
-  --bb-text-3: #8a918b;
-  --bb-border: #d9dcd7;
-
-  /* 品牌墨绿：主操作、选中与强调 */
-  --bb-brand-primary: #1f6b5e;
-  --bb-brand-secondary: #3e8f7e;
-  --bb-brand-light: #e9f0ed;
-  --bb-brand-deep: #12382f;
-
-  /* 状态墨色（跨空间共享语义，饱和度收敛如墨锭落纸） */
-  --bb-allow: #2e7d5b;
-  --bb-observe: #8f6a14;
-  --bb-block: #a33d3f;
-  --bb-info: #3d6488;
-  --bb-disabled: #97a1a8;
-  --bb-allow-text: #256b4d;
-  --bb-observe-text: #7a5a12;
-  --bb-block-text: #8f3338;
-  --bb-info-text: #34557a;
-
-  /* 状态浅底 */
-  --bb-allow-bg: #e9f2ed;
-  --bb-observe-bg: #f7efdc;
-  --bb-block-bg: #f6e9ea;
-  --bb-info-bg: #e9eff5;
-
-  /* 功能底色过渡（仅两处，不做装饰渐变） */
-  --bb-gradient-brand: #1f6b5e;
-  --bb-gradient-subtle: linear-gradient(180deg, #f4f5f2 0%, #ecede8 100%);
-
-  /* 骑缝斜纹（卷宗装订条） */
-  --bb-spine-1: #e3e6e0;
-  --bb-spine-2: #f4f5f2;
-
-  /* 圆角与阴影：深度靠发丝线，阴影只留给浮层 */
+:root,
+[data-theme='lab'] {
+  --bb-bg-page: var(--ant-color-bg-layout);
+  --bb-bg-card: var(--ant-color-bg-container);
+  --bb-bg-subtle: var(--ant-color-fill-quaternary);
+  --bb-text-1: var(--ant-color-text);
+  --bb-text-2: var(--ant-color-text-secondary);
+  --bb-text-3: var(--ant-color-text-tertiary);
+  --bb-border: var(--ant-color-border-secondary);
+  --bb-brand-primary: var(--ant-color-primary);
+  --bb-brand-secondary: var(--ant-color-primary-hover);
+  --bb-brand-light: var(--ant-color-primary-bg);
+  --bb-brand-deep: var(--ant-color-primary-text-active);
+  --bb-allow: var(--ant-color-success);
+  --bb-observe: var(--ant-color-warning);
+  --bb-block: var(--ant-color-error);
+  --bb-info: var(--ant-color-info);
+  --bb-disabled: var(--ant-color-text-disabled);
+  --bb-allow-text: var(--ant-color-success-text);
+  --bb-observe-text: var(--ant-color-warning-text);
+  --bb-block-text: var(--ant-color-error-text);
+  --bb-info-text: var(--ant-color-info-text);
+  --bb-allow-bg: var(--ant-color-success-bg);
+  --bb-observe-bg: var(--ant-color-warning-bg);
+  --bb-block-bg: var(--ant-color-error-bg);
+  --bb-info-bg: var(--ant-color-info-bg);
+  --bb-gradient-brand: var(--ant-color-primary);
+  --bb-gradient-subtle: var(--ant-color-fill-quaternary);
+  --bb-spine-1: var(--ant-color-border-secondary);
+  --bb-spine-2: var(--ant-color-bg-container);
   --bb-radius-sm: 6px;
   --bb-radius-md: 8px;
-  --bb-radius-lg: 10px;
+  --bb-radius-lg: 8px;
   --bb-shadow-1: none;
-  --bb-shadow-2: 0 2px 6px rgba(28, 31, 36, 0.05);
-  --bb-shadow-3: 0 8px 20px rgba(28, 31, 36, 0.08);
-
-  /* 图表色板（墨色系，无紫） */
-  --bb-chart-1: #1f6b5e;
-  --bb-chart-2: #3d6488;
-  --bb-chart-3: #8f6a14;
-  --bb-chart-4: #a33d3f;
-  --bb-chart-5: #64748b;
-  --bb-chart-6: #6a8f5f;
-  --bb-chart-7: #4fb0a5;
-  --bb-chart-8: #97a1a8;
-
-  --bb-scrollbar-track: #ecede8;
-  --bb-scrollbar-thumb: #c5c9c2;
-  --bb-scrollbar-thumb-hover: #a9afa6;
-
-  --bb-sidebar-bg: #f7f7f4;
-  --bb-topbar-bg: rgba(255, 255, 255, 0.92);
-
-  /* Display 级排版用字（中文回退思源黑体/系统黑体） */
+  --bb-shadow-2: none;
+  --bb-shadow-3: none;
+  --bb-chart-1: var(--ant-color-primary);
+  --bb-chart-2: var(--ant-color-info);
+  --bb-chart-3: var(--ant-color-warning);
+  --bb-chart-4: var(--ant-color-error);
+  --bb-chart-5: var(--ant-color-text-secondary);
+  --bb-chart-6: var(--ant-color-success);
+  --bb-chart-7: var(--ant-color-primary-hover);
+  --bb-chart-8: var(--ant-color-text-tertiary);
+  --bb-scrollbar-track: var(--ant-color-bg-layout);
+  --bb-scrollbar-thumb: var(--ant-color-fill-secondary);
+  --bb-scrollbar-thumb-hover: var(--ant-color-fill);
+  --bb-sidebar-bg: var(--ant-color-bg-container);
+  --bb-topbar-bg: var(--ant-color-bg-container);
   --bb-font-display: 'IBM Plex Sans', 'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif;
 }

@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { App, Button, Empty, Input, Modal, Segmented, Select, Spin, Switch, Tag, Tooltip } from 'antd';
+import { App, Button, Collapse, Descriptions, Empty, Form, Input, Modal, Segmented, Select, Spin, Switch, Tag, Tooltip, Typography } from 'antd';
+import { InfoCircleOutlined } from '@ant-design/icons';
 import {
   ArrowLeft,
   Filter,
@@ -16,7 +17,6 @@ import { ApiClientError } from '@/services/api/client';
 import { PageHeader } from '@/components/common/PageHeader';
 import { SectionCard } from '@/components/common/SectionCard';
 import { StatusBadge } from '@/components/common/StatusBadge';
-import { EmptyState } from '@/components/common/EmptyState';
 import { JsonViewer } from '@/components/common/JsonViewer';
 import { PresetTag } from '@/components/common/PresetTag';
 import { DossierNo } from '@/components/common/DossierNo';
@@ -27,9 +27,9 @@ import { dossierFromId } from '@/utils/workspace';
 import type { Action, Policy } from '@/types/api';
 
 const LEVEL_META: Record<string, { name: string; desc: string; hue: string }> = {
-  L1: { name: 'L1 · 确定性规则', desc: '工具存在性 / 对象边界 / 参数边界 / 调用约束，命中即短路', hue: '#4f7ba6' },
-  L2: { name: 'L2 · 注入分类', desc: '注入概率打分，高危短路、灰区质询', hue: '#176b63' },
-  L3: { name: 'L3 · 语义判定', desc: '对照基线摘要的语义越权判定，输出固定 JSON', hue: '#64748b' },
+  L1: { name: 'L1 · 确定性规则', desc: '工具存在性 / 对象边界 / 参数边界 / 调用约束，命中即短路', hue: 'var(--bb-info)' },
+  L2: { name: 'L2 · 注入分类', desc: '注入概率打分，高危短路、灰区质询', hue: 'var(--bb-brand-primary)' },
+  L3: { name: 'L3 · 语义判定', desc: '对照基线摘要的语义越权判定，输出固定 JSON', hue: 'var(--bb-text-3)' },
 };
 
 // 三级案卷的档号式编号：卷一 / 卷二 / 卷三。
@@ -168,46 +168,32 @@ export default function PoliciesPage() {
             return (
               <button
                 key={lv}
+                aria-pressed={active}
                 onClick={() => setLevelFilter(levelFilter === lv ? 'all' : lv)}
                 style={{
                   display: 'flex',
                   alignItems: 'stretch',
                   width: '100%',
+                  padding: 0,
                   textAlign: 'left',
                   background: active ? 'var(--bb-allow-bg)' : 'transparent',
                   border: 'none',
-                  borderLeft: active ? '3px solid var(--bb-allow)' : '3px solid transparent',
                   borderBottom: lv !== 'L3' ? '1px solid var(--bb-border)' : 'none',
                   cursor: 'pointer',
                   opacity: dim ? 0.6 : 1,
                   transition: 'background-color 160ms ease, opacity 160ms ease',
                 }}
               >
-                {/* 档号式编号 */}
-                <div
-                  style={{
-                    width: 56,
-                    flexShrink: 0,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRight: '1px solid var(--bb-border)',
-                    background: active ? 'var(--bb-allow-bg)' : 'var(--bb-bg-subtle)',
-                  }}
-                >
-                  <span style={{ fontSize: 14, fontWeight: 600, color: active ? 'var(--bb-allow)' : 'var(--bb-text-2)' }}>{CN_NUM[lv]}</span>
-                  <span className="mono" style={{ fontSize: 10.5, color: 'var(--bb-text-3)', marginTop: 2 }}>{lv}</span>
-                </div>
-                <div style={{ flex: 1, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
+                <div style={{ flex: 1, padding: 16, display: 'flex', alignItems: 'center', gap: 16, minWidth: 0 }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                       <span style={{ width: 6, height: 6, borderRadius: '50%', background: meta.hue, flexShrink: 0 }} />
+                      <Tag style={{ margin: 0 }}>{CN_NUM[lv]}</Tag>
                       <span style={{ fontSize: 14.5, fontWeight: 600, color: 'var(--bb-text-1)' }}>{meta.name}</span>
                     </div>
-                    <div style={{ fontSize: 12.5, color: 'var(--bb-text-2)', lineHeight: 1.5 }}>{meta.desc}</div>
+                    <Typography.Text type="secondary"><InfoCircleOutlined /> {meta.desc}</Typography.Text>
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, flexShrink: 0 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8, flexShrink: 0 }}>
                     <span className="mono" style={{ fontSize: 18, fontWeight: 600, color: 'var(--bb-text-1)' }}>
                       {counts[lv] ?? 0}
                     </span>
@@ -231,7 +217,7 @@ export default function PoliciesPage() {
           title={
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
               <ScrollText size={15} /> 策略条目
-              <Tag style={{ marginInlineStart: 4 }}>{filtered.length}</Tag>
+              <Tag style={{ marginInlineStart: 8 }}>{filtered.length}</Tag>
             </span>
           }
           extra={
@@ -260,11 +246,11 @@ export default function PoliciesPage() {
           padding={0}
         >
           {loading ? (
-            <div style={{ padding: 48, textAlign: 'center' }}>
+            <div style={{ padding: 32, textAlign: 'center' }}>
               <Spin />
             </div>
           ) : filtered.length === 0 ? (
-            <EmptyState icon={<ScrollText size={22} />} title="没有匹配的策略条目" description="调整筛选条件或清空搜索关键字" compact />
+            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={<><div>没有匹配的策略条目</div><Typography.Text type="secondary">调整筛选条件或清空搜索关键字</Typography.Text></>} />
           ) : (
             <div style={{ maxHeight: 'max(240px, calc(100vh - 360px))', overflowY: 'auto' }}>
               {(['L1', 'L2', 'L3'] as const).map((lv) =>
@@ -275,11 +261,11 @@ export default function PoliciesPage() {
                         position: 'sticky',
                         top: 0,
                         zIndex: 1,
-                        padding: '7px 16px',
+                        padding: '8px 16px',
                         fontSize: 12,
                         fontWeight: 500,
                         color: 'var(--bb-text-2)',
-                        background: 'var(--bb-bg-subtle)',
+                        background: 'var(--bb-bg-card)',
                         borderBottom: '1px solid var(--bb-border)',
                         display: 'flex',
                         alignItems: 'center',
@@ -326,16 +312,16 @@ export default function PoliciesPage() {
               <PolicyDetail policy={selected} />
             ) : snapshot ? (
               <div>
-                <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
-                  <Tag color="processing">快照 v{snapshot.version}</Tag>
-                  <Tag>人工覆盖 {snapshot.manual_override_count} 项</Tag>
-                  <Tag>{formatShort(snapshot.created_at)}</Tag>
-                </div>
+                <Descriptions bordered={false} column={1} size="small" style={{ marginBottom: 16 }} items={[
+                  { key: 'version', label: '快照', children: `v${snapshot.version}` },
+                  { key: 'overrides', label: '人工覆盖', children: `${snapshot.manual_override_count} 项` },
+                  { key: 'created', label: '创建时间', children: formatShort(snapshot.created_at) },
+                ]} />
                 <pre
                   className="mono"
                   style={{
                     margin: 0,
-                    padding: 12,
+                    padding: 16,
                     background: 'var(--bb-bg-subtle)',
                     border: '1px solid var(--bb-border)',
                     borderRadius: 8,
@@ -350,9 +336,9 @@ export default function PoliciesPage() {
                 >
                   {snapshot.baseline_summary}
                 </pre>
-                <div style={{ fontSize: 12.5, color: 'var(--bb-text-3)', marginTop: 10, lineHeight: 1.6 }}>
-                  点击左侧任一策略条目查看详情并发起人工覆盖。覆盖将生成新版本快照（只增不改），历史会话仍引用其原快照。
-                </div>
+                <Typography.Text type="secondary" style={{ display: 'block', marginTop: 16 }}>
+                  <InfoCircleOutlined /> 点击左侧任一策略条目查看详情并发起人工覆盖。覆盖将生成新版本快照（只增不改），历史会话仍引用其原快照。
+                </Typography.Text>
               </div>
             ) : (
               <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="选择策略条目查看详情" />
@@ -378,17 +364,17 @@ function PolicyRow({ policy, active, onSelect }: { policy: Policy; active: boole
   const hard = policy.rule_type === 'tool_existence';
   return (
     <button
+      aria-pressed={active}
       onClick={onSelect}
       style={{
         display: 'flex',
         alignItems: 'center',
-        gap: 12,
+        gap: 16,
         width: '100%',
         textAlign: 'left',
-        padding: '11px 16px',
+        padding: '8px 16px',
         background: active ? 'var(--bb-bg-subtle)' : 'transparent',
         border: 'none',
-        borderLeft: `3px solid ${active ? 'var(--bb-brand-primary)' : 'transparent'}`,
         borderBottom: '1px solid var(--bb-border)',
         cursor: 'pointer',
         opacity: policy.enabled ? 1 : 0.55,
@@ -405,12 +391,12 @@ function PolicyRow({ policy, active, onSelect }: { policy: Policy; active: boole
           </span>
           <span style={{ fontSize: 12, color: 'var(--bb-text-3)' }}>{policy.rule_type}</span>
           {policy.origin === 'manual' && (
-            <Tag color="warning" style={{ margin: 0, fontSize: 11, lineHeight: '16px', padding: '0 5px' }}>
+            <Tag color="warning" style={{ margin: 0, fontSize: 11, lineHeight: '16px', padding: '0 8px' }}>
               人工
             </Tag>
           )}
         </span>
-        <span style={{ display: 'block', marginTop: 2, marginBottom: 2 }}>
+        <span style={{ display: 'block', marginTop: 8, marginBottom: 8 }}>
           <DossierNo no={dossierFromId(policy.policy_id)} />
         </span>
         <span
@@ -418,7 +404,7 @@ function PolicyRow({ policy, active, onSelect }: { policy: Policy; active: boole
             display: 'block',
             fontSize: 13,
             color: 'var(--bb-text-2)',
-            marginTop: 3,
+            marginTop: 8,
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',
@@ -435,7 +421,7 @@ function PolicyRow({ policy, active, onSelect }: { policy: Policy; active: boole
 function PolicyDetail({ policy }: { policy: Policy }) {
   const hard = policy.rule_type === 'tool_existence';
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
         <span className="mono" style={{ fontSize: 15, fontWeight: 600, color: 'var(--bb-text-1)' }}>
           {policy.policy_id}
@@ -450,26 +436,14 @@ function PolicyDetail({ policy }: { policy: Policy }) {
           </Tooltip>
         )}
       </div>
-      <Field label="规则类型" value={policy.rule_type} mono />
-      <Field label="命中条件" value={policy.condition} />
-      <Field label="配置来源" value={policy.source} mono />
-      <Field label="来源" value={policy.origin === 'manual' ? '人工覆盖' : '自动生成'} />
-      {policy.override_note && <Field label="覆盖备注" value={policy.override_note} />}
-      <div>
-        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--bb-text-3)', marginBottom: 6 }}>参数</div>
-        <JsonViewer data={policy.params} maxHeight={200} collapsed />
-      </div>
-    </div>
-  );
-}
-
-function Field({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
-  return (
-    <div>
-      <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--bb-text-3)', marginBottom: 3 }}>{label}</div>
-      <div className={mono ? 'mono' : ''} style={{ fontSize: 13.5, color: 'var(--bb-text-1)', lineHeight: 1.6, wordBreak: 'break-word' }}>
-        {value}
-      </div>
+      <Descriptions bordered={false} column={1} size="small" styles={{ content: { wordBreak: 'break-word' } }} items={[
+        { key: 'type', label: '规则类型', children: <span className="mono">{policy.rule_type}</span> },
+        { key: 'condition', label: '命中条件', children: policy.condition },
+        { key: 'source', label: '配置来源', children: <span className="mono">{policy.source}</span> },
+        { key: 'origin', label: '来源', children: policy.origin === 'manual' ? '人工覆盖' : '自动生成' },
+        ...(policy.override_note ? [{ key: 'note', label: '覆盖备注', children: policy.override_note }] : []),
+      ]} />
+      <Collapse key={policy.policy_id} ghost items={[{ key: 'params', label: '参数', children: <JsonViewer data={policy.params} maxHeight={200} /> }]} />
     </div>
   );
 }
@@ -534,43 +508,36 @@ function OverrideModal({
       centered
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16, paddingTop: 8 }}>
-        <div style={{ fontSize: 13.5, color: 'var(--bb-text-2)', lineHeight: 1.6, background: 'var(--bb-bg-subtle)', padding: 12, borderRadius: 8 }}>
-          {policy.condition}
-        </div>
+        <Descriptions bordered={false} column={1} size="small" items={[{ key: 'condition', label: '命中条件', children: policy.condition }]} />
         <div style={{ display: 'flex', gap: 16 }}>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>判定动作</div>
+          <Form.Item layout="vertical" label="判定动作" style={{ flex: 1, marginBottom: 0 }}>
             <Select value={action} onChange={setAction} options={ACTION_OPTIONS} style={{ width: '100%' }} />
-          </div>
-          <div>
-            <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>启用状态</div>
+          </Form.Item>
+          <Form.Item layout="vertical" label="启用状态" style={{ marginBottom: 0 }}>
             <Switch checked={enabled} onChange={setEnabled} checkedChildren="启用" unCheckedChildren="停用" />
-          </div>
+          </Form.Item>
         </div>
         {isThreshold && (
           <div style={{ display: 'flex', gap: 16 }}>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>高危阈值 high</div>
+            <Form.Item layout="vertical" label="高危阈值 high" style={{ flex: 1, marginBottom: 0 }}>
               <Select
                 value={high}
                 onChange={setHigh}
                 style={{ width: '100%' }}
                 options={[0.5, 0.6, 0.7, 0.75, 0.8, 0.9].map((v) => ({ value: v, label: v.toFixed(2) }))}
               />
-            </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>灰区下限 gray_low</div>
+            </Form.Item>
+            <Form.Item layout="vertical" label="灰区下限 gray_low" style={{ flex: 1, marginBottom: 0 }}>
               <Select
                 value={grayLow}
                 onChange={setGrayLow}
                 style={{ width: '100%' }}
                 options={[0.2, 0.3, 0.4, 0.45, 0.5, 0.6].map((v) => ({ value: v, label: v.toFixed(2) }))}
               />
-            </div>
+            </Form.Item>
           </div>
         )}
-        <div>
-          <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>覆盖备注（可选）</div>
+        <Form.Item layout="vertical" label="覆盖备注（可选）" style={{ marginBottom: 0 }}>
           <Input.TextArea
             value={note}
             onChange={(e) => setNote(e.target.value)}
@@ -579,10 +546,10 @@ function OverrideModal({
             maxLength={200}
             showCount
           />
-        </div>
-        <div style={{ fontSize: 12.5, color: 'var(--bb-text-3)', lineHeight: 1.6 }}>
-          覆盖会生成新的策略快照版本（只增不改）。已有会话仍引用其创建时的快照，新会话将使用最新版本。
-        </div>
+        </Form.Item>
+        <Typography.Text type="secondary">
+          <InfoCircleOutlined /> 覆盖会生成新的策略快照版本（只增不改）。已有会话仍引用其创建时的快照，新会话将使用最新版本。
+        </Typography.Text>
       </div>
     </Modal>
   );
