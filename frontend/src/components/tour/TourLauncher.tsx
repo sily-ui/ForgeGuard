@@ -39,38 +39,38 @@ export function TourLauncher() {
   };
 
   const menu = (
-    <div className="fg-tour-menu">
-      <div className="fg-tour-menu-head">
-        <div className="fg-tour-menu-title">
+    <div className="bb-tour-menu">
+      <div className="bb-tour-menu-head">
+        <div className="bb-tour-menu-title">
           <LifeBuoy size={15} strokeWidth={1.5} /> 新手引导中心
         </div>
-        <div className="fg-tour-menu-sub">每个页面首次进入自动播放，也可随时重看</div>
+        <div className="bb-tour-menu-sub">每个页面首次进入自动播放，也可随时重看</div>
       </div>
-      <div className="fg-tour-menu-list">
+      <div className="bb-tour-menu-list">
         {TOUR_META.map((m) => {
           const here = m.id === tourId;
           const done = !!seen[m.id];
           return (
-            <button key={m.id} type="button" className={here ? 'fg-tour-menu-item here' : 'fg-tour-menu-item'} onClick={() => play(m.id)}>
-              <span className="fg-tour-menu-icon">
+            <button key={m.id} type="button" className={here ? 'bb-tour-menu-item here' : 'bb-tour-menu-item'} onClick={() => play(m.id)}>
+              <span className="bb-tour-menu-icon">
                 <m.icon size={15} strokeWidth={1.5} />
               </span>
-              <span className="fg-tour-menu-text">
-                <span className="fg-tour-menu-label">
+              <span className="bb-tour-menu-text">
+                <span className="bb-tour-menu-label">
                   {m.label}
                   {here && <em>本页</em>}
                 </span>
-                <span className="fg-tour-menu-desc">
+                <span className="bb-tour-menu-desc">
                   {m.desc}
                   {m.contextual && !here ? ' · 进入页面后播放' : ''}
                 </span>
               </span>
-              <span className="fg-tour-menu-state">{done ? <Check size={13} /> : <Play size={12} />}</span>
+              <span className="bb-tour-menu-state">{done ? <Check size={13} /> : <Play size={12} />}</span>
             </button>
           );
         })}
       </div>
-      <div className="fg-tour-menu-foot">
+      <div className="bb-tour-menu-foot">
         <Button
           size="small"
           type="text"
@@ -93,17 +93,17 @@ export function TourLauncher() {
       trigger="click"
       placement="topRight"
       arrow={false}
-      overlayClassName="fg-tour-popover"
+      overlayClassName="bb-tour-popover"
       content={menu}
     >
       <button
         type="button"
         aria-label="打开新手引导"
-        className="fg-tour-fab"
+        className="bb-tour-fab"
         style={{ bottom: 24 }}
       >
         <Compass size={20} strokeWidth={1.5} />
-        {pending && <span className="fg-tour-fab-dot" />}
+        {pending && <span className="bb-tour-fab-dot" />}
       </button>
     </Popover>
   );

@@ -95,10 +95,10 @@ export function ChatPanel({
         )}
       </div>
       <div style={colFooterStyle}>
-        <span className="mono" style={{ fontSize: 11, color: 'var(--fg-text-3)' }}>
+        <span className="mono" style={{ fontSize: 11, color: 'var(--bb-text-3)' }}>
           {sessionId}
         </span>
-        <span style={{ fontSize: 11, color: 'var(--fg-text-3)' }}>内存仿真 · 不触及真实系统</span>
+        <span style={{ fontSize: 11, color: 'var(--bb-text-3)' }}>内存仿真 · 不触及真实系统</span>
       </div>
     </div>
   );
@@ -198,9 +198,9 @@ function ChatTab({
     <>
       <div ref={scrollRef} style={scrollAreaStyle}>
         {messages.length === 0 ? (
-          <div style={{ padding: '32px 18px', textAlign: 'center', color: 'var(--fg-text-3)' }}>
+          <div style={{ padding: '32px 18px', textAlign: 'center', color: 'var(--bb-text-3)' }}>
             <Bot size={28} strokeWidth={1.4} style={{ opacity: 0.5, marginBottom: 10 }} />
-            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--fg-text-2)' }}>开始一轮攻防对话</div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--bb-text-2)' }}>开始一轮攻防对话</div>
             <div style={{ fontSize: 12.5, lineHeight: 1.7, marginTop: 6 }}>
               以业务用户或红队身份发送消息，
               <br />
@@ -213,8 +213,8 @@ function ChatTab({
               <MessageBubble key={m.id} message={m} />
             ))}
             {sending && !messages[messages.length - 1]?.pending && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--fg-text-3)', fontSize: 13, padding: '2px 4px' }}>
-                <Loader2 size={13} className="fg-spin" /> Agent 正在响应…
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--bb-text-3)', fontSize: 13, padding: '2px 4px' }}>
+                <Loader2 size={13} className="bb-spin" /> Agent 正在响应…
               </div>
             )}
           </div>
@@ -236,7 +236,7 @@ function ChatTab({
             ]}
           />
           <Tooltip title="本轮跳过旁路监护（对照演示），该轮结果不代表防护能力">
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12.5, color: skipGuard ? 'var(--fg-observe-text)' : 'var(--fg-text-3)' }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12.5, color: skipGuard ? 'var(--bb-observe-text)' : 'var(--bb-text-3)' }}>
               <Switch size="small" checked={skipGuard} onChange={setSkipGuard} />
               跳过防护
             </span>
@@ -255,7 +255,7 @@ function ChatTab({
                   whiteSpace: 'nowrap',
                   textOverflow: 'ellipsis',
                   pointerEvents: 'none',
-                  color: 'var(--fg-text-3)',
+                  color: 'var(--bb-text-3)',
                   opacity: 0.75,
                   boxSizing: 'border-box',
                 }}
@@ -287,14 +287,14 @@ function ChatTab({
           </div>
           <Button
             type="primary"
-            icon={sending ? <Loader2 size={15} className="fg-spin" /> : <Send size={15} />}
+            icon={sending ? <Loader2 size={15} className="bb-spin" /> : <Send size={15} />}
             onClick={submit}
             disabled={!content.trim() || sending || terminated}
             style={{ height: 34 }}
           />
         </div>
         {!terminated && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 7, fontSize: 12, color: 'var(--fg-text-3)', lineHeight: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 7, fontSize: 12, color: 'var(--bb-text-3)', lineHeight: 1 }}>
             {tabTarget ? (
               <>
                 <Sparkles size={11} style={{ flexShrink: 0 }} />
@@ -324,9 +324,9 @@ function MessageBubble({ message }: { message: ReturnType<typeof useSessionStore
         <span
           style={{
             fontSize: 12,
-            color: 'var(--fg-text-3)',
-            background: 'var(--fg-bg-subtle)',
-            border: '1px solid var(--fg-border)',
+            color: 'var(--bb-text-3)',
+            background: 'var(--bb-bg-subtle)',
+            border: '1px solid var(--bb-border)',
             borderRadius: 6,
             padding: '3px 12px',
             display: 'inline-flex',
@@ -342,7 +342,7 @@ function MessageBubble({ message }: { message: ReturnType<typeof useSessionStore
   const redteam = message.actor === 'redteam';
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: isUser ? 'flex-end' : 'flex-start', gap: 4 }}>
-      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11.5, color: 'var(--fg-text-3)' }}>
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11.5, color: 'var(--bb-text-3)' }}>
         {isUser ? (redteam ? <AttackIcon size={11} /> : <User size={11} />) : <Bot size={11} />}
         {isUser ? (redteam ? '红队' : '业务用户') : 'Agent'}
         {message.turn != null && <span className="mono">· T{message.turn}</span>}
@@ -361,15 +361,15 @@ function MessageBubble({ message }: { message: ReturnType<typeof useSessionStore
           lineHeight: 1.65,
           whiteSpace: 'pre-wrap',
           wordBreak: 'break-word',
-          background: isUser ? (redteam ? 'var(--fg-observe-bg)' : 'var(--fg-brand-primary)') : 'var(--fg-bg-card)',
-          color: isUser && !redteam ? '#fff' : 'var(--fg-text-1)',
-          border: isUser ? 'none' : '1px solid var(--fg-border)',
+          background: isUser ? (redteam ? 'var(--bb-observe-bg)' : 'var(--bb-brand-primary)') : 'var(--bb-bg-card)',
+          color: isUser && !redteam ? '#fff' : 'var(--bb-text-1)',
+          border: isUser ? 'none' : '1px solid var(--bb-border)',
           borderTopRightRadius: isUser ? 3 : 12,
           borderTopLeftRadius: isUser ? 12 : 3,
         }}
       >
         {message.content}
-        {!isUser && message.pending && <span className="fg-cursor" />}
+        {!isUser && message.pending && <span className="bb-cursor" />}
       </div>
     </div>
   );
@@ -410,7 +410,7 @@ function SamplesTab({
 
   return (
     <div style={scrollAreaStyle}>
-      <div style={{ padding: '10px 12px', fontSize: 12, color: 'var(--fg-text-3)', lineHeight: 1.6, borderBottom: '1px solid var(--fg-border)' }}>
+      <div style={{ padding: '10px 12px', fontSize: 12, color: 'var(--bb-text-3)', lineHeight: 1.6, borderBottom: '1px solid var(--bb-border)' }}>
         预置攻击样本库 · 共 {items.length} 条。载入将自动执行铺垫轮次与攻击载荷，实时观察监护判定。
       </div>
       {Object.keys(grouped).length === 0 ? (
@@ -426,7 +426,7 @@ function SamplesTab({
               >
                 {open ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
                 {CATEGORY_NAMES[cat] ?? cat}
-                <span className="mono" style={{ marginLeft: 'auto', color: 'var(--fg-text-3)' }}>{list.length}</span>
+                <span className="mono" style={{ marginLeft: 'auto', color: 'var(--bb-text-3)' }}>{list.length}</span>
               </button>
               {open &&
                 list.map((s) => (
@@ -455,18 +455,18 @@ function SampleCard({
 }) {
   const [expanded, setExpanded] = useState(false);
   return (
-    <div style={{ padding: '10px 14px', borderBottom: '1px solid var(--fg-border)' }}>
+    <div style={{ padding: '10px 14px', borderBottom: '1px solid var(--bb-border)' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--fg-text-1)' }}>{sample.name}</span>
+            <span style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--bb-text-1)' }}>{sample.name}</span>
             {!sample.applicable && (
               <Tooltip title={sample.reason || '当前实例未启用相关工具，样本不适用'}>
                 <Tag color="default" style={{ margin: 0, fontSize: 10.5, lineHeight: '15px', padding: '0 5px' }}>不适用</Tag>
               </Tooltip>
             )}
           </div>
-          <div style={{ fontSize: 12, color: 'var(--fg-text-3)', marginTop: 2 }}>{sample.mechanism}</div>
+          <div style={{ fontSize: 12, color: 'var(--bb-text-3)', marginTop: 2 }}>{sample.mechanism}</div>
         </div>
         <Button
           size="small"
@@ -487,8 +487,8 @@ function SampleCard({
         <div style={{ marginTop: 6, display: 'flex', flexDirection: 'column', gap: 6 }}>
           <pre className="mono" style={payloadPreStyle}>{sample.payload_preview}</pre>
           <div style={{ display: 'flex', gap: 10, fontSize: 11.5 }}>
-            <span style={{ color: 'var(--fg-block-text)' }}>关防护：{truncate(sample.expected_off, 40)}</span>
-            <span style={{ color: 'var(--fg-allow-text)' }}>开防护：{truncate(sample.expected_on, 40)}</span>
+            <span style={{ color: 'var(--bb-block-text)' }}>关防护：{truncate(sample.expected_off, 40)}</span>
+            <span style={{ color: 'var(--bb-allow-text)' }}>开防护：{truncate(sample.expected_on, 40)}</span>
           </div>
         </div>
       )}
@@ -521,8 +521,8 @@ function RedteamTab({
 
   return (
     <>
-      <div style={{ padding: 14, borderBottom: '1px solid var(--fg-border)', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <div style={{ fontSize: 12.5, color: 'var(--fg-text-2)', lineHeight: 1.6 }}>
+      <div style={{ padding: 14, borderBottom: '1px solid var(--bb-border)', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{ fontSize: 12.5, color: 'var(--bb-text-2)', lineHeight: 1.6 }}>
           红队自动攻击：模型驱动的多轮渐进式注入，自动尝试越权并记录每步结果。
         </div>
         <div style={{ display: 'flex', gap: 12 }}>
@@ -543,7 +543,7 @@ function RedteamTab({
           <Button
             type="primary"
             block
-            icon={pending ? <Loader2 size={14} className="fg-spin" /> : <Play size={14} />}
+            icon={pending ? <Loader2 size={14} className="bb-spin" /> : <Play size={14} />}
             disabled={terminated || pending}
             onClick={() => onStart({ maxRounds, timeLimitS: timeLimit })}
           >
@@ -551,15 +551,15 @@ function RedteamTab({
           </Button>
         )}
         {running && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12.5, color: 'var(--fg-observe-text)' }}>
-            <span className="fg-breathe" style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--fg-observe)' }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12.5, color: 'var(--bb-observe-text)' }}>
+            <span className="bb-breathe" style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--bb-observe)' }} />
             红队进行中…
           </div>
         )}
       </div>
       <div ref={scrollRef} style={scrollAreaStyle}>
         {steps.length === 0 ? (
-          <div style={{ padding: '28px 18px', textAlign: 'center', color: 'var(--fg-text-3)', fontSize: 13 }}>
+          <div style={{ padding: '28px 18px', textAlign: 'center', color: 'var(--bb-text-3)', fontSize: 13 }}>
             <AttackIcon size={24} strokeWidth={1.4} style={{ opacity: 0.5, marginBottom: 8 }} />
             <div>启动后，红队每一步将在此实时显示</div>
           </div>
@@ -568,14 +568,14 @@ function RedteamTab({
             {steps.map((s) => (
               <div key={s.id} style={stepCardStyle}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                  <span className="mono" style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--fg-text-2)' }}>
+                  <span className="mono" style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--bb-text-2)' }}>
                     {s.round != null ? `第 ${s.round} 轮` : '步骤'}
                   </span>
                   {s.status && <Tag style={{ margin: 0, fontSize: 10.5, lineHeight: '15px', padding: '0 5px' }}>{s.status}</Tag>}
-                  <span style={{ marginLeft: 'auto', fontSize: 10.5, color: 'var(--fg-text-3)' }}>{formatShort(s.created_at)}</span>
+                  <span style={{ marginLeft: 'auto', fontSize: 10.5, color: 'var(--bb-text-3)' }}>{formatShort(s.created_at)}</span>
                 </div>
-                {s.payload && <div style={{ fontSize: 12.5, color: 'var(--fg-text-2)', lineHeight: 1.55, wordBreak: 'break-word' }}>{truncate(s.payload, 160)}</div>}
-                {s.result && <div style={{ fontSize: 12, color: 'var(--fg-text-3)', marginTop: 3, lineHeight: 1.5 }}>→ {truncate(s.result, 120)}</div>}
+                {s.payload && <div style={{ fontSize: 12.5, color: 'var(--bb-text-2)', lineHeight: 1.55, wordBreak: 'break-word' }}>{truncate(s.payload, 160)}</div>}
+                {s.result && <div style={{ fontSize: 12, color: 'var(--bb-text-3)', marginTop: 3, lineHeight: 1.5 }}>→ {truncate(s.result, 120)}</div>}
               </div>
             ))}
           </div>
@@ -587,10 +587,10 @@ function RedteamTab({
 
 function TabButton({ active, onClick, icon, label, dot }: { active: boolean; onClick: () => void; icon: React.ReactNode; label: string; dot?: boolean }) {
   return (
-    <button onClick={onClick} style={{ ...tabBtnStyle, color: active ? 'var(--fg-brand-primary)' : 'var(--fg-text-2)', borderBottomColor: active ? 'var(--fg-brand-primary)' : 'transparent' }}>
+    <button onClick={onClick} style={{ ...tabBtnStyle, color: active ? 'var(--bb-brand-primary)' : 'var(--bb-text-2)', borderBottomColor: active ? 'var(--bb-brand-primary)' : 'transparent' }}>
       {icon}
       {label}
-      {dot && <span className="fg-breathe" style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--fg-observe)' }} />}
+      {dot && <span className="bb-breathe" style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--bb-observe)' }} />}
     </button>
   );
 }
@@ -600,8 +600,8 @@ const colStyle: React.CSSProperties = {
   flexDirection: 'column',
   height: '100%',
   minHeight: 0,
-  background: 'var(--fg-bg-card)',
-  border: '1px solid var(--fg-border)',
+  background: 'var(--bb-bg-card)',
+  border: '1px solid var(--bb-border)',
   borderRadius: 14,
   overflow: 'hidden',
 };
@@ -610,8 +610,8 @@ const tabStripStyle: React.CSSProperties = {
   alignItems: 'center',
   gap: 2,
   padding: '0 8px',
-  borderBottom: '1px solid var(--fg-border)',
-  background: 'var(--fg-bg-subtle)',
+  borderBottom: '1px solid var(--bb-border)',
+  background: 'var(--bb-bg-subtle)',
   flexShrink: 0,
 };
 const tabBtnStyle: React.CSSProperties = {
@@ -634,23 +634,23 @@ const pendingPillStyle: React.CSSProperties = {
   gap: 4,
   fontSize: 11.5,
   fontWeight: 600,
-  color: 'var(--fg-observe-text)',
-  background: 'var(--fg-observe-bg)',
-  border: '1px solid var(--fg-border)',
+  color: 'var(--bb-observe-text)',
+  background: 'var(--bb-observe-bg)',
+  border: '1px solid var(--bb-border)',
   borderRadius: 4,
   padding: '2px 8px',
 };
 const scrollAreaStyle: React.CSSProperties = { flex: 1, minHeight: 0, overflowY: 'auto' };
-const composerStyle: React.CSSProperties = { padding: 12, borderTop: '1px solid var(--fg-border)', background: 'var(--fg-bg-subtle)', flexShrink: 0 };
+const composerStyle: React.CSSProperties = { padding: 12, borderTop: '1px solid var(--bb-border)', background: 'var(--bb-bg-subtle)', flexShrink: 0 };
 const kbdStyle: React.CSSProperties = {
   display: 'inline-block',
   padding: '1px 5px',
   borderRadius: 4,
-  border: '1px solid var(--fg-border)',
-  background: 'var(--fg-bg-card)',
+  border: '1px solid var(--bb-border)',
+  background: 'var(--bb-bg-card)',
   fontSize: 10.5,
   fontWeight: 600,
-  color: 'var(--fg-text-2)',
+  color: 'var(--bb-text-2)',
   lineHeight: 1.4,
 };
 const rotateBtnStyle: React.CSSProperties = {
@@ -660,7 +660,7 @@ const rotateBtnStyle: React.CSSProperties = {
   background: 'none',
   border: 'none',
   cursor: 'pointer',
-  color: 'var(--fg-text-3)',
+  color: 'var(--bb-text-3)',
   padding: 2,
 };
 const colFooterStyle: React.CSSProperties = {
@@ -668,7 +668,7 @@ const colFooterStyle: React.CSSProperties = {
   alignItems: 'center',
   justifyContent: 'space-between',
   padding: '6px 12px',
-  borderTop: '1px solid var(--fg-border)',
+  borderTop: '1px solid var(--bb-border)',
   flexShrink: 0,
 };
 const catHeaderStyle: React.CSSProperties = {
@@ -677,13 +677,13 @@ const catHeaderStyle: React.CSSProperties = {
   gap: 6,
   width: '100%',
   padding: '8px 14px',
-  background: 'var(--fg-bg-subtle)',
+  background: 'var(--bb-bg-subtle)',
   border: 'none',
-  borderBottom: '1px solid var(--fg-border)',
+  borderBottom: '1px solid var(--bb-border)',
   cursor: 'pointer',
   fontSize: 12.5,
   fontWeight: 600,
-  color: 'var(--fg-text-2)',
+  color: 'var(--bb-text-2)',
   position: 'sticky',
   top: 0,
 };
@@ -696,27 +696,27 @@ const linkBtnStyle: React.CSSProperties = {
   border: 'none',
   cursor: 'pointer',
   fontSize: 11.5,
-  color: 'var(--fg-text-3)',
+  color: 'var(--bb-text-3)',
   padding: 0,
 };
 const payloadPreStyle: React.CSSProperties = {
   margin: 0,
   padding: '8px 10px',
-  background: 'var(--fg-bg-page)',
-  border: '1px solid var(--fg-border)',
+  background: 'var(--bb-bg-page)',
+  border: '1px solid var(--bb-border)',
   borderRadius: 7,
   fontSize: 11.5,
   lineHeight: 1.6,
   whiteSpace: 'pre-wrap',
   wordBreak: 'break-word',
-  color: 'var(--fg-text-2)',
+  color: 'var(--bb-text-2)',
   maxHeight: 120,
   overflowY: 'auto',
 };
-const fieldLabelStyle: React.CSSProperties = { fontSize: 12, fontWeight: 500, color: 'var(--fg-text-3)', marginBottom: 5 };
+const fieldLabelStyle: React.CSSProperties = { fontSize: 12, fontWeight: 500, color: 'var(--bb-text-3)', marginBottom: 5 };
 const stepCardStyle: React.CSSProperties = {
   padding: '9px 11px',
-  background: 'var(--fg-bg-subtle)',
-  border: '1px solid var(--fg-border)',
+  background: 'var(--bb-bg-subtle)',
+  border: '1px solid var(--bb-border)',
   borderRadius: 9,
 };

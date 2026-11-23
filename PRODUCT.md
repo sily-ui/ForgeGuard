@@ -64,7 +64,7 @@ React 18 + TypeScript + Vite + Ant Design 5 + AntV X6 + Zustand + TanStack Query
 - **品牌：越界之前 BeforeBound**（用户 2026-11-22 确认，取代"白盒 Whitebox"）。副题"Agent 安全实验室"，保留"实验室"定位。语义：调用越界之前先被三级判据看见并处置。
 - **定位绑定**："智能体安全实验室"定位保留（用户 2026-11-21 确认）。
 - **视觉硬约束（用户明确给出，绑定）**：不要科技炫酷黑 / 黑客风；贴近红队测评主题；整体耳目一新、有设计感；去 AI 味、反模板化。
-- 原产品代号 AgentShield / ForgeGuard / Agent Security Lab / 白盒 Whitebox 不再作为对外品牌；`ForgeGuard` 仅保留为仓库与内部代码代号（模块名、`--fg-` Token 前缀、日志前缀）。
+- 旧代号 AgentShield / ForgeGuard / Agent Security Lab / 白盒 Whitebox 均已全面退役（2026-11-23 起不再作为任何对外或内部名称）：模块名、`--bb-` Token 前缀（原 `--fg-`）、日志前缀、包名、数据库文件名等代码与文档记录已统一更名为 BeforeBound。
 
 ## Evidence on Hand
 

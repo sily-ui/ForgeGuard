@@ -26,9 +26,9 @@ import type { Report } from '@/types/api';
 
 // 最高风险等级 → 卷宗条目左侧语义色条。
 const RISK_BAR_COLOR: Record<string, string> = {
-  high: 'var(--fg-block)',
-  medium: 'var(--fg-observe)',
-  low: 'var(--fg-allow)',
+  high: 'var(--bb-block)',
+  medium: 'var(--bb-observe)',
+  low: 'var(--bb-allow)',
 };
 
 export default function ReportsPage() {
@@ -72,10 +72,10 @@ export default function ReportsPage() {
         }
       />
 
-      <div data-tour="reports-stats" className="fg-stats-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 18 }}>
+      <div data-tour="reports-stats" className="bb-stats-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 18 }}>
         <StatCard label="报告总数" value={stats.total} />
-        <StatCard label="累计拦截" value={stats.blocked} color="var(--fg-allow-text)" />
-        <StatCard label="高危报告" value={stats.high} color="var(--fg-block-text)" />
+        <StatCard label="累计拦截" value={stats.blocked} color="var(--bb-allow-text)" />
+        <StatCard label="高危报告" value={stats.high} color="var(--bb-block-text)" />
       </div>
 
       <div data-tour="reports-list">
@@ -87,7 +87,7 @@ export default function ReportsPage() {
               allowClear
               size="small"
               placeholder="搜索靶标 / 结论 / 编号"
-              prefix={<Search size={13} style={{ color: 'var(--fg-text-3)' }} />}
+              prefix={<Search size={13} style={{ color: 'var(--bb-text-3)' }} />}
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
               style={{ width: 200 }}
@@ -149,28 +149,28 @@ function ReportCard({ report, onOpen }: { report: Report; onOpen: () => void }) 
       onClick={onOpen}
       style={{
         ...reportCardStyle,
-        borderLeft: `3px solid ${RISK_BAR_COLOR[s.max_risk] ?? 'var(--fg-border)'}`,
+        borderLeft: `3px solid ${RISK_BAR_COLOR[s.max_risk] ?? 'var(--bb-border)'}`,
       }}
     >
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
         <RiskRing score={high ? 0.9 : s.max_risk === 'medium' ? 0.5 : 0.15} maxRisk={s.max_risk} size={46} stroke={5} />
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--fg-text-1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--bb-text-1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {s.instance_name}
           </div>
-          <div className="mono" style={{ fontSize: 11, color: 'var(--fg-text-3)', marginTop: 2 }}>{report.report_id}</div>
+          <div className="mono" style={{ fontSize: 11, color: 'var(--bb-text-3)', marginTop: 2 }}>{report.report_id}</div>
           <div style={{ marginTop: 2 }}><DossierNo no={dossierFromId(report.report_id)} /></div>
         </div>
         <Tag color={high ? 'error' : s.max_risk === 'medium' ? 'warning' : 'success'} style={{ margin: 0 }}>
           {RISK_META[s.max_risk]?.label ?? s.max_risk}
         </Tag>
       </div>
-      <div style={{ fontSize: 13, color: 'var(--fg-text-2)', lineHeight: 1.6, margin: '12px 0', minHeight: 38 }}>
+      <div style={{ fontSize: 13, color: 'var(--bb-text-2)', lineHeight: 1.6, margin: '12px 0', minHeight: 38 }}>
         {truncate(s.conclusion, 76)}
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14, fontSize: 12, color: 'var(--fg-text-3)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14, fontSize: 12, color: 'var(--bb-text-3)' }}>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-          <GuardIcon size={12} style={{ color: 'var(--fg-allow-text)' }} /> 拦截 <b className="mono" style={{ color: 'var(--fg-text-2)' }}>{s.block_count}</b>
+          <GuardIcon size={12} style={{ color: 'var(--bb-allow-text)' }} /> 拦截 <b className="mono" style={{ color: 'var(--bb-text-2)' }}>{s.block_count}</b>
         </span>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
           <Clock size={12} /> {s.turns} 回合
@@ -178,7 +178,7 @@ function ReportCard({ report, onOpen }: { report: Report; onOpen: () => void }) 
         <span style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
           {report.share_expires_at && (
             <Tooltip title={`分享链接有效期至 ${formatShort(report.share_expires_at)}`}>
-              <Share2 size={12} style={{ color: 'var(--fg-brand-primary)' }} />
+              <Share2 size={12} style={{ color: 'var(--bb-brand-primary)' }} />
             </Tooltip>
           )}
           {fromNow(report.created_at)}
@@ -194,7 +194,7 @@ function ReportTable({ reports, onOpen }: { reports: Report[]; onOpen: (id: stri
     <div style={{ overflowX: 'auto' }}>
       <table style={{ width: '100%', minWidth: 720, borderCollapse: 'collapse', fontSize: 13.5 }}>
         <thead>
-          <tr style={{ background: 'var(--fg-bg-subtle)', textAlign: 'left' }}>
+          <tr style={{ background: 'var(--bb-bg-subtle)', textAlign: 'left' }}>
             {['靶标', '最高风险', '拦截', '回合', '结论', '生成时间', ''].map((h) => (
               <th key={h} style={thStyle}>{h}</th>
             ))}
@@ -202,10 +202,10 @@ function ReportTable({ reports, onOpen }: { reports: Report[]; onOpen: (id: stri
         </thead>
         <tbody>
           {reports.map((r) => (
-            <tr key={r.report_id} style={{ borderBottom: '1px solid var(--fg-border)', cursor: 'pointer' }} onClick={() => onOpen(r.report_id)}>
-              <td style={{ ...tdStyle, borderLeft: `3px solid ${RISK_BAR_COLOR[r.summary.max_risk] ?? 'var(--fg-border)'}` }}>
-                <div style={{ fontWeight: 600, color: 'var(--fg-text-1)' }}>{r.summary.instance_name}</div>
-                <div className="mono" style={{ fontSize: 11, color: 'var(--fg-text-3)' }}>{r.report_id}</div>
+            <tr key={r.report_id} style={{ borderBottom: '1px solid var(--bb-border)', cursor: 'pointer' }} onClick={() => onOpen(r.report_id)}>
+              <td style={{ ...tdStyle, borderLeft: `3px solid ${RISK_BAR_COLOR[r.summary.max_risk] ?? 'var(--bb-border)'}` }}>
+                <div style={{ fontWeight: 600, color: 'var(--bb-text-1)' }}>{r.summary.instance_name}</div>
+                <div className="mono" style={{ fontSize: 11, color: 'var(--bb-text-3)' }}>{r.report_id}</div>
                 <div style={{ marginTop: 2 }}><DossierNo no={dossierFromId(r.report_id)} /></div>
               </td>
               <td style={tdStyle}>
@@ -213,11 +213,11 @@ function ReportTable({ reports, onOpen }: { reports: Report[]; onOpen: (id: stri
                   {RISK_META[r.summary.max_risk]?.label ?? r.summary.max_risk}
                 </Tag>
               </td>
-              <td style={tdStyle}><span className="mono" style={{ color: 'var(--fg-allow-text)', fontWeight: 600 }}>{r.summary.block_count}</span></td>
+              <td style={tdStyle}><span className="mono" style={{ color: 'var(--bb-allow-text)', fontWeight: 600 }}>{r.summary.block_count}</span></td>
               <td style={tdStyle}><span className="mono">{r.summary.turns}</span></td>
-              <td style={{ ...tdStyle, maxWidth: 320, color: 'var(--fg-text-2)' }}>{truncate(r.summary.conclusion, 50)}</td>
-              <td style={{ ...tdStyle, color: 'var(--fg-text-3)', whiteSpace: 'nowrap' }}>{formatShort(r.created_at)}</td>
-              <td style={tdStyle}><ArrowRight size={14} style={{ color: 'var(--fg-text-3)' }} /></td>
+              <td style={{ ...tdStyle, maxWidth: 320, color: 'var(--bb-text-2)' }}>{truncate(r.summary.conclusion, 50)}</td>
+              <td style={{ ...tdStyle, color: 'var(--bb-text-3)', whiteSpace: 'nowrap' }}>{formatShort(r.created_at)}</td>
+              <td style={tdStyle}><ArrowRight size={14} style={{ color: 'var(--bb-text-3)' }} /></td>
             </tr>
           ))}
         </tbody>
@@ -228,9 +228,9 @@ function ReportTable({ reports, onOpen }: { reports: Report[]; onOpen: (id: stri
 
 function StatCard({ label, value, color }: { label: string; value: number; color?: string }) {
   return (
-    <div className="fg-card" style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '16px 18px' }}>
-      <span style={{ fontSize: 13, color: 'var(--fg-text-3)' }}>{label}</span>
-      <span className="mono" style={{ fontSize: 28, fontWeight: 600, color: color ?? 'var(--fg-text-1)', lineHeight: 1 }}>{value}</span>
+    <div className="bb-card" style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '16px 18px' }}>
+      <span style={{ fontSize: 13, color: 'var(--bb-text-3)' }}>{label}</span>
+      <span className="mono" style={{ fontSize: 28, fontWeight: 600, color: color ?? 'var(--bb-text-1)', lineHeight: 1 }}>{value}</span>
     </div>
   );
 }
@@ -238,12 +238,12 @@ function StatCard({ label, value, color }: { label: string; value: number; color
 const reportCardStyle: React.CSSProperties = {
   textAlign: 'left',
   padding: 16,
-  background: 'var(--fg-bg-card)',
-  border: '1px solid var(--fg-border)',
+  background: 'var(--bb-bg-card)',
+  border: '1px solid var(--bb-border)',
   borderRadius: 12,
   cursor: 'pointer',
   transition: 'border-color 160ms ease, background-color 160ms ease',
   width: '100%',
 };
-const thStyle: React.CSSProperties = { padding: '10px 14px', fontSize: 12, fontWeight: 500, color: 'var(--fg-text-3)', borderBottom: '1px solid var(--fg-border)' };
+const thStyle: React.CSSProperties = { padding: '10px 14px', fontSize: 12, fontWeight: 500, color: 'var(--bb-text-3)', borderBottom: '1px solid var(--bb-border)' };
 const tdStyle: React.CSSProperties = { padding: '11px 14px', verticalAlign: 'middle' };

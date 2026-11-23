@@ -124,7 +124,7 @@ export default function ConsolePage() {
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
         <Logo size={48} />
         <Spin />
-        <div style={{ color: 'var(--fg-text-3)', fontSize: 14 }}>正在接入攻防控制台…</div>
+        <div style={{ color: 'var(--bb-text-3)', fontSize: 14 }}>正在接入攻防控制台…</div>
       </div>
     );
   }
@@ -132,15 +132,15 @@ export default function ConsolePage() {
   return (
     <>
       {/* 实验舱导航 */}
-      <div className="fg-lab-nav" style={labNavStyle}>
+      <div className="bb-lab-nav" style={labNavStyle}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
           <Button size="small" icon={<ArrowLeft size={14} />} onClick={() => navigate('/instances')} style={{ flexShrink: 0 }}>
             实例管理
           </Button>
           <Logo size={24} />
-          <span style={{ fontSize: 13.5, color: 'var(--fg-text-2)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            攻防控制台 <span style={{ color: 'var(--fg-text-3)' }}>/</span>{' '}
-            <b style={{ color: 'var(--fg-text-1)' }}>{session?.instance_name ?? '—'}</b>
+          <span style={{ fontSize: 13.5, color: 'var(--bb-text-2)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            攻防控制台 <span style={{ color: 'var(--bb-text-3)' }}>/</span>{' '}
+            <b style={{ color: 'var(--bb-text-1)' }}>{session?.instance_name ?? '—'}</b>
           </span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -158,7 +158,7 @@ export default function ConsolePage() {
       <ConsoleHintBar />
 
       {/* 三栏主体 */}
-      <div className="fg-console-grid" style={bodyStyle}>
+      <div className="bb-console-grid" style={bodyStyle}>
         <ChatPanel
           sessionId={sessionId}
           instanceId={session?.instance_id}
@@ -177,14 +177,14 @@ export default function ConsolePage() {
       </div>
 
       {/* 底部控制条 */}
-      <div className="fg-lab-controlbar" style={controlBarStyle}>
+      <div className="bb-lab-controlbar" style={controlBarStyle}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', rowGap: 6, minWidth: 0 }}>
           <Tag color={status === 'active' ? 'success' : status === 'paused' ? 'warning' : 'default'} style={{ margin: 0 }}>
             {SESSION_STATUS_META[status]?.label ?? status}
           </Tag>
-          <span style={{ fontSize: 12.5, color: 'var(--fg-text-3)' }}>
-            第 <b className="mono" style={{ color: 'var(--fg-text-2)' }}>{session?.turn ?? 0}</b> 回合 ·{' '}
-            <b className="mono" style={{ color: 'var(--fg-text-2)' }}>{session?.call_count ?? 0}</b> 次调用
+          <span style={{ fontSize: 12.5, color: 'var(--bb-text-3)' }}>
+            第 <b className="mono" style={{ color: 'var(--bb-text-2)' }}>{session?.turn ?? 0}</b> 回合 ·{' '}
+            <b className="mono" style={{ color: 'var(--bb-text-2)' }}>{session?.call_count ?? 0}</b> 次调用
           </span>
           {session?.degradations && session.degradations.length > 0 && (
             <Tooltip title={session.degradations.join('；')}>
@@ -212,7 +212,7 @@ export default function ConsolePage() {
           <Button
             size="small"
             type="primary"
-            icon={ctrl.reporting ? <Loader2 size={14} className="fg-spin" /> : <FileBarChart size={14} />}
+            icon={ctrl.reporting ? <Loader2 size={14} className="bb-spin" /> : <FileBarChart size={14} />}
             loading={ctrl.reporting}
             onClick={() => ctrl.generateReport()}
           >
@@ -240,7 +240,7 @@ function ConsoleHintBar() {
   const [dismissed, setDismissed] = useState(false);
   useEffect(() => {
     try {
-      setDismissed(localStorage.getItem('fg-console-hint') === '0');
+      setDismissed(localStorage.getItem('bb-console-hint') === '0');
     } catch {
       /* 隐私模式下 localStorage 不可用，忽略 */
     }
@@ -257,16 +257,16 @@ function ConsoleHintBar() {
         padding: '7px 12px',
         margin: '10px 12px 0',
         fontSize: 13,
-        color: 'var(--fg-text-2)',
-        background: 'var(--fg-brand-light)',
-        border: '1px solid var(--fg-border)',
+        color: 'var(--bb-text-2)',
+        background: 'var(--bb-brand-light)',
+        border: '1px solid var(--bb-border)',
         borderRadius: 9,
       }}
     >
-      <span style={{ fontWeight: 600, color: 'var(--fg-brand-primary)', flexShrink: 0 }}>使用方式</span>
+      <span style={{ fontWeight: 600, color: 'var(--bb-brand-primary)', flexShrink: 0 }}>使用方式</span>
       {steps.map((t, i) => (
         <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
-          {i > 0 && <span style={{ color: 'var(--fg-text-3)' }}>→</span>}
+          {i > 0 && <span style={{ color: 'var(--bb-text-3)' }}>→</span>}
           <span
             className="mono"
             style={{
@@ -278,9 +278,9 @@ function ConsoleHintBar() {
               borderRadius: '50%',
               fontSize: 11,
               fontWeight: 600,
-              color: 'var(--fg-brand-primary)',
-              background: 'var(--fg-bg-card)',
-              border: '1px solid var(--fg-border)',
+              color: 'var(--bb-brand-primary)',
+              background: 'var(--bb-bg-card)',
+              border: '1px solid var(--bb-border)',
               flexShrink: 0,
             }}
           >
@@ -297,12 +297,12 @@ function ConsoleHintBar() {
         onClick={() => {
           setDismissed(true);
           try {
-            localStorage.setItem('fg-console-hint', '0');
+            localStorage.setItem('bb-console-hint', '0');
           } catch {
             /* 忽略 */
           }
         }}
-        style={{ marginLeft: 'auto', flexShrink: 0, color: 'var(--fg-text-3)' }}
+        style={{ marginLeft: 'auto', flexShrink: 0, color: 'var(--bb-text-3)' }}
       />
     </div>
   );
@@ -310,14 +310,14 @@ function ConsoleHintBar() {
 
 function ConnectionBadge({ connection }: { connection: string }) {
   const map: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
-    open: { label: '实时连接', color: 'var(--fg-allow-text)', icon: <Wifi size={12} /> },
-    connecting: { label: '连接中', color: 'var(--fg-observe-text)', icon: <Loader2 size={12} className="fg-spin" /> },
-    error: { label: '连接异常', color: 'var(--fg-block-text)', icon: <WifiOff size={12} /> },
-    closed: { label: '已断开', color: 'var(--fg-text-3)', icon: <WifiOff size={12} /> },
+    open: { label: '实时连接', color: 'var(--bb-allow-text)', icon: <Wifi size={12} /> },
+    connecting: { label: '连接中', color: 'var(--bb-observe-text)', icon: <Loader2 size={12} className="bb-spin" /> },
+    error: { label: '连接异常', color: 'var(--bb-block-text)', icon: <WifiOff size={12} /> },
+    closed: { label: '已断开', color: 'var(--bb-text-3)', icon: <WifiOff size={12} /> },
   };
   const m = map[connection] ?? map.closed;
   return (
-    <span className="mono" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11.5, fontWeight: 600, color: m.color, padding: '3px 9px', borderRadius: 4, background: 'var(--fg-bg-subtle)', border: '1px solid var(--fg-border)' }}>
+    <span className="mono" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11.5, fontWeight: 600, color: m.color, padding: '3px 9px', borderRadius: 4, background: 'var(--bb-bg-subtle)', border: '1px solid var(--bb-border)' }}>
       {m.icon}
       {m.label}
     </span>
@@ -393,7 +393,7 @@ function CompareModal({
         />
         {dimension === 'guard' ? (
           <div style={compareHintStyle}>
-            <AttackIcon size={15} style={{ color: 'var(--fg-observe)', flexShrink: 0, marginTop: 2 }} />
+            <AttackIcon size={15} style={{ color: 'var(--bb-observe)', flexShrink: 0, marginTop: 2 }} />
             <span>
               以当前会话为起点（A 组，防护<b>{guardEnabled ? '开启' : '关闭'}</b>），创建同实例的 B 组会话并
               <b>取消防护开关</b>（防护{guardEnabled ? '关闭' : '开启'}），重放同一输入，逐步对比判定差异。
@@ -438,8 +438,8 @@ const labNavStyle: React.CSSProperties = {
   justifyContent: 'space-between',
   gap: 12,
   padding: '0 16px',
-  borderBottom: '1px solid var(--fg-border)',
-  background: 'var(--fg-bg-subtle)',
+  borderBottom: '1px solid var(--bb-border)',
+  background: 'var(--bb-bg-subtle)',
 };
 const bodyStyle: React.CSSProperties = {
   flex: 1,
@@ -458,17 +458,17 @@ const controlBarStyle: React.CSSProperties = {
   justifyContent: 'space-between',
   gap: 12,
   padding: '0 16px',
-  borderTop: '1px solid var(--fg-border)',
-  background: 'var(--fg-bg-subtle)',
+  borderTop: '1px solid var(--bb-border)',
+  background: 'var(--bb-bg-subtle)',
 };
 const compareHintStyle: React.CSSProperties = {
   display: 'flex',
   gap: 10,
   fontSize: 13.5,
-  color: 'var(--fg-text-2)',
+  color: 'var(--bb-text-2)',
   lineHeight: 1.7,
-  background: 'var(--fg-bg-subtle)',
-  border: '1px solid var(--fg-border)',
+  background: 'var(--bb-bg-subtle)',
+  border: '1px solid var(--bb-border)',
   borderRadius: 9,
   padding: 12,
 };

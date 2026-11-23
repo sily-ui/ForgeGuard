@@ -31,10 +31,10 @@ type TourIcon = ComponentType<{ size?: number | string; strokeWidth?: number | s
 
 // 行内关键词 chip：取自语义色板，保证引导文案与双空间主题同色。
 function K({ children, tone = 'brand' }: { children: ReactNode; tone?: Tone }) {
-  const color = tone === 'brand' ? 'var(--fg-brand-primary)' : `var(--fg-${tone}-text)`;
-  const bg = tone === 'brand' ? 'var(--fg-brand-light)' : `var(--fg-${tone}-bg)`;
+  const color = tone === 'brand' ? 'var(--bb-brand-primary)' : `var(--bb-${tone}-text)`;
+  const bg = tone === 'brand' ? 'var(--bb-brand-light)' : `var(--bb-${tone}-bg)`;
   return (
-    <span className="fg-tour-k" style={{ color, background: bg }}>
+    <span className="bb-tour-k" style={{ color, background: bg }}>
       {children}
     </span>
   );
@@ -42,7 +42,7 @@ function K({ children, tone = 'brand' }: { children: ReactNode; tone?: Tone }) {
 
 function Title({ icon: Icon, children }: { icon: TourIcon; children: ReactNode }) {
   return (
-    <span className="fg-tour-step-title">
+    <span className="bb-tour-step-title">
       <Icon size={15} strokeWidth={1.5} />
       {children}
     </span>
@@ -80,7 +80,7 @@ export const TOURS: Record<TourId, { label: string; steps: TourStepProps[] }> = 
             <K>测评报告</K>查看根因分析与加固建议。下方的「攻防实验舱」入口会带你进入深色实时控制台。
           </>
         ),
-        target: byClass('.fg-sider-nav'),
+        target: byClass('.bb-sider-nav'),
         placement: place('right', 900, 'bottom'),
       },
       {
@@ -140,7 +140,7 @@ export const TOURS: Record<TourId, { label: string; steps: TourStepProps[] }> = 
             <K>3 调用约束</K>次数与超时上限 → <K>4 防护档位</K>宽松 / 标准 / 严格。左侧可随时跳步。
           </>
         ),
-        target: byClass('.fg-orch-steps'),
+        target: byClass('.bb-orch-steps'),
         placement: place('right', 1000, 'bottom'),
       },
       {
@@ -171,7 +171,7 @@ export const TOURS: Record<TourId, { label: string; steps: TourStepProps[] }> = 
             编排摘要随编辑实时更新：启用工具、调用上限、防护档位一目了然。点击「校验配置」后，错误与警告也会显示在这里。
           </>
         ),
-        target: byClass('.fg-orch-aside'),
+        target: byClass('.bb-orch-aside'),
         placement: place('left', 1000),
       },
       {
@@ -255,7 +255,7 @@ export const TOURS: Record<TourId, { label: string; steps: TourStepProps[] }> = 
             来源筛选；点击任一条目在右侧查看详情。
           </>
         ),
-        target: byClass('.fg-policies-grid'),
+        target: byClass('.bb-policies-grid'),
         placement: place('top', 900),
       },
       {
@@ -266,7 +266,7 @@ export const TOURS: Record<TourId, { label: string; steps: TourStepProps[] }> = 
             <K tone="observe">人工覆盖</K>调整动作，覆盖记录会保留溯源。
           </>
         ),
-        target: byClass('.fg-policies-aside'),
+        target: byClass('.bb-policies-aside'),
         placement: place('left', 900),
       },
     ],
@@ -283,7 +283,7 @@ export const TOURS: Record<TourId, { label: string; steps: TourStepProps[] }> = 
             <K tone="info">实时 / 回放</K>模式与 SIM 仿真标识随时可见。
           </>
         ),
-        target: byClass('.fg-topbar'),
+        target: byClass('.bb-topbar'),
         placement: 'bottom',
       },
       {
@@ -338,7 +338,7 @@ export const TOURS: Record<TourId, { label: string; steps: TourStepProps[] }> = 
             （不可再发消息）；测评完成后点<K tone="allow">生成报告</K>产出六部分取证报告。
           </>
         ),
-        target: byClass('.fg-lab-controlbar'),
+        target: byClass('.bb-lab-controlbar'),
         placement: 'top',
       },
     ],
@@ -437,7 +437,7 @@ export const TOURS: Record<TourId, { label: string; steps: TourStepProps[] }> = 
             测评概要 → 靶标基线 → 攻击序列 → 风险分析 → 加固建议 → 局限性说明。点击章节快速定位，滚动时自动高亮当前章节。
           </>
         ),
-        target: byClass('.fg-report-nav'),
+        target: byClass('.bb-report-nav'),
         placement: place('right', 820, 'bottom'),
       },
       {

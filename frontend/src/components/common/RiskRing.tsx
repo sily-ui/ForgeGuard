@@ -54,7 +54,7 @@ export function RiskRing({ score, maxRisk = 'none', size = 44, stroke = 4, label
       </div>
       {label && (
         <div style={{ lineHeight: 1.2 }}>
-          <div style={{ fontSize: 13, color: 'var(--fg-text-3)' }}>{label}</div>
+          <div style={{ fontSize: 13, color: 'var(--bb-text-3)' }}>{label}</div>
           <div className="mono" style={{ fontSize: 14, fontWeight: 600, color: c.text }}>
             {String(maxRisk).toUpperCase()}
           </div>

@@ -14,8 +14,8 @@ export function DossierSpine({ no, width = 34, style }: Props) {
       style={{
         width,
         flexShrink: 0,
-        backgroundImage: `repeating-linear-gradient(115deg, var(--fg-spine-1) 0 6px, var(--fg-spine-2) 6px 12px)`,
-        borderRight: '1px solid var(--fg-border)',
+        backgroundImage: `repeating-linear-gradient(115deg, var(--bb-spine-1) 0 6px, var(--bb-spine-2) 6px 12px)`,
+        borderRight: '1px solid var(--bb-border)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -28,7 +28,7 @@ export function DossierSpine({ no, width = 34, style }: Props) {
           writingMode: 'vertical-rl',
           fontSize: 9.5,
           letterSpacing: 1,
-          color: 'var(--fg-text-3)',
+          color: 'var(--bb-text-3)',
           fontWeight: 500,
         }}
       >

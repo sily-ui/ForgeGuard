@@ -32,7 +32,7 @@ export function JsonViewer({ data, maxHeight = 280, collapsed = false }: Props) 
   return (
     <div
       style={{
-        border: '1px solid var(--fg-border)',
+        border: '1px solid var(--bb-border)',
         borderRadius: 8,
         background: '#f7faf9',
         overflow: 'hidden',
@@ -44,7 +44,7 @@ export function JsonViewer({ data, maxHeight = 280, collapsed = false }: Props) 
           alignItems: 'center',
           justifyContent: 'space-between',
           padding: '5px 10px',
-          borderBottom: open ? '1px solid var(--fg-border)' : 'none',
+          borderBottom: open ? '1px solid var(--bb-border)' : 'none',
           background: '#eef3f1',
         }}
       >
@@ -57,7 +57,7 @@ export function JsonViewer({ data, maxHeight = 280, collapsed = false }: Props) 
             background: 'none',
             border: 'none',
             cursor: 'pointer',
-            color: 'var(--fg-text-2)',
+            color: 'var(--bb-text-2)',
             fontSize: 13,
             fontWeight: 600,
             padding: 0,
@@ -69,7 +69,7 @@ export function JsonViewer({ data, maxHeight = 280, collapsed = false }: Props) 
         <button
           onClick={copy}
           title="复制"
-          style={{ background: 'none', border: 'none', cursor: 'pointer', color: copied ? 'var(--fg-allow)' : 'var(--fg-text-3)', display: 'inline-flex', padding: 2 }}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', color: copied ? 'var(--bb-allow)' : 'var(--bb-text-3)', display: 'inline-flex', padding: 2 }}
         >
           {copied ? <Check size={13} /> : <Copy size={13} />}
         </button>

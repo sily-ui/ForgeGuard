@@ -1,59 +1,59 @@
 /* 越界之前 BeforeBound — 夜档：深墨阅档舱（深墨底、骨白字、发丝线、印章；无霓虹、无光晕） */
 [data-theme='lab'] {
-  --fg-bg-page: #14171b;
-  --fg-bg-card: #1c2026;
-  --fg-bg-subtle: #191d22;
-  --fg-text-1: #e8e6e0;
-  --fg-text-2: #9aa1a8;
-  --fg-text-3: #6b7278;
-  --fg-border: #333941;
+  --bb-bg-page: #14171b;
+  --bb-bg-card: #1c2026;
+  --bb-bg-subtle: #191d22;
+  --bb-text-1: #e8e6e0;
+  --bb-text-2: #9aa1a8;
+  --bb-text-3: #6b7278;
+  --bb-border: #333941;
 
-  --fg-brand-primary: #6bc7b3;
-  --fg-brand-secondary: #4fd1a8;
-  --fg-brand-light: #1d2b28;
-  --fg-brand-deep: #e8e6e0;
+  --bb-brand-primary: #6bc7b3;
+  --bb-brand-secondary: #4fd1a8;
+  --bb-brand-light: #1d2b28;
+  --bb-brand-deep: #e8e6e0;
 
-  --fg-allow: #4fd1a8;
-  --fg-observe: #e8b45a;
-  --fg-block: #f0787c;
-  --fg-info: #7faed9;
-  --fg-disabled: #5b636b;
-  --fg-allow-text: #4fd1a8;
-  --fg-observe-text: #e8b45a;
-  --fg-block-text: #f0787c;
-  --fg-info-text: #7faed9;
+  --bb-allow: #4fd1a8;
+  --bb-observe: #e8b45a;
+  --bb-block: #f0787c;
+  --bb-info: #7faed9;
+  --bb-disabled: #5b636b;
+  --bb-allow-text: #4fd1a8;
+  --bb-observe-text: #e8b45a;
+  --bb-block-text: #f0787c;
+  --bb-info-text: #7faed9;
 
-  --fg-allow-bg: #16241f;
-  --fg-observe-bg: #241d10;
-  --fg-block-bg: #261416;
-  --fg-info-bg: #121d26;
+  --bb-allow-bg: #16241f;
+  --bb-observe-bg: #241d10;
+  --bb-block-bg: #261416;
+  --bb-info-bg: #121d26;
 
-  --fg-gradient-brand: #6bc7b3;
-  --fg-gradient-subtle: linear-gradient(180deg, #14171b 0%, #191d22 100%);
+  --bb-gradient-brand: #6bc7b3;
+  --bb-gradient-subtle: linear-gradient(180deg, #14171b 0%, #191d22 100%);
 
-  --fg-spine-1: #22272e;
-  --fg-spine-2: #191d22;
+  --bb-spine-1: #22272e;
+  --bb-spine-2: #191d22;
 
-  --fg-radius-sm: 6px;
-  --fg-radius-md: 8px;
-  --fg-radius-lg: 10px;
-  --fg-shadow-1: none;
-  --fg-shadow-2: 0 2px 6px rgba(0, 0, 0, 0.35);
-  --fg-shadow-3: 0 8px 20px rgba(0, 0, 0, 0.45);
+  --bb-radius-sm: 6px;
+  --bb-radius-md: 8px;
+  --bb-radius-lg: 10px;
+  --bb-shadow-1: none;
+  --bb-shadow-2: 0 2px 6px rgba(0, 0, 0, 0.35);
+  --bb-shadow-3: 0 8px 20px rgba(0, 0, 0, 0.45);
 
-  --fg-chart-1: #6bc7b3;
-  --fg-chart-2: #7faed9;
-  --fg-chart-3: #e8b45a;
-  --fg-chart-4: #f0787c;
-  --fg-chart-5: #8b959e;
-  --fg-chart-6: #8fbf9d;
-  --fg-chart-7: #5fbdb2;
-  --fg-chart-8: #5b636b;
+  --bb-chart-1: #6bc7b3;
+  --bb-chart-2: #7faed9;
+  --bb-chart-3: #e8b45a;
+  --bb-chart-4: #f0787c;
+  --bb-chart-5: #8b959e;
+  --bb-chart-6: #8fbf9d;
+  --bb-chart-7: #5fbdb2;
+  --bb-chart-8: #5b636b;
 
-  --fg-scrollbar-track: #191d22;
-  --fg-scrollbar-thumb: #3a4149;
-  --fg-scrollbar-thumb-hover: #4c545d;
+  --bb-scrollbar-track: #191d22;
+  --bb-scrollbar-thumb: #3a4149;
+  --bb-scrollbar-thumb-hover: #4c545d;
 
-  --fg-sidebar-bg: #171a1f;
-  --fg-topbar-bg: rgba(20, 23, 27, 0.92);
+  --bb-sidebar-bg: #171a1f;
+  --bb-topbar-bg: rgba(20, 23, 27, 0.92);
 }

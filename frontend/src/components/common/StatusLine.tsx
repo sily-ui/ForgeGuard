@@ -11,7 +11,7 @@ interface Props {
   style?: CSSProperties;
 }
 
-export function StatusLine({ variant, color = 'var(--fg-text-3)', label, thickness = 3, style }: Props) {
+export function StatusLine({ variant, color = 'var(--bb-text-3)', label, thickness = 3, style }: Props) {
   const lineStyle: CSSProperties = {
     flexShrink: 0,
     borderRadius: 2,
@@ -45,7 +45,7 @@ export function StatusLine({ variant, color = 'var(--fg-text-3)', label, thickne
         )}
       </span>
       {label !== undefined && (
-        <span style={{ fontSize: 12, color: 'var(--fg-text-2)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        <span style={{ fontSize: 12, color: 'var(--bb-text-2)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
           {label}
         </span>
       )}

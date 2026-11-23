@@ -29,7 +29,7 @@ export function confirmAction({ title, content, okText = '确认', danger = true
   const confirm = contextConfirm ?? Modal.confirm;
   confirm({
     title,
-    icon: <ExclamationCircleFilled style={{ color: danger ? 'var(--fg-block)' : 'var(--fg-observe)' }} />,
+    icon: <ExclamationCircleFilled style={{ color: danger ? 'var(--bb-block)' : 'var(--bb-observe)' }} />,
     content,
     okText,
     cancelText: '取消',

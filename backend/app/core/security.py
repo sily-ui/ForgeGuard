@@ -39,7 +39,7 @@ class AuthContext:
 
 # 请求级身份：模型代理在调用链深处消费配额，需要据此区分游客并定位工作区/IP。
 # 异步端点与其中创建的后台任务共享同一 context，故无需逐层透传参数。
-_current_auth: ContextVar = ContextVar("forgeguard_auth", default=None)
+_current_auth: ContextVar = ContextVar("beforebound_auth", default=None)
 
 
 def bind_auth(ctx):

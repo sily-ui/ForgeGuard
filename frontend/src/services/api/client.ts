@@ -2,8 +2,9 @@ import axios, { AxiosError, type AxiosRequestConfig } from 'axios';
 import type { Envelope, FieldError } from '@/types/api';
 import { getWorkspaceId } from '@/utils/workspace';
 
-// 所有请求经 Vite 代理转发到本地后端 127.0.0.1:8000，前端不持有模型密钥、不直连外部模型。
-export const API_BASE = '/api/v1';
+// 后端已移植为 Qoder Sites 的 app Edge Function：浏览器同源访问 /functions/v1/app/<原路径>。
+// 部署网关会把 `app` 换成本次部署的物理函数名，前端只需带 `/functions/v1/app` 这段逻辑前缀。
+export const API_BASE = '/functions/v1/app/api/v1';
 
 let authToken: string | null = null;
 let onUnauthorized: (() => void) | null = null;
@@ -49,6 +50,9 @@ http.interceptors.request.use((config) => {
   config.headers = config.headers ?? {};
   (config.headers as Record<string, string>)['X-Workspace-Id'] = getWorkspaceId();
   if (authToken) {
+    // 私有站点的平台网关可能占用 Authorization 放它自己的身份凭证，
+    // 业务不透明令牌一律通过自定义头 X-BeforeBound-Token 携带；Authorization 保留本地直连兼容。
+    (config.headers as Record<string, string>)['X-BeforeBound-Token'] = authToken;
     (config.headers as Record<string, string>).Authorization = `Bearer ${authToken}`;
   }
   return config;

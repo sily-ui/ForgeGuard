@@ -58,7 +58,7 @@ export function TourMask() {
   const vh = window.innerHeight;
 
   return (
-    <div className="fg-tour-mask" style={{ pointerEvents: hole ? 'none' : 'auto' }} aria-hidden>
+    <div className="bb-tour-mask" style={{ pointerEvents: hole ? 'none' : 'auto' }} aria-hidden>
       <svg>
         {hole && (
           <defs>

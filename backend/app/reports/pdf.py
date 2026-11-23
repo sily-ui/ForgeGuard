@@ -26,8 +26,8 @@ from reportlab.platypus import (
     TableStyle,
 )
 
-_FONT_NAME = "ForgeGuardCJK"
-_FONT_BOLD = "ForgeGuardCJK-Bold"
+_FONT_NAME = "BeforeBoundCJK"
+_FONT_BOLD = "BeforeBoundCJK-Bold"
 _font_registered = False
 
 _LEVEL_NAMES = {"high": "高危", "medium": "中危", "low": "低危", "none": "无"}

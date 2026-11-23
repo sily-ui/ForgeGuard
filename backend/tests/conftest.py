@@ -7,7 +7,7 @@ import pytest
 BACKEND_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, BACKEND_DIR)
 
-_TMP = tempfile.mkdtemp(prefix="forgeguard-test-")
+_TMP = tempfile.mkdtemp(prefix="beforebound-test-")
 os.environ["SQLITE_PATH"] = os.path.join(_TMP, "test.db")
 os.environ["SNAPSHOT_MODE"] = "auto"
 os.environ["INSTANCE_MAX"] = "200"

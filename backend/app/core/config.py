@@ -34,7 +34,7 @@ class Settings:
         self.port = int(os.environ.get("FORGE_PORT", "8000"))
         self.redis_url = os.environ.get("REDIS_URL", "redis://127.0.0.1:6379/0")
         self.sqlite_path = os.environ.get(
-            "SQLITE_PATH", str(BACKEND_DIR / "data" / "forgeguard.db")
+            "SQLITE_PATH", str(BACKEND_DIR / "data" / "beforebound.db")
         )
         # 共享存储：多副本部署置为 postgresql+psycopg://user:pass@host:5432/db；
         # 留空则回退本地 SQLite（单进程开发/测试）。
@@ -54,7 +54,7 @@ class Settings:
         self.quota_session_max = int(os.environ.get("QUOTA_SESSION_MAX", "60"))
         # 游客匿名放行：每工作区每日模型调用上限，以及同一 IP 的每日总量上限
         # （后者防止不断切换工作区绕过配额）。
-        self.quota_guest_daily = int(os.environ.get("QUOTA_GUEST_DAILY", "20"))
+        self.quota_guest_daily = int(os.environ.get("QUOTA_GUEST_DAILY", "50"))
         self.quota_guest_ip_daily = int(os.environ.get("QUOTA_GUEST_IP_DAILY", "60"))
         # 演示期放宽存活实例上限；一键演示会复用同类就绪实例，正常使用不会逼近此值。
         self.instance_max = int(os.environ.get("INSTANCE_MAX", "16"))

@@ -136,7 +136,7 @@ function LabFlowNode({ data }: NodeProps<Node<NodeData>>) {
         <span className="mono" style={{ fontSize: 12.5, fontWeight: 700, color: stateColor, flexShrink: 0 }}>{data.count}</span>
       )}
       <span
-        className={active ? 'fg-breathe' : undefined}
+        className={active ? 'bb-breathe' : undefined}
         style={{ position: 'absolute', top: 6, right: 6, width: 6, height: 6, borderRadius: '50%', background: active ? stateColor : '#dfe3e7' }}
       />
       <Handle id="l" type="target" position={Position.Left} style={{ opacity: 0 }} />
@@ -157,14 +157,14 @@ function LabFlowEdge({ id, sourceX, sourceY, targetX, targetY, sourcePosition, t
   const color = EDGE_COLOR[kind] || EDGE_COLOR.normal;
   const [path] = getSmoothStepPath({ sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, borderRadius: 10 });
   const dashed = kind === 'attack' || kind === 'mirror';
-  const runClass = data?.active ? (kind === 'attack' ? 'fg-flow-run-attack' : kind === 'mirror' ? 'fg-flow-run-mirror' : kind === 'block' ? 'fg-flow-run-block' : 'fg-flow-run-normal') : '';
+  const runClass = data?.active ? (kind === 'attack' ? 'bb-flow-run-attack' : kind === 'mirror' ? 'bb-flow-run-mirror' : kind === 'block' ? 'bb-flow-run-block' : 'bb-flow-run-normal') : '';
   return (
     <BaseEdge
       id={id}
       path={path}
-      className={`fg-flow-edge ${runClass}`}
+      className={`bb-flow-edge ${runClass}`}
       style={{ stroke: color, strokeWidth: kind === 'block' ? 2.4 : dashed ? 1.6 : 2, strokeDasharray: kind === 'attack' ? '6 4' : kind === 'mirror' ? '4 5' : undefined }}
-      markerEnd={`url(#fg-flow-arrow-${kind})`}
+      markerEnd={`url(#bb-flow-arrow-${kind})`}
     />
   );
 }
@@ -382,7 +382,7 @@ function TopologyInner({ state, height = 268 }: Props) {
       <svg width="0" height="0" style={{ position: 'absolute' }}>
         <defs>
           {Object.entries(EDGE_COLOR).map(([kind, color]) => (
-            <marker key={kind} id={`fg-flow-arrow-${kind}`} viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <marker key={kind} id={`bb-flow-arrow-${kind}`} viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
               <path d="M0 0 10 5 0 10Z" fill={color} />
             </marker>
           ))}
@@ -411,21 +411,21 @@ function TopologyInner({ state, height = 268 }: Props) {
       <PixiFX ref={fxRef} />
       {stamp && (
         <div style={{ left: stamp.x, top: stamp.y, position: 'absolute', transform: 'translate(-50%, -50%)', pointerEvents: 'none' }}>
-          <div ref={stampRef} className="fg-flow-stamp">已拦截</div>
+          <div ref={stampRef} className="bb-flow-stamp">已拦截</div>
         </div>
       )}
-      <div style={{ position: 'absolute', top: 6, left: 10, display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'var(--fg-text-3)', pointerEvents: 'none' }}>
-        <span className="fg-blink" style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--fg-allow)' }} />
+      <div style={{ position: 'absolute', top: 6, left: 10, display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'var(--bb-text-3)', pointerEvents: 'none' }}>
+        <span className="bb-blink" style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--bb-allow)' }} />
         <span className="mono" style={{ fontWeight: 600, letterSpacing: 0.4 }}>LIVE</span>
         {fxEvent && (
-          <span key={fxEvent.at} className="mono fg-flow-event" style={{ color: 'var(--fg-text-2)' }}>
+          <span key={fxEvent.at} className="mono bb-flow-event" style={{ color: 'var(--bb-text-2)' }}>
             {EVENT_TEXT[fxEvent.kind]}
             {fxEvent.tool ? ` · ${fxEvent.tool}` : ''}
             {fxEvent.action ? ` → ${fxEvent.action}` : ''}
           </span>
         )}
       </div>
-      <div style={{ position: 'absolute', bottom: 6, left: 12, display: 'flex', gap: 14, fontSize: 12, color: 'var(--fg-text-3)', pointerEvents: 'none' }}>
+      <div style={{ position: 'absolute', bottom: 6, left: 12, display: 'flex', gap: 14, fontSize: 12, color: 'var(--bb-text-3)', pointerEvents: 'none' }}>
         <Legend color="#176b63" label="正常调用" />
         <Legend color="#c2892b" label="攻击 / 降级" dash />
         <Legend color="#4f7ba6" label="旁路镜像" dash />

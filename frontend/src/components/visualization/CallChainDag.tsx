@@ -36,18 +36,18 @@ function DagNode({ node }: { node?: { getData: () => DagData } }) {
         justifyContent: 'center',
         padding: '0 10px',
         borderRadius: 8,
-        background: dim ? 'var(--fg-bg-subtle)' : 'var(--fg-bg-card)',
-        border: '1px solid var(--fg-border)',
+        background: dim ? 'var(--bb-bg-subtle)' : 'var(--bb-bg-card)',
+        border: '1px solid var(--bb-border)',
         borderLeft: `3px solid ${color}`,
         opacity: dim ? 0.6 : 1,
         overflow: 'hidden',
       }}
     >
-      <div className="mono" style={{ fontSize: 12, fontWeight: 600, color: 'var(--fg-text-1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+      <div className="mono" style={{ fontSize: 12, fontWeight: 600, color: 'var(--bb-text-1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
         {data.label}
       </div>
       {data.sub && (
-        <div style={{ fontSize: 10, color: dim ? 'var(--fg-text-3)' : color, marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        <div style={{ fontSize: 10, color: dim ? 'var(--bb-text-3)' : color, marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
           {data.sub}
         </div>
       )}
@@ -55,7 +55,7 @@ function DagNode({ node }: { node?: { getData: () => DagData } }) {
   );
 }
 
-register({ shape: 'fg-dag-node', width: 128, height: 40, component: DagNode });
+register({ shape: 'bb-dag-node', width: 128, height: 40, component: DagNode });
 
 const LAYOUT: Record<string, { x: number; y: number }> = {
   msg: { x: 0, y: 8 },
@@ -183,7 +183,7 @@ export function CallChainDag({ live, full }: Props) {
     graph.clearCells();
     const data = derive(live, full);
     for (const [id, pos] of Object.entries(LAYOUT)) {
-      graph.addNode({ id, shape: 'fg-dag-node', x: pos.x, y: pos.y, width: 128, height: 40, data: data[id] });
+      graph.addNode({ id, shape: 'bb-dag-node', x: pos.x, y: pos.y, width: 128, height: 40, data: data[id] });
     }
     for (const [source, target] of CHAIN) {
       const elbow = source === 'tool';

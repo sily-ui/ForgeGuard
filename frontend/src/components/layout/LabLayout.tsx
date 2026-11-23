@@ -20,14 +20,14 @@ export function LabLayout() {
 
   return (
     <div
-      className="fg-lab"
+      className="bb-lab"
       data-theme="lab"
       style={{
         minHeight: '100vh',
         height: '100vh',
         display: 'flex',
         flexDirection: 'column',
-        background: 'var(--fg-bg-page)',
+        background: 'var(--bb-bg-page)',
         overflow: 'hidden',
       }}
     >

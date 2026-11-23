@@ -55,24 +55,24 @@ export function AppTour() {
         onClose={close}
         onFinish={close}
         steps={def.steps}
-        rootClassName="fg-tour"
+        rootClassName="bb-tour"
         gap={{ offset: 0, radius: 8 }}
         popupAlign={{ offset: [0, 0], overflow: { adjustX: true, adjustY: true, shiftX: true, shiftY: true } }}
         mask={false}
         // rc-tour 仅在换步时测量一次目标矩形：smooth 滚动会在测量后才移动页面，导致聚光罩与卡片停在旧坐标。
         scrollIntoViewOptions={{ block: 'center' }}
         indicatorsRender={(cur, tot) => (
-          <div className="fg-tour-ind">
-            <span className="fg-tour-count mono">
+          <div className="bb-tour-ind">
+            <span className="bb-tour-count mono">
               {cur + 1} / {tot}
             </span>
-            <div className="fg-tour-dots">
+            <div className="bb-tour-dots">
               {Array.from({ length: tot }, (_, i) => (
                 <button
                   key={i}
                   type="button"
                   aria-label={`跳到第 ${i + 1} 步`}
-                  className={i === cur ? 'fg-tour-dot active' : 'fg-tour-dot'}
+                  className={i === cur ? 'bb-tour-dot active' : 'bb-tour-dot'}
                   onClick={() => setCurrent(i)}
                 />
               ))}
@@ -80,15 +80,15 @@ export function AppTour() {
           </div>
         )}
         actionsRender={(_, { current: cur, total: tot }) => (
-          <div className="fg-tour-actions">
+          <div className="bb-tour-actions">
             {cur < tot - 1 ? (
-              <Button size="small" type="text" className="fg-tour-skip" onClick={close}>
+              <Button size="small" type="text" className="bb-tour-skip" onClick={close}>
                 跳过引导
               </Button>
             ) : (
               <span />
             )}
-            <div className="fg-tour-nav">
+            <div className="bb-tour-nav">
               {cur > 0 && (
                 <Button size="small" onClick={() => setCurrent(cur - 1)}>
                   上一步

@@ -1,4 +1,4 @@
-"""ForgeGuard 后端入口：面向可编排 Agent 的自适应红队测评与动态旁路监护平台。
+"""BeforeBound 后端入口：面向可编排 Agent 的自适应红队测评与动态旁路监护平台。
 
 全部工具调用为内存仿真，不触达真实系统；模型接口仅使用 MODEL_BASE_URL 配置地址。
 """
@@ -31,7 +31,7 @@ from .internal.events import bind_main_loop
 from .models.db import init_db
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
-logger = logging.getLogger("forgeguard")
+logger = logging.getLogger("beforebound")
 
 
 @asynccontextmanager
@@ -60,7 +60,7 @@ async def lifespan(app: FastAPI):
         logger.info("存储为共享 %s；运行态（质询/任务/事件）仍为进程内存，多副本须按会话亲和路由", dialect)
     if not settings.model_configured:
         logger.info("未配置 MODEL_* 环境变量，使用离线仿真推理（可随时配置真实模型接口）")
-    logger.info("ForgeGuard 后端就绪，监听 %s:%s", settings.host, settings.port)
+    logger.info("BeforeBound 后端就绪，监听 %s:%s", settings.host, settings.port)
     yield
 
 

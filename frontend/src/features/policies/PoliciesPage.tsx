@@ -133,7 +133,7 @@ export default function PoliciesPage() {
         subtitle={
           instance ? (
             <span>
-              靶标 <b style={{ color: 'var(--fg-text-1)' }}>{instance.name}</b> · 防护档位 <PresetTag preset={instance.guard.preset} size="sm" /> · 当前快照 v{snapshot?.version ?? '—'}
+              靶标 <b style={{ color: 'var(--bb-text-1)' }}>{instance.name}</b> · 防护档位 <PresetTag preset={instance.guard.preset} size="sm" /> · 当前快照 v{snapshot?.version ?? '—'}
             </span>
           ) : (
             '三级判定策略的可视化与人工覆盖'
@@ -174,10 +174,10 @@ export default function PoliciesPage() {
                   alignItems: 'stretch',
                   width: '100%',
                   textAlign: 'left',
-                  background: active ? 'var(--fg-allow-bg)' : 'transparent',
+                  background: active ? 'var(--bb-allow-bg)' : 'transparent',
                   border: 'none',
-                  borderLeft: active ? '3px solid var(--fg-allow)' : '3px solid transparent',
-                  borderBottom: lv !== 'L3' ? '1px solid var(--fg-border)' : 'none',
+                  borderLeft: active ? '3px solid var(--bb-allow)' : '3px solid transparent',
+                  borderBottom: lv !== 'L3' ? '1px solid var(--bb-border)' : 'none',
                   cursor: 'pointer',
                   opacity: dim ? 0.6 : 1,
                   transition: 'background-color 160ms ease, opacity 160ms ease',
@@ -192,28 +192,28 @@ export default function PoliciesPage() {
                     flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    borderRight: '1px solid var(--fg-border)',
-                    background: active ? 'var(--fg-allow-bg)' : 'var(--fg-bg-subtle)',
+                    borderRight: '1px solid var(--bb-border)',
+                    background: active ? 'var(--bb-allow-bg)' : 'var(--bb-bg-subtle)',
                   }}
                 >
-                  <span style={{ fontSize: 14, fontWeight: 600, color: active ? 'var(--fg-allow)' : 'var(--fg-text-2)' }}>{CN_NUM[lv]}</span>
-                  <span className="mono" style={{ fontSize: 10.5, color: 'var(--fg-text-3)', marginTop: 2 }}>{lv}</span>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: active ? 'var(--bb-allow)' : 'var(--bb-text-2)' }}>{CN_NUM[lv]}</span>
+                  <span className="mono" style={{ fontSize: 10.5, color: 'var(--bb-text-3)', marginTop: 2 }}>{lv}</span>
                 </div>
                 <div style={{ flex: 1, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                       <span style={{ width: 6, height: 6, borderRadius: '50%', background: meta.hue, flexShrink: 0 }} />
-                      <span style={{ fontSize: 14.5, fontWeight: 600, color: 'var(--fg-text-1)' }}>{meta.name}</span>
+                      <span style={{ fontSize: 14.5, fontWeight: 600, color: 'var(--bb-text-1)' }}>{meta.name}</span>
                     </div>
-                    <div style={{ fontSize: 12.5, color: 'var(--fg-text-2)', lineHeight: 1.5 }}>{meta.desc}</div>
+                    <div style={{ fontSize: 12.5, color: 'var(--bb-text-2)', lineHeight: 1.5 }}>{meta.desc}</div>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, flexShrink: 0 }}>
-                    <span className="mono" style={{ fontSize: 18, fontWeight: 600, color: 'var(--fg-text-1)' }}>
+                    <span className="mono" style={{ fontSize: 18, fontWeight: 600, color: 'var(--bb-text-1)' }}>
                       {counts[lv] ?? 0}
                     </span>
                     <StatusLine
                       variant={active ? 'solid' : 'dashed'}
-                      color={active ? 'var(--fg-allow)' : 'var(--fg-text-3)'}
+                      color={active ? 'var(--bb-allow)' : 'var(--bb-text-3)'}
                       label={active ? '当前' : '未触发'}
                     />
                   </div>
@@ -225,7 +225,7 @@ export default function PoliciesPage() {
       </SectionCard>
       </div>
 
-      <div className="fg-policies-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 360px', gap: 16, alignItems: 'start' }}>
+      <div className="bb-policies-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 360px', gap: 16, alignItems: 'start' }}>
         {/* 左：策略列表 */}
         <SectionCard
           title={
@@ -240,7 +240,7 @@ export default function PoliciesPage() {
                 allowClear
                 size="small"
                 placeholder="搜索规则 / 来源"
-                prefix={<Filter size={13} style={{ color: 'var(--fg-text-3)' }} />}
+                prefix={<Filter size={13} style={{ color: 'var(--bb-text-3)' }} />}
                 value={keyword}
                 onChange={(e) => setKeyword(e.target.value)}
                 style={{ width: 168 }}
@@ -278,9 +278,9 @@ export default function PoliciesPage() {
                         padding: '7px 16px',
                         fontSize: 12,
                         fontWeight: 500,
-                        color: 'var(--fg-text-2)',
-                        background: 'var(--fg-bg-subtle)',
-                        borderBottom: '1px solid var(--fg-border)',
+                        color: 'var(--bb-text-2)',
+                        background: 'var(--bb-bg-subtle)',
+                        borderBottom: '1px solid var(--bb-border)',
                         display: 'flex',
                         alignItems: 'center',
                         gap: 8,
@@ -305,7 +305,7 @@ export default function PoliciesPage() {
         </SectionCard>
 
         {/* 右：详情 + 基线 */}
-        <div className="fg-policies-aside" style={{ display: 'flex', flexDirection: 'column', gap: 16, position: 'sticky', top: 16 }}>
+        <div className="bb-policies-aside" style={{ display: 'flex', flexDirection: 'column', gap: 16, position: 'sticky', top: 16 }}>
           <SectionCard
             title={selected ? '策略详情' : '基线摘要'}
             extra={
@@ -336,21 +336,21 @@ export default function PoliciesPage() {
                   style={{
                     margin: 0,
                     padding: 12,
-                    background: 'var(--fg-bg-subtle)',
-                    border: '1px solid var(--fg-border)',
+                    background: 'var(--bb-bg-subtle)',
+                    border: '1px solid var(--bb-border)',
                     borderRadius: 8,
                     fontSize: 12.5,
                     lineHeight: 1.7,
                     whiteSpace: 'pre-wrap',
                     wordBreak: 'break-word',
-                    color: 'var(--fg-text-2)',
+                    color: 'var(--bb-text-2)',
                     maxHeight: 360,
                     overflowY: 'auto',
                   }}
                 >
                   {snapshot.baseline_summary}
                 </pre>
-                <div style={{ fontSize: 12.5, color: 'var(--fg-text-3)', marginTop: 10, lineHeight: 1.6 }}>
+                <div style={{ fontSize: 12.5, color: 'var(--bb-text-3)', marginTop: 10, lineHeight: 1.6 }}>
                   点击左侧任一策略条目查看详情并发起人工覆盖。覆盖将生成新版本快照（只增不改），历史会话仍引用其原快照。
                 </div>
               </div>
@@ -386,24 +386,24 @@ function PolicyRow({ policy, active, onSelect }: { policy: Policy; active: boole
         width: '100%',
         textAlign: 'left',
         padding: '11px 16px',
-        background: active ? 'var(--fg-bg-subtle)' : 'transparent',
+        background: active ? 'var(--bb-bg-subtle)' : 'transparent',
         border: 'none',
-        borderLeft: `3px solid ${active ? 'var(--fg-brand-primary)' : 'transparent'}`,
-        borderBottom: '1px solid var(--fg-border)',
+        borderLeft: `3px solid ${active ? 'var(--bb-brand-primary)' : 'transparent'}`,
+        borderBottom: '1px solid var(--bb-border)',
         cursor: 'pointer',
         opacity: policy.enabled ? 1 : 0.55,
         transition: 'background-color 140ms ease',
       }}
     >
-      <span style={{ flexShrink: 0, color: policy.enabled ? 'var(--fg-allow-text)' : 'var(--fg-text-3)' }}>
+      <span style={{ flexShrink: 0, color: policy.enabled ? 'var(--bb-allow-text)' : 'var(--bb-text-3)' }}>
         {hard ? <Lock size={15} /> : policy.enabled ? <Unlock size={15} /> : <Lock size={15} />}
       </span>
       <span style={{ flex: 1, minWidth: 0 }}>
         <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span className="mono" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--fg-text-1)' }}>
+          <span className="mono" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--bb-text-1)' }}>
             {policy.policy_id}
           </span>
-          <span style={{ fontSize: 12, color: 'var(--fg-text-3)' }}>{policy.rule_type}</span>
+          <span style={{ fontSize: 12, color: 'var(--bb-text-3)' }}>{policy.rule_type}</span>
           {policy.origin === 'manual' && (
             <Tag color="warning" style={{ margin: 0, fontSize: 11, lineHeight: '16px', padding: '0 5px' }}>
               人工
@@ -417,7 +417,7 @@ function PolicyRow({ policy, active, onSelect }: { policy: Policy; active: boole
           style={{
             display: 'block',
             fontSize: 13,
-            color: 'var(--fg-text-2)',
+            color: 'var(--bb-text-2)',
             marginTop: 3,
             overflow: 'hidden',
             textOverflow: 'ellipsis',
@@ -437,7 +437,7 @@ function PolicyDetail({ policy }: { policy: Policy }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-        <span className="mono" style={{ fontSize: 15, fontWeight: 600, color: 'var(--fg-text-1)' }}>
+        <span className="mono" style={{ fontSize: 15, fontWeight: 600, color: 'var(--bb-text-1)' }}>
           {policy.policy_id}
         </span>
         <StatusBadge action={policy.action} size="sm" />
@@ -456,7 +456,7 @@ function PolicyDetail({ policy }: { policy: Policy }) {
       <Field label="来源" value={policy.origin === 'manual' ? '人工覆盖' : '自动生成'} />
       {policy.override_note && <Field label="覆盖备注" value={policy.override_note} />}
       <div>
-        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--fg-text-3)', marginBottom: 6 }}>参数</div>
+        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--bb-text-3)', marginBottom: 6 }}>参数</div>
         <JsonViewer data={policy.params} maxHeight={200} collapsed />
       </div>
     </div>
@@ -466,8 +466,8 @@ function PolicyDetail({ policy }: { policy: Policy }) {
 function Field({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
     <div>
-      <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--fg-text-3)', marginBottom: 3 }}>{label}</div>
-      <div className={mono ? 'mono' : ''} style={{ fontSize: 13.5, color: 'var(--fg-text-1)', lineHeight: 1.6, wordBreak: 'break-word' }}>
+      <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--bb-text-3)', marginBottom: 3 }}>{label}</div>
+      <div className={mono ? 'mono' : ''} style={{ fontSize: 13.5, color: 'var(--bb-text-1)', lineHeight: 1.6, wordBreak: 'break-word' }}>
         {value}
       </div>
     </div>
@@ -534,7 +534,7 @@ function OverrideModal({
       centered
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16, paddingTop: 8 }}>
-        <div style={{ fontSize: 13.5, color: 'var(--fg-text-2)', lineHeight: 1.6, background: 'var(--fg-bg-subtle)', padding: 12, borderRadius: 8 }}>
+        <div style={{ fontSize: 13.5, color: 'var(--bb-text-2)', lineHeight: 1.6, background: 'var(--bb-bg-subtle)', padding: 12, borderRadius: 8 }}>
           {policy.condition}
         </div>
         <div style={{ display: 'flex', gap: 16 }}>
@@ -580,7 +580,7 @@ function OverrideModal({
             showCount
           />
         </div>
-        <div style={{ fontSize: 12.5, color: 'var(--fg-text-3)', lineHeight: 1.6 }}>
+        <div style={{ fontSize: 12.5, color: 'var(--bb-text-3)', lineHeight: 1.6 }}>
           覆盖会生成新的策略快照版本（只增不改）。已有会话仍引用其创建时的快照，新会话将使用最新版本。
         </div>
       </div>

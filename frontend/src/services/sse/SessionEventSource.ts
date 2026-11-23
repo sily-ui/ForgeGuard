@@ -1,4 +1,5 @@
 import { fetchEventSource } from '@microsoft/fetch-event-source';
+import { API_BASE } from '@/services/api/client';
 import type { SseEventType, SseRecord } from '@/types/api';
 import { getWorkspaceId } from '@/utils/workspace';
 
@@ -42,11 +43,11 @@ export class SessionEventSource {
     const params = new URLSearchParams();
     if (this.lastId > 0) params.set('last_event_id', String(this.lastId));
     const qs = params.toString();
-    const url = `/api/v1/sessions/${sessionId}/events${qs ? `?${qs}` : ''}`;
+    const url = `${API_BASE}/sessions/${sessionId}/events${qs ? `?${qs}` : ''}`;
 
     fetchEventSource(url, {
       signal: this.controller.signal,
-      headers: { Authorization: `Bearer ${token}`, 'X-Workspace-Id': getWorkspaceId() },
+      headers: { Authorization: `Bearer ${token}`, 'X-BeforeBound-Token': token, 'X-Workspace-Id': getWorkspaceId() },
       openWhenHidden: true,
       onopen: async (response) => {
         if (response.ok && response.headers.get('content-type')?.includes('text/event-stream')) {

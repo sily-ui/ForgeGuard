@@ -2,8 +2,8 @@
 
 用法（在 backend 目录下）：
     python scripts/migrate_sqlite_to_pg.py \
-        --source data/forgeguard.db \
-        --target postgresql+psycopg://user:pass@host:5432/forgeguard
+        --source data/beforebound.db \
+        --target postgresql+psycopg://user:pass@host:5432/beforebound
 
 默认 --source 取 SQLITE_PATH，--target 取 DATABASE_URL。迁移为「附加式」：
 目标库已存在的同主键行跳过（ON CONFLICT DO NOTHING），可重复执行而不产生重复。
@@ -81,7 +81,7 @@ def migrate(source_url, target_url, batch_size=500, truncate=False, create_schem
 
 
 def main():
-    parser = argparse.ArgumentParser(description="ForgeGuard 存量数据迁移（源库只读）")
+    parser = argparse.ArgumentParser(description="BeforeBound 存量数据迁移（源库只读）")
     parser.add_argument("--source", default=settings.sqlite_path, help="源 SQLite 路径或 URL")
     parser.add_argument("--target", default=settings.database_url, help="目标库 URL（postgresql+psycopg://...）")
     parser.add_argument("--batch-size", type=int, default=500)

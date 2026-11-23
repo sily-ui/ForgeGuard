@@ -4,13 +4,13 @@ import type { CSSProperties } from 'react';
 export type StampKind = 'allow' | 'block' | 'challenge' | 'degrade' | 'info' | 'live' | 'replay';
 
 const KIND_COLOR: Record<StampKind, string> = {
-  allow: 'var(--fg-allow)',
-  block: 'var(--fg-block)',
-  challenge: 'var(--fg-observe)',
-  degrade: 'var(--fg-observe)',
-  info: 'var(--fg-info)',
-  live: 'var(--fg-brand-primary)',
-  replay: 'var(--fg-observe)',
+  allow: 'var(--bb-allow)',
+  block: 'var(--bb-block)',
+  challenge: 'var(--bb-observe)',
+  degrade: 'var(--bb-observe)',
+  info: 'var(--bb-info)',
+  live: 'var(--bb-brand-primary)',
+  replay: 'var(--bb-observe)',
 };
 
 const KIND_LABEL: Record<StampKind, string> = {
@@ -60,7 +60,7 @@ export function StampBadge({ kind, label, size = 'md', animate = false, style }:
         whiteSpace: 'nowrap',
         background: 'transparent',
         transform: 'rotate(-12deg)',
-        animation: animate ? 'fg-stamp-press 350ms cubic-bezier(0.16, 0.84, 0.3, 1.04) both' : undefined,
+        animation: animate ? 'bb-stamp-press 350ms cubic-bezier(0.16, 0.84, 0.3, 1.04) both' : undefined,
         ...style,
       }}
     >
@@ -80,7 +80,7 @@ export function StampInk({ color, style }: { color: string; style?: CSSPropertie
         borderRadius: 8,
         background: color,
         opacity: 0,
-        animation: 'fg-stamp-ink 420ms ease-out 120ms both',
+        animation: 'bb-stamp-ink 420ms ease-out 120ms both',
         pointerEvents: 'none',
         ...style,
       }}

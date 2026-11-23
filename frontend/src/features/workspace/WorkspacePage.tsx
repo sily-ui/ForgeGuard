@@ -164,19 +164,19 @@ export default function WorkspacePage() {
           display: 'flex',
           borderRadius: 10,
           overflow: 'hidden',
-          border: '1px solid var(--fg-border)',
-          boxShadow: 'var(--fg-shadow-1)',
-          background: 'var(--fg-bg-card)',
+          border: '1px solid var(--bb-border)',
+          boxShadow: 'var(--bb-shadow-1)',
+          background: 'var(--bb-bg-card)',
         }}
       >
         <DossierSpine no={dossier} />
         <div style={{ flex: 1, padding: 20, display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap', minWidth: 0 }}>
           <div style={{ flex: 1, minWidth: 280 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <AttackIcon size={16} strokeWidth={1.5} style={{ color: 'var(--fg-text-3)' }} />
-              <span style={{ fontSize: 16, fontWeight: 600, color: 'var(--fg-text-1)' }}>一键演示</span>
+              <AttackIcon size={16} strokeWidth={1.5} style={{ color: 'var(--bb-text-3)' }} />
+              <span style={{ fontSize: 16, fontWeight: 600, color: 'var(--bb-text-1)' }}>一键演示</span>
             </div>
-            <p style={{ margin: '4px 0 0', fontSize: 13.5, color: 'var(--fg-text-2)', lineHeight: 1.6 }}>
+            <p style={{ margin: '4px 0 0', fontSize: 13.5, color: 'var(--bb-text-2)', lineHeight: 1.6 }}>
               自动选用预置模板创建靶标实例与会话，载入攻击样本后进入实时控制台，全程内存仿真，演示走快速链路秒级完成
             </p>
             <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 12, flexWrap: 'wrap' }}>
@@ -195,7 +195,7 @@ export default function WorkspacePage() {
                         display: 'inline-flex',
                         alignItems: 'center',
                         gap: 3,
-                        color: active || done ? 'var(--fg-brand-primary)' : 'var(--fg-text-3)',
+                        color: active || done ? 'var(--bb-brand-primary)' : 'var(--bb-text-3)',
                       }}
                     >
                       {done ? <Check size={11} strokeWidth={2.5} /> : String(i + 1).padStart(2, '0')}
@@ -204,7 +204,7 @@ export default function WorkspacePage() {
                       style={{
                         fontSize: 13,
                         fontWeight: active ? 600 : 400,
-                        color: active ? 'var(--fg-brand-primary)' : done ? 'var(--fg-text-2)' : 'var(--fg-text-3)',
+                        color: active ? 'var(--bb-brand-primary)' : done ? 'var(--bb-text-2)' : 'var(--bb-text-3)',
                       }}
                     >
                       {label}
@@ -218,17 +218,17 @@ export default function WorkspacePage() {
                                 height: 2,
                                 marginLeft: 10,
                                 backgroundImage:
-                                  'repeating-linear-gradient(90deg, var(--fg-brand-primary) 0 5px, transparent 5px 10px)',
+                                  'repeating-linear-gradient(90deg, var(--bb-brand-primary) 0 5px, transparent 5px 10px)',
                                 backgroundSize: '20px 100%',
                                 backgroundRepeat: 'repeat',
-                                animation: 'fg-flow-bg 800ms linear infinite',
+                                animation: 'bb-flow-bg 800ms linear infinite',
                                 borderRadius: 2,
                               }
                             : {
                                 width: 16,
                                 height: 1,
                                 marginLeft: 10,
-                                background: done ? 'var(--fg-brand-primary)' : 'var(--fg-border)',
+                                background: done ? 'var(--bb-brand-primary)' : 'var(--bb-border)',
                               }
                         }
                       />
@@ -243,7 +243,7 @@ export default function WorkspacePage() {
               type="text"
               size="large"
               onClick={cancelDemo}
-              style={{ flexShrink: 0, color: 'var(--fg-text-2)' }}
+              style={{ flexShrink: 0, color: 'var(--bb-text-2)' }}
             >
               取消
             </Button>
@@ -263,7 +263,7 @@ export default function WorkspacePage() {
 
       {/* 能力入口：文书索引条目，不用等大卡片行 */}
       <div data-tour="capabilities" style={{ marginBottom: 16 }}>
-        <div className="fg-card" style={{ padding: '4px 18px' }}>
+        <div className="bb-card" style={{ padding: '4px 18px' }}>
           {CAPABILITIES.map((c, i) => (
             <button
               key={c.title}
@@ -278,25 +278,25 @@ export default function WorkspacePage() {
                 background: 'transparent',
                 cursor: 'pointer',
                 textAlign: 'left',
-                borderBottom: i < CAPABILITIES.length - 1 ? '1px solid var(--fg-border)' : 'none',
+                borderBottom: i < CAPABILITIES.length - 1 ? '1px solid var(--bb-border)' : 'none',
                 transition: 'background-color 150ms ease',
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--fg-bg-subtle)'; }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bb-bg-subtle)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
             >
-              <span className="mono" style={{ fontSize: 12, fontWeight: 600, color: 'var(--fg-brand-primary)', width: 20, textAlign: 'right', flexShrink: 0 }}>
+              <span className="mono" style={{ fontSize: 12, fontWeight: 600, color: 'var(--bb-brand-primary)', width: 20, textAlign: 'right', flexShrink: 0 }}>
                 {c.no}
               </span>
-              <c.icon size={16} strokeWidth={1.5} style={{ color: 'var(--fg-text-3)', flexShrink: 0 }} />
-              <span style={{ fontSize: 14.5, fontWeight: 600, color: 'var(--fg-text-1)', flexShrink: 0 }}>{c.title}</span>
-              <span style={{ fontSize: 13, color: 'var(--fg-text-2)', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.desc}</span>
-              <ArrowRight size={14} style={{ color: 'var(--fg-text-3)', flexShrink: 0 }} />
+              <c.icon size={16} strokeWidth={1.5} style={{ color: 'var(--bb-text-3)', flexShrink: 0 }} />
+              <span style={{ fontSize: 14.5, fontWeight: 600, color: 'var(--bb-text-1)', flexShrink: 0 }}>{c.title}</span>
+              <span style={{ fontSize: 13, color: 'var(--bb-text-2)', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.desc}</span>
+              <ArrowRight size={14} style={{ color: 'var(--bb-text-3)', flexShrink: 0 }} />
             </button>
           ))}
         </div>
       </div>
 
-      <div className="fg-workspace-grid" style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 16, alignItems: 'start' }}>
+      <div className="bb-workspace-grid" style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 16, alignItems: 'start' }}>
         {/* 靶标模板 */}
         <div data-tour="templates">
         <SectionCard
@@ -313,18 +313,18 @@ export default function WorkspacePage() {
               {templates.slice(0, 4).map((t) => (
                 <div
                   key={t.id}
-                  style={{ display: 'flex', alignItems: 'center', gap: 14, padding: 12, borderRadius: 8, border: '1px solid var(--fg-border)' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 14, padding: 12, borderRadius: 8, border: '1px solid var(--bb-border)' }}
                 >
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
                       <DossierNo no={dossierFromId(t.id)} />
-                      <span style={{ fontSize: 14.5, fontWeight: 600, color: 'var(--fg-text-1)' }}>{t.name}</span>
+                      <span style={{ fontSize: 14.5, fontWeight: 600, color: 'var(--bb-text-1)' }}>{t.name}</span>
                       <PresetTag preset={t.suggested_guard} size="sm" />
                     </div>
-                    <div style={{ fontSize: 13, color: 'var(--fg-text-2)', lineHeight: 1.5 }}>{t.description}</div>
+                    <div style={{ fontSize: 13, color: 'var(--bb-text-2)', lineHeight: 1.5 }}>{t.description}</div>
                     <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
                       {t.suggested_tools.slice(0, 5).map((tool) => (
-                        <span key={tool} className="mono" style={{ fontSize: 11, padding: '1px 7px', borderRadius: 4, background: 'var(--fg-bg-subtle)', color: 'var(--fg-text-2)' }}>
+                        <span key={tool} className="mono" style={{ fontSize: 11, padding: '1px 7px', borderRadius: 4, background: 'var(--bb-bg-subtle)', color: 'var(--bb-text-2)' }}>
                           {TOOL_META[tool]?.label || tool}
                         </span>
                       ))}
@@ -360,17 +360,17 @@ export default function WorkspacePage() {
                     key={s.session_id}
                     onClick={() => navigate(`/console/${s.session_id}`)}
                     style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 8, border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left', width: '100%', transition: 'background-color 150ms ease' }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--fg-bg-subtle)'; }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bb-bg-subtle)'; }}
                     onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
                   >
                     <StatusBadge action={s.block_count > 0 ? 'block' : 'allow'} size="sm" showText={false} />
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 13.5, fontWeight: 500, color: 'var(--fg-text-1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.instance_name}</div>
-                      <div className="mono" style={{ fontSize: 11, color: 'var(--fg-text-3)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <div style={{ fontSize: 13.5, fontWeight: 500, color: 'var(--bb-text-1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.instance_name}</div>
+                      <div className="mono" style={{ fontSize: 11, color: 'var(--bb-text-3)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         档号 {dossierFromId(s.session_id)} · {s.session_id.slice(0, 8)} · {s.turn} 轮
                       </div>
                     </div>
-                    <span style={{ fontSize: 11.5, color: 'var(--fg-text-3)' }}>{fromNow(s.created_at)}</span>
+                    <span style={{ fontSize: 11.5, color: 'var(--bb-text-3)' }}>{fromNow(s.created_at)}</span>
                   </button>
                 ))}
               </div>
@@ -387,17 +387,17 @@ export default function WorkspacePage() {
                     key={r.report_id}
                     onClick={() => navigate(`/reports/${r.report_id}`)}
                     style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 8, border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left', width: '100%', transition: 'background-color 150ms ease' }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--fg-bg-subtle)'; }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bb-bg-subtle)'; }}
                     onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
                   >
-                    <FileBarChart size={15} strokeWidth={1.5} style={{ color: 'var(--fg-text-3)' }} />
+                    <FileBarChart size={15} strokeWidth={1.5} style={{ color: 'var(--bb-text-3)' }} />
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 13.5, fontWeight: 500, color: 'var(--fg-text-1)' }}>{r.summary.instance_name}</div>
-                      <div className="mono" style={{ fontSize: 11.5, color: 'var(--fg-text-3)' }}>
+                      <div style={{ fontSize: 13.5, fontWeight: 500, color: 'var(--bb-text-1)' }}>{r.summary.instance_name}</div>
+                      <div className="mono" style={{ fontSize: 11.5, color: 'var(--bb-text-3)' }}>
                         档号 {dossierFromId(r.report_id)} · 拦截 {r.summary.block_count} · {formatShort(r.created_at)}
                       </div>
                     </div>
-                    <ArrowRight size={13} style={{ color: 'var(--fg-text-3)' }} />
+                    <ArrowRight size={13} style={{ color: 'var(--bb-text-3)' }} />
                   </button>
                 ))}
               </div>
@@ -407,13 +407,13 @@ export default function WorkspacePage() {
       </div>
 
       {quota && (
-        <div className="mono" style={{ marginTop: 16, fontSize: 12.5, color: 'var(--fg-text-3)', display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+        <div className="mono" style={{ marginTop: 16, fontSize: 12.5, color: 'var(--bb-text-3)', display: 'flex', gap: 16, flexWrap: 'wrap' }}>
           <span>
             今日模型调用 {quota.guest_used_calls ?? quota.global_used_calls}/{quota.guest_max_calls ?? quota.global_max_calls}
           </span>
           <span>存活实例 {instances.filter((i) => i.status !== 'destroyed').length}</span>
           {(quota.guest_max_calls ?? 0) > 0 && (quota.guest_used_calls ?? 0) >= (quota.guest_max_calls ?? 0) && (
-            <span style={{ color: 'var(--fg-block-text)' }}>今日额度已用尽，明日恢复</span>
+            <span style={{ color: 'var(--bb-block-text)' }}>今日额度已用尽，明日恢复</span>
           )}
         </div>
       )}

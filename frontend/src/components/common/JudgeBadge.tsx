@@ -23,9 +23,9 @@ export function JudgeBadge({ judgedBy, size = 'md' }: { judgedBy?: string; size?
         borderRadius: 4,
         fontSize: size === 'sm' ? 11 : 11.5,
         fontWeight: 500,
-        color: warn ? '#8f6a14' : 'var(--fg-text-2)',
-        background: warn ? '#f7efdc' : 'var(--fg-bg-subtle)',
-        border: '1px solid var(--fg-border)',
+        color: warn ? '#8f6a14' : 'var(--bb-text-2)',
+        background: warn ? '#f7efdc' : 'var(--bb-bg-subtle)',
+        border: '1px solid var(--bb-border)',
         whiteSpace: 'nowrap',
       }}
     >

@@ -12,6 +12,12 @@ export default defineConfig({
     port: 5173,
     strictPort: true,
     proxy: {
+      // 本地仍可用 Python 后端联调：把 Sites 的函数前缀映射回 /api/v1 与 /share。
+      '/functions/v1/app': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
+        rewrite: (p) => p.replace(/^\/functions\/v1\/app/, ''),
+      },
       '/api': { target: 'http://127.0.0.1:8000', changeOrigin: true },
       '/share': { target: 'http://127.0.0.1:8000', changeOrigin: true },
     },

@@ -267,7 +267,7 @@ REQUEST_SCHEMAS = {
 # resp: json(默认) | list(分页) | sse | pdf | html
 # flags: public(无需鉴权) idem(幂等键) heavy(重限流) admin(管理员)
 META = {
-    "POST /api/v1/auth/guest": ("认证", "游客准入", "匿名签发 guest 令牌，须携带 X-Workspace-Id 头。受 AUTH 限流（12 次/分钟）；游客每工作区 20 次模型调用/天，同一 IP 60 次/天。", "GuestTokenRequest", {"client_id": "web"}, "json", {"public", "heavy"}),
+    "POST /api/v1/auth/guest": ("认证", "游客准入", "匿名签发 guest 令牌，须携带 X-Workspace-Id 头。受 AUTH 限流（12 次/分钟）；游客每工作区 50 次模型调用/天，同一 IP 60 次/天。", "GuestTokenRequest", {"client_id": "web"}, "json", {"public", "heavy"}),
     "POST /api/v1/auth/logout": ("认证", "注销令牌", "吊销当前 Bearer 令牌。", None, None, "json", set()),
     "GET /api/v1/quota": ("配额", "查询配额", "查询全局/会话模型配额与当前运行模式。", None, None, "json", set()),
     "GET /api/v1/templates": ("模板", "场景模板列表", "列出预置场景模板，选择后仍可逐项修改。分页返回。", None, None, "list", set()),
@@ -376,7 +376,7 @@ SSE 事件流因 EventSource 限制，额外支持查询参数 `token`。
 触发限流返回 HTTP 429 与错误码 42900，并携带 `Retry-After` 头；所有响应携带 `X-RateLimit-Limit/Remaining/Reset` 头。
 
 ## 游客配额
-- 每工作区每日 20 次模型调用（`QUOTA_GUEST_DAILY`）
+- 每工作区每日 50 次模型调用（`QUOTA_GUEST_DAILY`）
 - 同一 IP 每日 60 次模型调用（`QUOTA_GUEST_IP_DAILY`），防止切换工作区绕过
 - 额度用尽返回 HTTP 429 与错误码 42901；`GET /api/v1/quota` 返回 guest_used_calls/guest_max_calls 等字段
 
@@ -446,7 +446,7 @@ def custom_openapi(app):
         "title": "越界之前 BeforeBound API",
         "version": app.version,
         "description": _INFO_DESCRIPTION,
-        "contact": {"name": "越界之前 维护团队", "email": "forgeguard@example.com"},
+        "contact": {"name": "越界之前 维护团队", "email": "beforebound@example.com"},
         "license": {"name": "MIT", "identifier": "MIT"},
         "x-rate-limits": {"general_per_minute": 240, "heavy_per_minute": 12, "auth_per_minute": 12},
         "x-id-format": "prefixed-string (cfg-/inst-/sess-/rpt-/alt-/rec-/snap-/exp-)",
@@ -455,7 +455,7 @@ def custom_openapi(app):
     spec["servers"] = [
         {"url": "http://127.0.0.1:8000", "description": "本地开发服务器"},
     ]
-    spec["externalDocs"] = {"description": "越界之前（内部代号 ForgeGuard）开发与接口文档", "url": "http://127.0.0.1:8000/docs"}
+    spec["externalDocs"] = {"description": "越界之前（内部代号 BeforeBound）开发与接口文档", "url": "http://127.0.0.1:8000/docs"}
     spec["tags"] = [{"name": name, "description": desc} for name, desc in TAG_DESCRIPTIONS.items()]
     spec.setdefault("components", {})
     spec["components"]["securitySchemes"] = {

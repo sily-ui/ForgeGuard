@@ -6,7 +6,7 @@
 - 编制日期：2026 年 11 月 21 日
 - 前置文档：开发文档（功能设计分册）V2、接口与架构设计（技术设计分册）、PRODUCT.md、方向契约（`.impeccable/surfaces/frontend.md`）
 - 技术栈：React + TypeScript + Ant Design 5 + Ant Design Charts + AntV X6
-- 产品代号：越界之前 BeforeBound（Agent 安全实验室；2026-11-22 二次重命名，取代 2026-11-21 的"白盒 Whitebox"，避免误读为白盒测试；内部代码代号仍为 ForgeGuard）
+- 产品代号：越界之前 BeforeBound（Agent 安全实验室；2026-11-22 二次重命名，取代 2026-11-21 的"白盒 Whitebox"，避免误读为白盒测试；2026-11-23 起内部同样统一为 BeforeBound，ForgeGuard 代号已退役）
 - 适用对象：前端开发、UI 走查、答辩演示准备
 - 版本说明：V3 以「档案卷宗工作台」视觉世界整体替换 V2 的视觉规范，产品功能事实不变；V2 文档保留作历史版本，不再作为开发依据。
 

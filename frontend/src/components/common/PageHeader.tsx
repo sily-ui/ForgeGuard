@@ -20,21 +20,21 @@ export function PageHeader({ title, subtitle, extra, icon }: Props) {
       }}
     >
       <div style={{ display: 'flex', gap: 10, alignItems: 'center', minWidth: 0 }}>
-        {icon && <span style={{ display: 'inline-flex', color: 'var(--fg-text-3)', flexShrink: 0 }}>{icon}</span>}
+        {icon && <span style={{ display: 'inline-flex', color: 'var(--bb-text-3)', flexShrink: 0 }}>{icon}</span>}
         <div style={{ minWidth: 0 }}>
           <h1
             style={{
               margin: 0,
               fontSize: 22,
               fontWeight: 700,
-              color: 'var(--fg-text-1)',
-              fontFamily: 'var(--fg-font-display)',
+              color: 'var(--bb-text-1)',
+              fontFamily: 'var(--bb-font-display)',
               letterSpacing: 0.2,
             }}
           >
             {title}
           </h1>
-          {subtitle && <div style={{ fontSize: 14, color: 'var(--fg-text-2)', marginTop: 2, lineHeight: 1.5 }}>{subtitle}</div>}
+          {subtitle && <div style={{ fontSize: 14, color: 'var(--bb-text-2)', marginTop: 2, lineHeight: 1.5 }}>{subtitle}</div>}
         </div>
       </div>
       {extra && <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>{extra}</div>}

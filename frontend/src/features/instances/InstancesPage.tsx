@@ -29,11 +29,11 @@ const STATUS_COLOR: Record<string, string> = {
 
 // 实例状态 → 线形状态：实线=运行、虚线=待启动、半线=即将过期、划线=已回收。
 const STATUS_LINE: Record<string, { variant: 'solid' | 'dashed' | 'half' | 'strike'; color: string }> = {
-  ready: { variant: 'solid', color: 'var(--fg-allow)' },
-  creating: { variant: 'dashed', color: 'var(--fg-brand-primary)' },
-  pending_retry: { variant: 'half', color: 'var(--fg-observe)' },
-  frozen: { variant: 'half', color: 'var(--fg-observe)' },
-  destroyed: { variant: 'strike', color: 'var(--fg-text-3)' },
+  ready: { variant: 'solid', color: 'var(--bb-allow)' },
+  creating: { variant: 'dashed', color: 'var(--bb-brand-primary)' },
+  pending_retry: { variant: 'half', color: 'var(--bb-observe)' },
+  frozen: { variant: 'half', color: 'var(--bb-observe)' },
+  destroyed: { variant: 'strike', color: 'var(--bb-text-3)' },
 };
 
 export default function InstancesPage() {
@@ -95,8 +95,8 @@ export default function InstancesPage() {
       />
 
       {/* 统计 */}
-      <div data-tour="instances-stats" className="fg-stats-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 18 }}>
-        <StatCard label="存活实例" value={alive.length} accent="var(--fg-brand-primary)" />
+      <div data-tour="instances-stats" className="bb-stats-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 18 }}>
+        <StatCard label="存活实例" value={alive.length} accent="var(--bb-brand-primary)" />
         <StatCard label="就绪" value={instances.filter((i) => i.status === 'ready').length} />
         <StatCard label="累计调用" value={instances.reduce((s, i) => s + (i.stats?.call_count || 0), 0)} />
         <StatCard label="已销毁" value={instances.filter((i) => i.status === 'destroyed').length} />
@@ -154,7 +154,7 @@ export default function InstancesPage() {
             pagination={{ pageSize: 10, showSizeChanger: false }}
             scroll={{ x: 860 }}
             columns={[
-              { title: '名称', dataIndex: 'name', render: (v, r) => <span style={{ fontWeight: 600 }}>{v}<div className="mono" style={{ fontSize: 11, color: 'var(--fg-text-3)' }}>{r.instance_id}</div><div style={{ marginTop: 2 }}><DossierNo no={dossierFromId(r.instance_id)} /></div></span> },
+              { title: '名称', dataIndex: 'name', render: (v, r) => <span style={{ fontWeight: 600 }}>{v}<div className="mono" style={{ fontSize: 11, color: 'var(--bb-text-3)' }}>{r.instance_id}</div><div style={{ marginTop: 2 }}><DossierNo no={dossierFromId(r.instance_id)} /></div></span> },
               { title: '状态', dataIndex: 'status', render: (v) => (
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
                   <StatusLine variant={STATUS_LINE[v]?.variant ?? 'solid'} color={STATUS_LINE[v]?.color} thickness={3} />
@@ -188,9 +188,9 @@ export default function InstancesPage() {
 
 function StatCard({ label, value, accent }: { label: string; value: number; accent?: string }) {
   return (
-    <div className="fg-card" style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 6 }}>
-      <span style={{ fontSize: 13, color: 'var(--fg-text-3)' }}>{label}</span>
-      <span className="mono" style={{ fontSize: 28, fontWeight: 600, color: accent ?? 'var(--fg-text-1)', lineHeight: 1 }}>{value}</span>
+    <div className="bb-card" style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <span style={{ fontSize: 13, color: 'var(--bb-text-3)' }}>{label}</span>
+      <span className="mono" style={{ fontSize: 28, fontWeight: 600, color: accent ?? 'var(--bb-text-1)', lineHeight: 1 }}>{value}</span>
     </div>
   );
 }
@@ -206,11 +206,11 @@ function InstanceCard({ instance, onEnter, entering, onClone, onPolicies, onRene
 }) {
   const destroyed = instance.status === 'destroyed';
   return (
-    <div className="fg-card" style={{ padding: 18, opacity: destroyed ? 0.6 : 1, display: 'flex', flexDirection: 'column', gap: 14 }}>
+    <div className="bb-card" style={{ padding: 18, opacity: destroyed ? 0.6 : 1, display: 'flex', flexDirection: 'column', gap: 14 }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
         <div style={{ minWidth: 0 }}>
-          <div style={{ fontSize: 16.5, fontWeight: 600, color: 'var(--fg-text-1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{instance.name}</div>
-          <div className="mono" style={{ fontSize: 11.5, color: 'var(--fg-text-3)', marginTop: 2 }}>{instance.instance_id}</div>
+          <div style={{ fontSize: 16.5, fontWeight: 600, color: 'var(--bb-text-1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{instance.name}</div>
+          <div className="mono" style={{ fontSize: 11.5, color: 'var(--bb-text-3)', marginTop: 2 }}>{instance.instance_id}</div>
           <div style={{ marginTop: 2 }}><DossierNo no={dossierFromId(instance.instance_id)} /></div>
         </div>
         <span style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-end', gap: 5 }}>
@@ -222,27 +222,27 @@ function InstanceCard({ instance, onEnter, entering, onClone, onPolicies, onRene
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
         <PresetTag preset={instance.guard.preset} size="sm" />
         <SimBadge compact />
-        {instance.clone_source_id && <span style={{ fontSize: 11.5, padding: '1px 8px', borderRadius: 4, border: '1px solid var(--fg-border)', color: 'var(--fg-text-2)' }}>克隆体</span>}
+        {instance.clone_source_id && <span style={{ fontSize: 11.5, padding: '1px 8px', borderRadius: 4, border: '1px solid var(--bb-border)', color: 'var(--bb-text-2)' }}>克隆体</span>}
       </div>
 
       <div>
-        <div style={{ fontSize: 12, color: 'var(--fg-text-3)', marginBottom: 6 }}>启用工具</div>
+        <div style={{ fontSize: 12, color: 'var(--bb-text-3)', marginBottom: 6 }}>启用工具</div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
-          {instance.enabled_tools.length === 0 && <span style={{ fontSize: 13, color: 'var(--fg-text-3)' }}>无</span>}
+          {instance.enabled_tools.length === 0 && <span style={{ fontSize: 13, color: 'var(--bb-text-3)' }}>无</span>}
           {instance.enabled_tools.map((t) => (
             <Tooltip key={t} title={TOOL_META[t]?.desc}>
-              <span className="mono" style={{ fontSize: 11.5, padding: '2px 8px', borderRadius: 6, background: 'var(--fg-bg-subtle)', border: '1px solid var(--fg-border)', color: 'var(--fg-text-2)' }}>{t}</span>
+              <span className="mono" style={{ fontSize: 11.5, padding: '2px 8px', borderRadius: 6, background: 'var(--bb-bg-subtle)', border: '1px solid var(--bb-border)', color: 'var(--bb-text-2)' }}>{t}</span>
             </Tooltip>
           ))}
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: 18, fontSize: 13, color: 'var(--fg-text-2)' }}>
-        <span>调用 <b className="mono" style={{ color: 'var(--fg-text-1)' }}>{instance.stats?.call_count || 0}</b></span>
+      <div style={{ display: 'flex', gap: 18, fontSize: 13, color: 'var(--bb-text-2)' }}>
+        <span>调用 <b className="mono" style={{ color: 'var(--bb-text-1)' }}>{instance.stats?.call_count || 0}</b></span>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Clock size={12} /> {fromNow(instance.expires_at)}过期</span>
       </div>
 
-      <div style={{ display: 'flex', gap: 8, marginTop: 'auto', paddingTop: 4, borderTop: '1px solid var(--fg-border)' }}>
+      <div style={{ display: 'flex', gap: 8, marginTop: 'auto', paddingTop: 4, borderTop: '1px solid var(--bb-border)' }}>
         <Button type="primary" size="small" icon={<AttackIcon size={13} />} disabled={destroyed} loading={entering} onClick={onEnter} style={{ flex: 1 }}>进入会话</Button>
         <Tooltip title="克隆比对"><Button size="small" icon={<Copy size={13} />} disabled={destroyed} onClick={onClone} /></Tooltip>
         <Tooltip title="查看策略"><Button size="small" icon={<GuardIcon size={13} />} onClick={onPolicies} /></Tooltip>
@@ -296,7 +296,7 @@ function CloneModal({ instance, onClose, onDone }: { instance: Instance | null; 
             <Radio.Button value="verbatim">原样克隆</Radio.Button>
             <Radio.Button value="modified">修改克隆</Radio.Button>
           </Radio.Group>
-          <div style={{ fontSize: 12.5, color: 'var(--fg-text-3)', marginTop: 8, lineHeight: 1.5 }}>
+          <div style={{ fontSize: 12.5, color: 'var(--bb-text-3)', marginTop: 8, lineHeight: 1.5 }}>
             {mode === 'verbatim' ? '完整复制源实例配置，用于复现与回归。' : '在源配置基础上调整防护档位，用于对照实验。'}
           </div>
         </div>

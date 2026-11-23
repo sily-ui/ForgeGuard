@@ -33,7 +33,7 @@ export function TopStatusBar({ preset = 'standard', onToggleGuard, guardDisabled
 
   return (
     <header
-      className="fg-topbar"
+      className="bb-topbar"
       style={{
         height: 60,
         flexShrink: 0,
@@ -42,9 +42,9 @@ export function TopStatusBar({ preset = 'standard', onToggleGuard, guardDisabled
         justifyContent: 'space-between',
         gap: 16,
         padding: '0 20px',
-        background: 'var(--fg-topbar-bg)',
+        background: 'var(--bb-topbar-bg)',
         backdropFilter: 'blur(12px)',
-        borderBottom: '1px solid var(--fg-border)',
+        borderBottom: '1px solid var(--bb-border)',
         position: 'sticky',
         top: 0,
         zIndex: 20,
@@ -54,7 +54,7 @@ export function TopStatusBar({ preset = 'standard', onToggleGuard, guardDisabled
         <span
           style={{
             display: 'inline-flex',
-            color: guardOn ? 'var(--fg-allow-text)' : 'var(--fg-block-text)',
+            color: guardOn ? 'var(--bb-allow-text)' : 'var(--bb-block-text)',
             flexShrink: 0,
           }}
           title={guardOn ? '旁路监护运行中' : '旁路监护已关闭'}
@@ -62,10 +62,10 @@ export function TopStatusBar({ preset = 'standard', onToggleGuard, guardDisabled
           <GuardIcon size={20} strokeWidth={1.5} />
         </span>
         <div style={{ minWidth: 0, lineHeight: 1.25 }}>
-          <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--fg-text-1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 260 }}>
+          <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--bb-text-1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 260 }}>
             {session?.instance_name || '攻防控制台'}
           </div>
-          <div className="mono" style={{ fontSize: 12.5, color: 'var(--fg-text-3)', display: 'flex', gap: 8, alignItems: 'center' }}>
+          <div className="mono" style={{ fontSize: 12.5, color: 'var(--bb-text-3)', display: 'flex', gap: 8, alignItems: 'center' }}>
             {session?.session_id ? (
               <>
                 <span>档号 {dossierFromId(session.session_id)}</span>
@@ -78,10 +78,10 @@ export function TopStatusBar({ preset = 'standard', onToggleGuard, guardDisabled
         </div>
       </div>
 
-      <div className="fg-topbar-guard" style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+      <div className="bb-topbar-guard" style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
         <Tooltip title={guardOn ? '旁路监护已启用，实时判定每次工具调用' : '防护已关闭（对照演示），调用不再被判定'}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 10px', borderRadius: 9, background: 'var(--fg-bg-subtle)', border: '1px solid var(--fg-border)', flexShrink: 0 }}>
-            <span style={{ fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap', color: guardOn ? 'var(--fg-allow-text)' : 'var(--fg-block-text)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 10px', borderRadius: 9, background: 'var(--bb-bg-subtle)', border: '1px solid var(--bb-border)', flexShrink: 0 }}>
+            <span style={{ fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap', color: guardOn ? 'var(--bb-allow-text)' : 'var(--bb-block-text)' }}>
               {guardOn ? '监护开启' : '监护关闭'}
             </span>
             <Switch
@@ -95,7 +95,7 @@ export function TopStatusBar({ preset = 'standard', onToggleGuard, guardDisabled
         <PresetTag preset={preset} />
       </div>
 
-      <div className="fg-topbar-meta" style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+      <div className="bb-topbar-meta" style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
         <RiskRing score={session?.risk_score ?? 0} maxRisk={session?.max_risk ?? 'none'} size={40} stroke={4} />
         <Tooltip
           title={
@@ -104,10 +104,10 @@ export function TopStatusBar({ preset = 'standard', onToggleGuard, guardDisabled
               : `全局今日 ${usedCalls}/${maxCalls} 次模型调用`
           }
         >
-          <div className="fg-topbar-quota" style={{ width: 104 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--fg-text-3)', marginBottom: 3 }}>
+          <div className="bb-topbar-quota" style={{ width: 104 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--bb-text-3)', marginBottom: 3 }}>
               <span>今日额度</span>
-              <span className="mono" style={{ color: maxCalls && leftCalls === 0 ? 'var(--fg-block-text)' : undefined }}>
+              <span className="mono" style={{ color: maxCalls && leftCalls === 0 ? 'var(--bb-block-text)' : undefined }}>
                 {usedCalls}/{maxCalls || '—'}
               </span>
             </div>
@@ -115,7 +115,7 @@ export function TopStatusBar({ preset = 'standard', onToggleGuard, guardDisabled
               percent={usedPct}
               size="small"
               showInfo={false}
-              strokeColor={usedPct > 85 ? 'var(--fg-block)' : usedPct > 60 ? 'var(--fg-observe)' : 'var(--fg-brand-primary)'}
+              strokeColor={usedPct > 85 ? 'var(--bb-block)' : usedPct > 60 ? 'var(--bb-observe)' : 'var(--bb-brand-primary)'}
               trailColor="#e2e5e8"
             />
           </div>
@@ -132,7 +132,7 @@ export function TopStatusBar({ preset = 'standard', onToggleGuard, guardDisabled
                 border: 'none',
                 background: 'none',
                 cursor: 'pointer',
-                color: 'var(--fg-block)',
+                color: 'var(--bb-block)',
               }}
             >
               <AlertCircle size={15} />

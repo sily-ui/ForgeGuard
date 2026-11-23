@@ -23,8 +23,8 @@ const rowStyle = (active: boolean): React.CSSProperties => ({
   padding: '0 12px',
   borderRadius: 8,
   textDecoration: 'none',
-  color: active ? 'var(--fg-brand-primary)' : 'var(--fg-text-2)',
-  background: active ? 'var(--fg-bg-subtle)' : 'transparent',
+  color: active ? 'var(--bb-brand-primary)' : 'var(--bb-text-2)',
+  background: active ? 'var(--bb-bg-subtle)' : 'transparent',
   transition: 'background-color 150ms ease, color 150ms ease',
 });
 
@@ -64,7 +64,7 @@ export function Sidebar() {
 
   return (
     <aside
-      className="fg-sider"
+      className="bb-sider"
       style={{
         width: 240,
         flexShrink: 0,
@@ -73,8 +73,8 @@ export function Sidebar() {
         top: 0,
         display: 'flex',
         flexDirection: 'column',
-        background: 'var(--fg-sidebar-bg)',
-        borderRight: '1px solid var(--fg-border)',
+        background: 'var(--bb-sidebar-bg)',
+        borderRight: '1px solid var(--bb-border)',
       }}
     >
       <button
@@ -86,7 +86,7 @@ export function Sidebar() {
           padding: 16,
           background: 'none',
           border: 'none',
-          borderBottom: '1px solid var(--fg-border)',
+          borderBottom: '1px solid var(--bb-border)',
           cursor: 'pointer',
           textAlign: 'left',
         }}
@@ -104,13 +104,13 @@ export function Sidebar() {
         }}
       >
         <DossierNo no={dossier} label="本工作区案卷档号" />
-        <span className="mono" style={{ fontSize: 9.5, letterSpacing: 1.4, color: 'var(--fg-text-3)' }}>
+        <span className="mono" style={{ fontSize: 9.5, letterSpacing: 1.4, color: 'var(--bb-text-3)' }}>
           ARCHIVE
         </span>
       </div>
 
-      <nav className="fg-sider-nav" style={{ flex: 1, padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: 2, overflowY: 'auto' }}>
-        <div className="fg-sider-label" style={{ fontSize: 12, fontWeight: 500, color: 'var(--fg-text-3)', padding: '8px 12px 6px' }}>
+      <nav className="bb-sider-nav" style={{ flex: 1, padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: 2, overflowY: 'auto' }}>
+        <div className="bb-sider-label" style={{ fontSize: 12, fontWeight: 500, color: 'var(--bb-text-3)', padding: '8px 12px 6px' }}>
           案卷导航
         </div>
         {NAV.map((item) => (
@@ -120,7 +120,7 @@ export function Sidebar() {
           </NavLink>
         ))}
 
-        <div className="fg-sider-label" style={{ fontSize: 12, fontWeight: 500, color: 'var(--fg-text-3)', padding: '20px 12px 6px' }}>
+        <div className="bb-sider-label" style={{ fontSize: 12, fontWeight: 500, color: 'var(--bb-text-3)', padding: '20px 12px 6px' }}>
           攻防阅档舱
         </div>
         <button onClick={() => navigate('/workspace')} style={{ ...rowStyle(false), border: 'none', cursor: 'pointer', textAlign: 'left', width: '100%' }}>
@@ -129,10 +129,10 @@ export function Sidebar() {
         </button>
       </nav>
 
-      <div style={{ padding: 12, borderTop: '1px solid var(--fg-border)', display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div style={{ padding: 12, borderTop: '1px solid var(--bb-border)', display: 'flex', flexDirection: 'column', gap: 8 }}>
         <div style={{ padding: '0 4px', display: 'flex', flexDirection: 'column', gap: 4 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 20 }}>
-            <span style={{ fontSize: 12, color: 'var(--fg-text-3)' }}>工作区</span>
+            <span style={{ fontSize: 12, color: 'var(--bb-text-3)' }}>工作区</span>
             <button
               onClick={copyWorkspace}
               title={`点击复制完整标识 ${wsId}`}
@@ -146,7 +146,7 @@ export function Sidebar() {
                 border: 'none',
                 cursor: 'pointer',
                 borderRadius: 4,
-                color: copied ? 'var(--fg-brand-primary)' : 'var(--fg-text-2)',
+                color: copied ? 'var(--bb-brand-primary)' : 'var(--bb-text-2)',
               }}
             >
               <span className="mono" style={{ fontSize: 12 }}>{copied ? '已复制' : workspaceShort(wsId)}</span>
@@ -167,7 +167,7 @@ export function Sidebar() {
               border: 'none',
               cursor: 'pointer',
               borderRadius: 4,
-              color: 'var(--fg-text-3)',
+              color: 'var(--bb-text-3)',
               fontSize: 12,
             }}
           >
@@ -176,18 +176,18 @@ export function Sidebar() {
           </button>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 4px', height: 20 }}>
-          <span style={{ fontSize: 12, color: 'var(--fg-text-3)' }}>今日调用</span>
+          <span style={{ fontSize: 12, color: 'var(--bb-text-3)' }}>今日调用</span>
           <span
             className="mono"
             title={guestMax ? `游客每工作区每日 ${guestMax} 次模型调用，剩余 ${guestLeft} 次` : '模型调用额度'}
-            style={{ fontSize: 12, color: guestMax && guestLeft === 0 ? 'var(--fg-block-text)' : 'var(--fg-text-2)' }}
+            style={{ fontSize: 12, color: guestMax && guestLeft === 0 ? 'var(--bb-block-text)' : 'var(--bb-text-2)' }}
           >
             {guestMax ? `${guestUsed}/${guestMax}` : '—'}
           </span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 4px' }}>
           <SimBadge compact />
-          <span style={{ fontSize: 12, color: 'var(--fg-text-3)' }}>游客</span>
+          <span style={{ fontSize: 12, color: 'var(--bb-text-3)' }}>游客</span>
         </div>
         <button
           onClick={async () => {
@@ -201,10 +201,10 @@ export function Sidebar() {
             height: 32,
             padding: '0 12px',
             borderRadius: 8,
-            border: '1px solid var(--fg-border)',
+            border: '1px solid var(--bb-border)',
             background: 'transparent',
             cursor: 'pointer',
-            color: 'var(--fg-text-2)',
+            color: 'var(--bb-text-2)',
             fontSize: 13.5,
             transition: 'background-color 150ms ease, color 150ms ease',
           }}

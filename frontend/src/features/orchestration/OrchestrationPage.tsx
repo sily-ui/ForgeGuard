@@ -141,9 +141,9 @@ export default function OrchestrationPage() {
         }
       />
 
-      <div className="fg-orch-grid" style={{ display: 'grid', gridTemplateColumns: '190px 1fr 280px', gap: 16, alignItems: 'start' }}>
+      <div className="bb-orch-grid" style={{ display: 'grid', gridTemplateColumns: '190px 1fr 280px', gap: 16, alignItems: 'start' }}>
         {/* 左侧步骤导航 */}
-        <div className="fg-orch-steps" style={{ display: 'flex', flexDirection: 'column', gap: 6, position: 'sticky', top: 24 }}>
+        <div className="bb-orch-steps" style={{ display: 'flex', flexDirection: 'column', gap: 6, position: 'sticky', top: 24 }}>
           {STEPS.map((s, i) => {
             const active = i === step;
             return (
@@ -156,17 +156,17 @@ export default function OrchestrationPage() {
                   alignItems: 'flex-start',
                   padding: '12px 13px',
                   borderRadius: 11,
-                  border: '1px solid var(--fg-border)',
-                  background: active ? 'var(--fg-bg-subtle)' : 'var(--fg-bg-card)',
+                  border: '1px solid var(--bb-border)',
+                  background: active ? 'var(--bb-bg-subtle)' : 'var(--bb-bg-card)',
                   cursor: 'pointer',
                   textAlign: 'left',
                   transition: 'background-color 160ms ease, border-color 160ms ease',
                 }}
               >
-                <s.icon size={16} strokeWidth={1.5} style={{ color: active ? 'var(--fg-brand-primary)' : 'var(--fg-text-3)', marginTop: 2, flexShrink: 0 }} />
+                <s.icon size={16} strokeWidth={1.5} style={{ color: active ? 'var(--bb-brand-primary)' : 'var(--bb-text-3)', marginTop: 2, flexShrink: 0 }} />
                 <div style={{ lineHeight: 1.25 }}>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: active ? 'var(--fg-brand-primary)' : 'var(--fg-text-1)' }}>{i + 1}. {s.label}</div>
-                  <div style={{ fontSize: 11.5, color: 'var(--fg-text-3)', marginTop: 2 }}>{s.desc}</div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: active ? 'var(--bb-brand-primary)' : 'var(--bb-text-1)' }}>{i + 1}. {s.label}</div>
+                  <div style={{ fontSize: 11.5, color: 'var(--bb-text-3)', marginTop: 2 }}>{s.desc}</div>
                 </div>
               </button>
             );
@@ -215,21 +215,21 @@ export default function OrchestrationPage() {
                 const Icon = TOOL_ICONS[name];
                 const meta = TOOL_META[name];
                 return (
-                  <SectionCard key={name} padding={0} style={{ border: `1px solid ${spec.enabled ? 'var(--fg-brand-primary)' : 'var(--fg-border)'}` }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px', borderBottom: spec.enabled ? '1px solid var(--fg-border)' : 'none' }}>
-                      <Icon size={17} strokeWidth={1.5} style={{ color: spec.enabled ? 'var(--fg-brand-primary)' : 'var(--fg-text-3)', flexShrink: 0 }} />
+                  <SectionCard key={name} padding={0} style={{ border: `1px solid ${spec.enabled ? 'var(--bb-brand-primary)' : 'var(--bb-border)'}` }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px', borderBottom: spec.enabled ? '1px solid var(--bb-border)' : 'none' }}>
+                      <Icon size={17} strokeWidth={1.5} style={{ color: spec.enabled ? 'var(--bb-brand-primary)' : 'var(--bb-text-3)', flexShrink: 0 }} />
                       <div style={{ flex: 1 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <span className="mono" style={{ fontSize: 14.5, fontWeight: 600, color: 'var(--fg-text-1)' }}>{name}</span>
-                          <span style={{ fontSize: 13, color: 'var(--fg-text-2)' }}>{meta.label}</span>
+                          <span className="mono" style={{ fontSize: 14.5, fontWeight: 600, color: 'var(--bb-text-1)' }}>{name}</span>
+                          <span style={{ fontSize: 13, color: 'var(--bb-text-2)' }}>{meta.label}</span>
                           <SimBadge compact />
                         </div>
-                        <div style={{ fontSize: 12.5, color: 'var(--fg-text-3)', marginTop: 2 }}>{meta.desc}</div>
+                        <div style={{ fontSize: 12.5, color: 'var(--bb-text-3)', marginTop: 2 }}>{meta.desc}</div>
                       </div>
                       <Switch checked={spec.enabled} onChange={(v) => patchTool(name, { enabled: v })} />
                     </div>
                     {spec.enabled && (
-                      <div style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 12, background: 'var(--fg-bg-subtle)' }}>
+                      <div style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 12, background: 'var(--bb-bg-subtle)' }}>
                         <ToolPermEditor name={name} perm={spec.perm} onChange={(perm) => patchTool(name, { perm })} />
                       </div>
                     )}
@@ -265,24 +265,24 @@ export default function OrchestrationPage() {
                       style={{
                         padding: 18,
                         borderRadius: 12,
-                        border: `1px solid ${active ? 'var(--fg-brand-primary)' : 'var(--fg-border)'}`,
-                        background: active ? 'var(--fg-bg-subtle)' : 'var(--fg-bg-card)',
+                        border: `1px solid ${active ? 'var(--bb-brand-primary)' : 'var(--bb-border)'}`,
+                        background: active ? 'var(--bb-bg-subtle)' : 'var(--bb-bg-card)',
                         cursor: 'pointer',
                         textAlign: 'left',
                         transition: 'background-color 160ms ease, border-color 160ms ease',
                       }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                        <span style={{ fontSize: 16, fontWeight: 600, color: active ? 'var(--fg-brand-primary)' : 'var(--fg-text-1)' }}>{meta.label}</span>
-                        {active && <Check size={18} style={{ color: 'var(--fg-brand-primary)' }} />}
+                        <span style={{ fontSize: 16, fontWeight: 600, color: active ? 'var(--bb-brand-primary)' : 'var(--bb-text-1)' }}>{meta.label}</span>
+                        {active && <Check size={18} style={{ color: 'var(--bb-brand-primary)' }} />}
                       </div>
-                      <div className="mono" style={{ fontSize: 11.5, color: 'var(--fg-text-3)', marginBottom: 8 }}>{preset}</div>
-                      <div style={{ fontSize: 13, color: 'var(--fg-text-2)', lineHeight: 1.55 }}>{meta.desc}</div>
+                      <div className="mono" style={{ fontSize: 11.5, color: 'var(--bb-text-3)', marginBottom: 8 }}>{preset}</div>
+                      <div style={{ fontSize: 13, color: 'var(--bb-text-2)', lineHeight: 1.55 }}>{meta.desc}</div>
                     </button>
                   );
                 })}
               </div>
-              <div style={{ marginTop: 18, padding: 14, borderRadius: 11, background: 'var(--fg-bg-subtle)', border: '1px solid var(--fg-border)', fontSize: 13.5, color: 'var(--fg-text-2)', lineHeight: 1.6 }}>
+              <div style={{ marginTop: 18, padding: 14, borderRadius: 11, background: 'var(--bb-bg-subtle)', border: '1px solid var(--bb-border)', fontSize: 13.5, color: 'var(--bb-text-2)', lineHeight: 1.6 }}>
                 防护档位决定 L2 注入阈值与 L3 语义层的介入频率。严格档位会对任何越权迹象阻断并做跨轮一致性检查；宽松档位仅拦截高危越权。工具存在性硬规则在任何档位下都不允许停用。
               </div>
             </SectionCard>
@@ -303,8 +303,8 @@ export default function OrchestrationPage() {
         </div>
 
         {/* 右侧实时预览 */}
-        <div className="fg-orch-aside" style={{ display: 'flex', flexDirection: 'column', gap: 16, position: 'sticky', top: 24 }}>
-            <div style={{ display: 'flex', alignItems: 'stretch', overflow: 'hidden', borderRadius: 14, border: '1px solid var(--fg-border)', background: 'var(--fg-bg-card)' }}>
+        <div className="bb-orch-aside" style={{ display: 'flex', flexDirection: 'column', gap: 16, position: 'sticky', top: 24 }}>
+            <div style={{ display: 'flex', alignItems: 'stretch', overflow: 'hidden', borderRadius: 14, border: '1px solid var(--bb-border)', background: 'var(--bb-bg-card)' }}>
               <DossierSpine no={configDossierNo} style={{ alignSelf: 'stretch' }} />
               <SectionCard title="配置案卷" padding={16} noBorder bodyStyle={{ minWidth: 0 }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -312,11 +312,11 @@ export default function OrchestrationPage() {
                   <SummaryRow label="名称" value={config.name || '—'} />
                   <SummaryRow label="防护档位" value={<PresetTag preset={config.guard.preset} size="sm" />} />
                   <div>
-                    <div style={{ fontSize: 12, color: 'var(--fg-text-3)', marginBottom: 6 }}>启用工具 ({enabled.length})</div>
+                    <div style={{ fontSize: 12, color: 'var(--bb-text-3)', marginBottom: 6 }}>启用工具 ({enabled.length})</div>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
-                      {enabled.length === 0 && <span style={{ fontSize: 13, color: 'var(--fg-text-3)' }}>未启用任何工具</span>}
+                      {enabled.length === 0 && <span style={{ fontSize: 13, color: 'var(--bb-text-3)' }}>未启用任何工具</span>}
                       {enabled.map((t) => (
-                        <span key={t} className="mono" style={{ fontSize: 11.5, padding: '2px 8px', borderRadius: 4, background: 'var(--fg-bg-subtle)', color: 'var(--fg-text-2)', border: '1px solid var(--fg-border)' }}>{t}</span>
+                        <span key={t} className="mono" style={{ fontSize: 11.5, padding: '2px 8px', borderRadius: 4, background: 'var(--bb-bg-subtle)', color: 'var(--bb-text-2)', border: '1px solid var(--bb-border)' }}>{t}</span>
                       ))}
                     </div>
                   </div>
@@ -333,14 +333,14 @@ export default function OrchestrationPage() {
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 10 }}>
                   {validation.errors.map((e, i) => (
-                    <div key={i} style={{ fontSize: 13, color: 'var(--fg-block-text)', lineHeight: 1.5 }}>
+                    <div key={i} style={{ fontSize: 13, color: 'var(--bb-block-text)', lineHeight: 1.5 }}>
                       <span className="mono" style={{ opacity: 0.7 }}>{e.field}</span> · {e.message}
                     </div>
                   ))}
                 </div>
               )}
               {validation.warnings.map((w, i) => (
-                <div key={i} style={{ fontSize: 12.5, color: 'var(--fg-observe-text)', lineHeight: 1.5, marginTop: 4 }}>{w.message}</div>
+                <div key={i} style={{ fontSize: 12.5, color: 'var(--bb-observe-text)', lineHeight: 1.5, marginTop: 4 }}>{w.message}</div>
               ))}
             </SectionCard>
           )}
@@ -350,27 +350,27 @@ export default function OrchestrationPage() {
       {/* 策略预览 Drawer */}
       <Drawer title="三级策略预览" width="min(560px, 100vw)" open={previewOpen} onClose={() => setPreviewOpen(false)}>
         {previewQuery.isLoading ? (
-          <div style={{ padding: 40, textAlign: 'center', color: 'var(--fg-text-3)' }}>生成策略中…</div>
+          <div style={{ padding: 40, textAlign: 'center', color: 'var(--bb-text-3)' }}>生成策略中…</div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             {(['L1', 'L2', 'L3'] as const).map((level) => (
               <div key={level}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                  <span className="mono" style={{ fontSize: 13, fontWeight: 600, padding: '2px 9px', borderRadius: 4, background: 'var(--fg-bg-subtle)', color: 'var(--fg-text-2)', border: '1px solid var(--fg-border)' }}>{level}</span>
-                  <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--fg-text-1)' }}>
+                  <span className="mono" style={{ fontSize: 13, fontWeight: 600, padding: '2px 9px', borderRadius: 4, background: 'var(--bb-bg-subtle)', color: 'var(--bb-text-2)', border: '1px solid var(--bb-border)' }}>{level}</span>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--bb-text-1)' }}>
                     {level === 'L1' ? '确定性规则层' : level === 'L2' ? '注入分类层' : '语义判定层'}
                   </span>
-                  <span style={{ fontSize: 12, color: 'var(--fg-text-3)' }}>{grouped[level].length} 条</span>
+                  <span style={{ fontSize: 12, color: 'var(--bb-text-3)' }}>{grouped[level].length} 条</span>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {grouped[level].map((p) => (
-                    <div key={p.policy_id} style={{ padding: '10px 12px', borderRadius: 10, border: '1px solid var(--fg-border)', background: 'var(--fg-bg-subtle)' }}>
+                    <div key={p.policy_id} style={{ padding: '10px 12px', borderRadius: 10, border: '1px solid var(--bb-border)', background: 'var(--bb-bg-subtle)' }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 5 }}>
-                        <span className="mono" style={{ fontSize: 12, color: 'var(--fg-text-3)' }}>{p.policy_id} · {p.rule_type}</span>
+                        <span className="mono" style={{ fontSize: 12, color: 'var(--bb-text-3)' }}>{p.policy_id} · {p.rule_type}</span>
                         <StatusBadge action={p.action} size="sm" />
                       </div>
-                      <div style={{ fontSize: 13.5, color: 'var(--fg-text-1)', lineHeight: 1.5 }}>{p.condition}</div>
-                      <div className="mono" style={{ fontSize: 11.5, color: 'var(--fg-text-3)', marginTop: 4 }}>来源 {p.source}</div>
+                      <div style={{ fontSize: 13.5, color: 'var(--bb-text-1)', lineHeight: 1.5 }}>{p.condition}</div>
+                      <div className="mono" style={{ fontSize: 11.5, color: 'var(--bb-text-3)', marginTop: 4 }}>来源 {p.source}</div>
                     </div>
                   ))}
                 </div>
@@ -387,8 +387,8 @@ function Field({ label, required, hint, action, children }: { label: string; req
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 7 }}>
-        <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--fg-text-1)' }}>{label}{required && <span style={{ color: 'var(--fg-block)' }}> *</span>}</span>
-        {hint && <span style={{ fontSize: 12, color: 'var(--fg-text-3)' }}>{hint}</span>}
+        <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--bb-text-1)' }}>{label}{required && <span style={{ color: 'var(--bb-block)' }}> *</span>}</span>
+        {hint && <span style={{ fontSize: 12, color: 'var(--bb-text-3)' }}>{hint}</span>}
         {action && <span style={{ marginLeft: 'auto' }}>{action}</span>}
       </div>
       {children}
@@ -399,8 +399,8 @@ function Field({ label, required, hint, action, children }: { label: string; req
 function SummaryRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-      <span style={{ fontSize: 12.5, color: 'var(--fg-text-3)' }}>{label}</span>
-      <span style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--fg-text-1)', textAlign: 'right' }}>{value}</span>
+      <span style={{ fontSize: 12.5, color: 'var(--bb-text-3)' }}>{label}</span>
+      <span style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--bb-text-1)', textAlign: 'right' }}>{value}</span>
     </div>
   );
 }
@@ -409,10 +409,10 @@ function SliderField({ label, hint, value, min, max, step = 1, onChange }: { lab
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-        <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--fg-text-1)' }}>{label}</span>
+        <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--bb-text-1)' }}>{label}</span>
         <InputNumber size="small" value={value} min={min} max={max} step={step} onChange={(v) => onChange(v ?? min)} style={{ width: 100 }} />
       </div>
-      <div style={{ fontSize: 12, color: 'var(--fg-text-3)', marginBottom: 8 }}>{hint}</div>
+      <div style={{ fontSize: 12, color: 'var(--bb-text-3)', marginBottom: 8 }}>{hint}</div>
       <Slider value={value} min={min} max={max} step={step} onChange={onChange} />
     </div>
   );
@@ -421,7 +421,7 @@ function SliderField({ label, hint, value, min, max, step = 1, onChange }: { lab
 function ToolPermEditor({ name, perm, onChange }: { name: ToolName; perm: Record<string, unknown>; onChange: (perm: Record<string, unknown>) => void }) {
   const listField = (key: string, label: string, placeholder: string) => (
     <div>
-      <div style={{ fontSize: 12.5, color: 'var(--fg-text-2)', marginBottom: 5 }}>{label}</div>
+      <div style={{ fontSize: 12.5, color: 'var(--bb-text-2)', marginBottom: 5 }}>{label}</div>
       <Select
         mode="tags"
         style={{ width: '100%' }}
@@ -447,7 +447,7 @@ function ToolPermEditor({ name, perm, onChange }: { name: ToolName; perm: Record
       return (
         <>
           {listField('allow_paths', '允许写入路径', './tmp')}
-          <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13.5, color: 'var(--fg-text-2)' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13.5, color: 'var(--bb-text-2)' }}>
             <Switch size="small" checked={!!perm.overwrite} onChange={(v) => onChange({ ...perm, overwrite: v })} />
             允许覆写已存在文件
           </label>
@@ -458,7 +458,7 @@ function ToolPermEditor({ name, perm, onChange }: { name: ToolName; perm: Record
         <>
           {listField('allow_domains', '允许收件域名', 'example.com')}
           <div>
-            <div style={{ fontSize: 12.5, color: 'var(--fg-text-2)', marginBottom: 5 }}>最大收件人数</div>
+            <div style={{ fontSize: 12.5, color: 'var(--bb-text-2)', marginBottom: 5 }}>最大收件人数</div>
             <InputNumber min={1} max={50} value={(perm.max_recipients as number) ?? 3} onChange={(v) => onChange({ ...perm, max_recipients: v ?? 3 })} style={{ width: 120 }} />
           </div>
         </>

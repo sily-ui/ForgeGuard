@@ -11,10 +11,11 @@ export function MainLayout() {
   }, [location.pathname]);
 
   return (
-    <div className="fg-shell" style={{ display: 'flex', minHeight: '100vh', background: 'var(--fg-bg-page)' }}>
+    <div className="bb-shell" style={{ display: 'flex', minHeight: '100vh', background: 'var(--bb-bg-page)' }}>
       <Sidebar />
-      <main style={{ flex: 1, minWidth: 0, padding: 24, overflowX: 'hidden' }}>
-        <div className="fg-page" style={{ maxWidth: 1320, margin: '0 auto' }}>
+      {/* 留白交给 nudge.css 的 .bb-shell > main，便于站点间距变量生效。 */}
+      <main style={{ flex: 1, minWidth: 0, overflowX: 'hidden' }}>
+        <div className="bb-page" style={{ maxWidth: 1320, margin: '0 auto' }}>
           <Outlet />
         </div>
       </main>

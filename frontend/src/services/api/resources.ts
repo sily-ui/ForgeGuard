@@ -130,6 +130,5 @@ export const reportApi = {
     api.get<Paginated<Report>>('/reports', { session_id: sessionId, page, page_size: pageSize }),
   get: (id: string) => api.get<Report>(`/reports/${id}`),
   shareLink: (id: string, ttlHours = 72) => api.post<ShareLink>(`/reports/${id}/share-link`, { ttl_hours: ttlHours }),
-  // 相对 API base 的路径：rawClient 已带 /api/v1 baseURL，此处不可再重复前缀。
-  pdfUrl: (id: string) => `/reports/${id}/export.pdf`,
+  // PDF 改由浏览器端排版生成（见 @/services/report/exportPdf），后端不再提供 /export.pdf。
 };

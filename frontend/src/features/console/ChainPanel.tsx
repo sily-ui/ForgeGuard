@@ -39,9 +39,9 @@ export function ChainPanel({ topology, onSelectCall }: Props) {
         <span style={panelTitleStyle}>
           <Network size={15} /> 攻防拓扑
         </span>
-        <span style={{ fontSize: 11.5, color: 'var(--fg-text-3)' }}>红队 → 业务 → 网关 → 沙盒 · 监护旁路镜像</span>
+        <span style={{ fontSize: 11.5, color: 'var(--bb-text-3)' }}>红队 → 业务 → 网关 → 沙盒 · 监护旁路镜像</span>
       </div>
-      <div style={{ padding: '6px 10px 2px', borderBottom: '1px solid var(--fg-border)' }}>
+      <div style={{ padding: '6px 10px 2px', borderBottom: '1px solid var(--bb-border)' }}>
         <TopologyFlow state={topology} height={236} />
       </div>
 
@@ -60,9 +60,9 @@ export function ChainPanel({ topology, onSelectCall }: Props) {
 
       <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '8px 10px' }}>
         {ordered.length === 0 ? (
-          <div style={{ padding: '36px 18px', textAlign: 'center', color: 'var(--fg-text-3)' }}>
+          <div style={{ padding: '36px 18px', textAlign: 'center', color: 'var(--bb-text-3)' }}>
             <ListTree size={26} strokeWidth={1.4} style={{ opacity: 0.5, marginBottom: 10 }} />
-            <div style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--fg-text-2)' }}>尚无工具调用</div>
+            <div style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--bb-text-2)' }}>尚无工具调用</div>
             <div style={{ fontSize: 12.5, lineHeight: 1.7, marginTop: 6 }}>
               发送消息或载入样本后，每次工具调用将在此实时呈现，
               <br />
@@ -85,12 +85,12 @@ export function ChainPanel({ topology, onSelectCall }: Props) {
       </div>
 
       <div style={colFooterStyle}>
-        <span style={{ fontSize: 11.5, color: 'var(--fg-text-3)' }}>
-          会话累计 <b className="mono" style={{ color: 'var(--fg-text-2)' }}>{session?.call_count ?? ordered.length}</b> 次调用
+        <span style={{ fontSize: 11.5, color: 'var(--bb-text-3)' }}>
+          会话累计 <b className="mono" style={{ color: 'var(--bb-text-2)' }}>{session?.call_count ?? ordered.length}</b> 次调用
         </span>
-        <span style={{ fontSize: 11.5, color: 'var(--fg-text-3)' }}>
-          拦截 <b className="mono" style={{ color: 'var(--fg-block-text)' }}>{session?.block_count ?? stats.block}</b> · 告警{' '}
-          <b className="mono" style={{ color: 'var(--fg-observe-text)' }}>{topology.alertCount}</b>
+        <span style={{ fontSize: 11.5, color: 'var(--bb-text-3)' }}>
+          拦截 <b className="mono" style={{ color: 'var(--bb-block-text)' }}>{session?.block_count ?? stats.block}</b> · 告警{' '}
+          <b className="mono" style={{ color: 'var(--bb-observe-text)' }}>{topology.alertCount}</b>
         </span>
       </div>
     </div>
@@ -111,30 +111,30 @@ function CallRow({ call, index, active, onSelect }: { call: LiveCall; index: num
         width: '100%',
         textAlign: 'left',
         padding: '9px 11px',
-        background: active ? 'var(--fg-bg-subtle)' : 'var(--fg-bg-page)',
+        background: active ? 'var(--bb-bg-subtle)' : 'var(--bb-bg-page)',
         borderStyle: 'solid',
         borderWidth: '1px 1px 1px 3px',
-        borderTopColor: active ? 'var(--fg-brand-primary)' : 'var(--fg-border)',
-        borderRightColor: active ? 'var(--fg-brand-primary)' : 'var(--fg-border)',
-        borderBottomColor: active ? 'var(--fg-brand-primary)' : 'var(--fg-border)',
+        borderTopColor: active ? 'var(--bb-brand-primary)' : 'var(--bb-border)',
+        borderRightColor: active ? 'var(--bb-brand-primary)' : 'var(--bb-border)',
+        borderBottomColor: active ? 'var(--bb-brand-primary)' : 'var(--bb-border)',
         borderLeftColor: statusBorderColor(call),
         borderRadius: 10,
         cursor: 'pointer',
         transition: 'background-color 140ms ease, border-color 140ms ease',
       }}
     >
-      <span className="mono" style={{ fontSize: 11, color: 'var(--fg-text-3)', width: 22, flexShrink: 0 }}>
+      <span className="mono" style={{ fontSize: 11, color: 'var(--bb-text-3)', width: 22, flexShrink: 0 }}>
         {String(index + 1).padStart(2, '0')}
       </span>
       <span style={{ flex: 1, minWidth: 0 }}>
         <span style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-          <span className="mono" style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg-text-1)' }}>{call.tool}</span>
-          <span style={{ fontSize: 11.5, color: 'var(--fg-text-3)' }}>{meta?.label}</span>
-          <span className="mono" style={{ fontSize: 10.5, color: 'var(--fg-text-3)', marginLeft: 'auto' }}>T{call.turn}</span>
+          <span className="mono" style={{ fontSize: 13, fontWeight: 600, color: 'var(--bb-text-1)' }}>{call.tool}</span>
+          <span style={{ fontSize: 11.5, color: 'var(--bb-text-3)' }}>{meta?.label}</span>
+          <span className="mono" style={{ fontSize: 10.5, color: 'var(--bb-text-3)', marginLeft: 'auto' }}>T{call.turn}</span>
         </span>
         <span
           className="mono"
-          style={{ display: 'block', fontSize: 11.5, color: 'var(--fg-text-2)', marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+          style={{ display: 'block', fontSize: 11.5, color: 'var(--bb-text-2)', marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
         >
           {truncate(paramsSummaryText(call.params_summary), 64)}
         </span>
@@ -143,7 +143,7 @@ function CallRow({ call, index, active, onSelect }: { call: LiveCall; index: num
         {pending ? (
           <span style={pendingBadgeStyle}>待裁决</span>
         ) : unresolved ? (
-          <span style={{ ...pendingBadgeStyle, color: 'var(--fg-text-3)', background: 'var(--fg-bg-subtle)', borderColor: 'var(--fg-border)' }}>判定中</span>
+          <span style={{ ...pendingBadgeStyle, color: 'var(--bb-text-3)', background: 'var(--bb-bg-subtle)', borderColor: 'var(--bb-border)' }}>判定中</span>
         ) : (
           call.action === 'block' || call.action === 'limit_block' ? (
             <StampBadge kind="block" size="sm" />
@@ -154,31 +154,31 @@ function CallRow({ call, index, active, onSelect }: { call: LiveCall; index: num
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
           {call.judged_by && <JudgeBadge judgedBy={call.judged_by} size="sm" />}
           {call.duration_ms != null && (
-            <span className="mono" style={{ fontSize: 10.5, color: 'var(--fg-text-3)' }}>{formatDuration(call.duration_ms)}</span>
+            <span className="mono" style={{ fontSize: 10.5, color: 'var(--bb-text-3)' }}>{formatDuration(call.duration_ms)}</span>
           )}
         </span>
       </span>
-      <ArrowRight size={13} style={{ color: active ? 'var(--fg-brand-primary)' : 'var(--fg-text-3)', flexShrink: 0 }} />
+      <ArrowRight size={13} style={{ color: active ? 'var(--bb-brand-primary)' : 'var(--bb-text-3)', flexShrink: 0 }} />
     </button>
   );
 }
 
 function statusBorderColor(call: LiveCall): string {
-  if (call.challenge_pending) return 'var(--fg-observe)';
+  if (call.challenge_pending) return 'var(--bb-observe)';
   const a = call.action;
-  if (a === 'allow') return 'var(--fg-allow)';
-  if (a === 'block' || a === 'limit_block') return 'var(--fg-block)';
-  if (a === 'challenge' || a === 'degrade') return 'var(--fg-observe)';
-  return 'var(--fg-border)';
+  if (a === 'allow') return 'var(--bb-allow)';
+  if (a === 'block' || a === 'limit_block') return 'var(--bb-block)';
+  if (a === 'challenge' || a === 'degrade') return 'var(--bb-observe)';
+  return 'var(--bb-border)';
 }
 
 function StatChip({ label, value, kind }: { label: string; value: number; kind: 'allow' | 'block' | 'observe' }) {
-  const color = kind === 'allow' ? 'var(--fg-allow-text)' : kind === 'block' ? 'var(--fg-block-text)' : 'var(--fg-observe-text)';
+  const color = kind === 'allow' ? 'var(--bb-allow-text)' : kind === 'block' ? 'var(--bb-block-text)' : 'var(--bb-observe-text)';
   return (
     <Tooltip title={`${label} ${value} 次`}>
-      <span className="mono" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11.5, fontWeight: 600, color, padding: '2px 7px', borderRadius: 6, background: 'var(--fg-bg-subtle)', border: '1px solid var(--fg-border)' }}>
+      <span className="mono" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11.5, fontWeight: 600, color, padding: '2px 7px', borderRadius: 6, background: 'var(--bb-bg-subtle)', border: '1px solid var(--bb-border)' }}>
         {value}
-        <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--fg-text-3)' }}>{label}</span>
+        <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--bb-text-3)' }}>{label}</span>
       </span>
     </Tooltip>
   );
@@ -189,8 +189,8 @@ const colStyle: React.CSSProperties = {
   flexDirection: 'column',
   height: '100%',
   minHeight: 0,
-  background: 'var(--fg-bg-card)',
-  border: '1px solid var(--fg-border)',
+  background: 'var(--bb-bg-card)',
+  border: '1px solid var(--bb-border)',
   borderRadius: 14,
   overflow: 'hidden',
 };
@@ -200,19 +200,19 @@ const panelHeaderStyle: React.CSSProperties = {
   justifyContent: 'space-between',
   gap: 10,
   padding: '11px 14px',
-  borderBottom: '1px solid var(--fg-border)',
+  borderBottom: '1px solid var(--bb-border)',
   flexShrink: 0,
   flexWrap: 'wrap',
 };
-const panelTitleStyle: React.CSSProperties = { display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 14, fontWeight: 600, color: 'var(--fg-text-1)' };
-const countPillStyle: React.CSSProperties = { fontSize: 11.5, fontWeight: 500, color: 'var(--fg-text-3)', marginLeft: 2 };
-const colFooterStyle: React.CSSProperties = { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 14px', borderTop: '1px solid var(--fg-border)', flexShrink: 0 };
+const panelTitleStyle: React.CSSProperties = { display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 14, fontWeight: 600, color: 'var(--bb-text-1)' };
+const countPillStyle: React.CSSProperties = { fontSize: 11.5, fontWeight: 500, color: 'var(--bb-text-3)', marginLeft: 2 };
+const colFooterStyle: React.CSSProperties = { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 14px', borderTop: '1px solid var(--bb-border)', flexShrink: 0 };
 const pendingBadgeStyle: React.CSSProperties = {
   fontSize: 11,
   fontWeight: 600,
-  color: 'var(--fg-observe-text)',
-  background: 'var(--fg-observe-bg)',
-  border: '1px solid var(--fg-border)',
+  color: 'var(--bb-observe-text)',
+  background: 'var(--bb-observe-bg)',
+  border: '1px solid var(--bb-border)',
   borderRadius: 6,
   padding: '2px 7px',
   whiteSpace: 'nowrap',

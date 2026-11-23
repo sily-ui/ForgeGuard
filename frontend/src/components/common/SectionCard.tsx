@@ -13,7 +13,7 @@ interface Props {
 export function SectionCard({ title, extra, children, padding = 16, style, bodyStyle, noBorder }: Props) {
   return (
     <section
-      className="fg-card"
+      className="bb-card"
       style={{
         border: noBorder ? 'none' : undefined,
         boxShadow: noBorder ? 'none' : undefined,
@@ -32,10 +32,10 @@ export function SectionCard({ title, extra, children, padding = 16, style, bodyS
             gap: 12,
             rowGap: 8,
             padding: '12px 16px',
-            borderBottom: '1px solid var(--fg-border)',
+            borderBottom: '1px solid var(--bb-border)',
           }}
         >
-          <div style={{ fontSize: 14.5, fontWeight: 600, color: 'var(--fg-text-1)', display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+          <div style={{ fontSize: 14.5, fontWeight: 600, color: 'var(--bb-text-1)', display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
             {title}
           </div>
           {extra && <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', minWidth: 0, maxWidth: '100%' }}>{extra}</div>}

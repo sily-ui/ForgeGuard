@@ -872,7 +872,7 @@ LLMChatResult = {"content": str, "usage": {"prompt_tokens": int, "completion_tok
 ### 6.2 目录结构
 
 ```
-forgeguard/
+beforebound/
 ├── frontend/                     # React + TypeScript + Ant Design
 │   ├── src/
 │   │   ├── views/                # 编排页 / 控制台 / 报告页
@@ -921,7 +921,7 @@ forgeguard/
 容器内：
   uvicorn   :8000   FastAPI（业务 + 内部接口）
   redis-server :6379  状态存储（仅监听 127.0.0.1）
-  SQLite    :/data/forgeguard.db  审计证据（挂载卷持久化）
+  SQLite    :/data/beforebound.db  审计证据（挂载卷持久化）
 ```
 
 - 推荐云主机规格：2 核 4GB（功能设计分册约束三）。
@@ -935,12 +935,12 @@ forgeguard/
 | `FORGE_HOST` | `0.0.0.0` | 后端监听地址 |
 | `FORGE_PORT` | `8000` | 后端端口 |
 | `REDIS_URL` | `redis://127.0.0.1:6379/0` | Redis 连接 |
-| `SQLITE_PATH` | `/data/forgeguard.db` | SQLite 文件路径 |
+| `SQLITE_PATH` | `/data/beforebound.db` | SQLite 文件路径 |
 | `MODEL_API_KEY` | 无 | 外部 LLM 密钥（仅后端环境变量，不入日志） |
 | `MODEL_BASE_URL` | 无 | OpenAI 兼容接口地址 |
 | `MODEL_NAME` | 无 | 默认模型名 |
 | `GUARDIAN_MODEL_NAME` | 同 MODEL_NAME | L3 监护智能体模型 |
-| `QUOTA_GUEST_DAILY` | `20` | 游客每工作区日调用上限（F-31） |
+| `QUOTA_GUEST_DAILY` | `50` | 游客每工作区日调用上限（F-31） |
 | `QUOTA_GUEST_IP_DAILY` | `60` | 游客每 IP 日调用上限（防换工作区绕过） |
 | `QUOTA_GLOBAL_DAILY` | `1000` | 全局日调用上限 |
 | `QUOTA_SESSION_MAX` | `60` | 单会话调用上限 |

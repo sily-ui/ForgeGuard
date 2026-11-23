@@ -1,70 +1,70 @@
 /* 越界之前 BeforeBound — 日档：冷调纸面工作台（纸白 + 墨色 + 墨绿品牌 + 墨色状态） */
 :root {
   /* 纸墨基础：冷调纸白底、墨色文字、发丝线分层 */
-  --fg-bg-page: #f4f5f2;
-  --fg-bg-card: #ffffff;
-  --fg-bg-subtle: #ecede8;
-  --fg-text-1: #1c1f24;
-  --fg-text-2: #5a6168;
-  --fg-text-3: #8a918b;
-  --fg-border: #d9dcd7;
+  --bb-bg-page: #f4f5f2;
+  --bb-bg-card: #ffffff;
+  --bb-bg-subtle: #ecede8;
+  --bb-text-1: #1c1f24;
+  --bb-text-2: #5a6168;
+  --bb-text-3: #8a918b;
+  --bb-border: #d9dcd7;
 
   /* 品牌墨绿：主操作、选中与强调 */
-  --fg-brand-primary: #1f6b5e;
-  --fg-brand-secondary: #3e8f7e;
-  --fg-brand-light: #e9f0ed;
-  --fg-brand-deep: #12382f;
+  --bb-brand-primary: #1f6b5e;
+  --bb-brand-secondary: #3e8f7e;
+  --bb-brand-light: #e9f0ed;
+  --bb-brand-deep: #12382f;
 
   /* 状态墨色（跨空间共享语义，饱和度收敛如墨锭落纸） */
-  --fg-allow: #2e7d5b;
-  --fg-observe: #8f6a14;
-  --fg-block: #a33d3f;
-  --fg-info: #3d6488;
-  --fg-disabled: #97a1a8;
-  --fg-allow-text: #256b4d;
-  --fg-observe-text: #7a5a12;
-  --fg-block-text: #8f3338;
-  --fg-info-text: #34557a;
+  --bb-allow: #2e7d5b;
+  --bb-observe: #8f6a14;
+  --bb-block: #a33d3f;
+  --bb-info: #3d6488;
+  --bb-disabled: #97a1a8;
+  --bb-allow-text: #256b4d;
+  --bb-observe-text: #7a5a12;
+  --bb-block-text: #8f3338;
+  --bb-info-text: #34557a;
 
   /* 状态浅底 */
-  --fg-allow-bg: #e9f2ed;
-  --fg-observe-bg: #f7efdc;
-  --fg-block-bg: #f6e9ea;
-  --fg-info-bg: #e9eff5;
+  --bb-allow-bg: #e9f2ed;
+  --bb-observe-bg: #f7efdc;
+  --bb-block-bg: #f6e9ea;
+  --bb-info-bg: #e9eff5;
 
   /* 功能底色过渡（仅两处，不做装饰渐变） */
-  --fg-gradient-brand: #1f6b5e;
-  --fg-gradient-subtle: linear-gradient(180deg, #f4f5f2 0%, #ecede8 100%);
+  --bb-gradient-brand: #1f6b5e;
+  --bb-gradient-subtle: linear-gradient(180deg, #f4f5f2 0%, #ecede8 100%);
 
   /* 骑缝斜纹（卷宗装订条） */
-  --fg-spine-1: #e3e6e0;
-  --fg-spine-2: #f4f5f2;
+  --bb-spine-1: #e3e6e0;
+  --bb-spine-2: #f4f5f2;
 
   /* 圆角与阴影：深度靠发丝线，阴影只留给浮层 */
-  --fg-radius-sm: 6px;
-  --fg-radius-md: 8px;
-  --fg-radius-lg: 10px;
-  --fg-shadow-1: none;
-  --fg-shadow-2: 0 2px 6px rgba(28, 31, 36, 0.05);
-  --fg-shadow-3: 0 8px 20px rgba(28, 31, 36, 0.08);
+  --bb-radius-sm: 6px;
+  --bb-radius-md: 8px;
+  --bb-radius-lg: 10px;
+  --bb-shadow-1: none;
+  --bb-shadow-2: 0 2px 6px rgba(28, 31, 36, 0.05);
+  --bb-shadow-3: 0 8px 20px rgba(28, 31, 36, 0.08);
 
   /* 图表色板（墨色系，无紫） */
-  --fg-chart-1: #1f6b5e;
-  --fg-chart-2: #3d6488;
-  --fg-chart-3: #8f6a14;
-  --fg-chart-4: #a33d3f;
-  --fg-chart-5: #64748b;
-  --fg-chart-6: #6a8f5f;
-  --fg-chart-7: #4fb0a5;
-  --fg-chart-8: #97a1a8;
+  --bb-chart-1: #1f6b5e;
+  --bb-chart-2: #3d6488;
+  --bb-chart-3: #8f6a14;
+  --bb-chart-4: #a33d3f;
+  --bb-chart-5: #64748b;
+  --bb-chart-6: #6a8f5f;
+  --bb-chart-7: #4fb0a5;
+  --bb-chart-8: #97a1a8;
 
-  --fg-scrollbar-track: #ecede8;
-  --fg-scrollbar-thumb: #c5c9c2;
-  --fg-scrollbar-thumb-hover: #a9afa6;
+  --bb-scrollbar-track: #ecede8;
+  --bb-scrollbar-thumb: #c5c9c2;
+  --bb-scrollbar-thumb-hover: #a9afa6;
 
-  --fg-sidebar-bg: #f7f7f4;
-  --fg-topbar-bg: rgba(255, 255, 255, 0.92);
+  --bb-sidebar-bg: #f7f7f4;
+  --bb-topbar-bg: rgba(255, 255, 255, 0.92);
 
   /* Display 级排版用字（中文回退思源黑体/系统黑体） */
-  --fg-font-display: 'IBM Plex Sans', 'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --bb-font-display: 'IBM Plex Sans', 'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif;
 }

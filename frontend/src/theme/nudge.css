@@ -1,0 +1,69 @@
+/* Nudge 接入层：业务样式只消费站点根变量，未调参时全部回落日档原值。
+   必须排在 light.css/lab.css 之后导入，才能覆盖 :root 上的默认值；
+   实验舱夜档在后代作用域里自带配色，不受这里影响。 */
+:root {
+  --bb-bg-page: var(--site-bg, #f4f5f2);
+  --bb-bg-card: var(--site-surface, #ffffff);
+  --bb-text-1: var(--site-fg, #1c1f24);
+  --bb-text-2: var(--site-muted, #5a6168);
+  --bb-border: var(--site-border, #d9dcd7);
+
+  --bb-brand-primary: var(--site-accent, #1f6b5e);
+  --bb-gradient-brand: var(--site-accent, #1f6b5e);
+
+  --bb-font-display: var(--site-font, 'IBM Plex Sans', 'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif);
+
+  --bb-radius-sm: max(0px, calc(var(--site-radius, 8px) - 2px));
+  --bb-radius-md: var(--site-radius, 8px);
+  --bb-radius-lg: calc(var(--site-radius, 8px) + 2px);
+}
+
+body {
+  font-family: var(
+    --site-font,
+    'IBM Plex Sans',
+    'Inter',
+    'PingFang SC',
+    'Microsoft YaHei',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif
+  );
+}
+
+/* 间距：布局留白以 24px 为基准乘 --site-space（JSX 内联样式同样吃这一组 calc）。 */
+.bb-shell > main {
+  padding: calc(24px * var(--site-space, 1));
+}
+
+/* 字号：门户主标题以 34px 为基准乘 --site-type。 */
+.bb-portal-hero h1 {
+  font-size: calc(34px * var(--site-type, 1));
+}
+
+/* 动效：过渡与入场动画时长统一乘 --site-motion；系统「减少动效」仍由 global.css 收尾。 */
+body {
+  transition: background-color calc(220ms * var(--site-motion, 1)) ease, color calc(220ms * var(--site-motion, 1)) ease;
+}
+
+.bb-page,
+.bb-fade-in,
+.bb-slide-in {
+  animation-duration: calc(180ms * var(--site-motion, 1));
+}
+
+.bb-tour-fab {
+  transition: background-color calc(180ms * var(--site-motion, 1)) ease,
+    box-shadow calc(180ms * var(--site-motion, 1)) ease;
+  animation-duration: calc(320ms * var(--site-motion, 1));
+}
+
+.bb-tour-menu-item {
+  transition: background-color calc(150ms * var(--site-motion, 1)) ease,
+    border-color calc(150ms * var(--site-motion, 1)) ease;
+}
+
+.bb-flow-edge {
+  transition: stroke calc(200ms * var(--site-motion, 1)) ease;
+}
