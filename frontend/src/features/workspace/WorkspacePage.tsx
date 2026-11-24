@@ -157,6 +157,7 @@ export default function WorkspacePage() {
 
       {/* 演示进度与实际创建、载入阶段同步 */}
       <Card
+        className="bb-demo-card"
         data-tour="demo-banner"
         size="small"
         variant="borderless"
@@ -196,10 +197,11 @@ export default function WorkspacePage() {
 
       {/* 能力入口：文书索引条目，不用等大卡片行 */}
       <div data-tour="capabilities" style={{ marginBottom: 16 }}>
-        <Card size="small" variant="borderless">
+        <Card className="bb-capability-index" size="small" variant="borderless">
           {CAPABILITIES.map((c, i) => (
             <button
               key={c.title}
+              className="bb-capability-row"
               onClick={() => navigate(c.to)}
               style={{
                 display: 'flex',
@@ -217,7 +219,8 @@ export default function WorkspacePage() {
               onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bb-bg-subtle)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
             >
-              <c.icon size={16} strokeWidth={1.5} style={{ color: 'var(--bb-text-3)', flexShrink: 0 }} />
+              <span className="bb-capability-no">{String(i + 1).padStart(2, '0')}</span>
+              <c.icon size={16} strokeWidth={1.5} style={{ color: 'var(--bb-brand-primary)', flexShrink: 0 }} />
               <span style={{ fontSize: 14.5, fontWeight: 600, color: 'var(--bb-text-1)', flexShrink: 0 }}>{c.title}</span>
               <span style={{ fontSize: 13, color: 'var(--bb-text-2)', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.desc}</span>
               <ArrowRight size={14} style={{ color: 'var(--bb-text-3)', flexShrink: 0 }} />

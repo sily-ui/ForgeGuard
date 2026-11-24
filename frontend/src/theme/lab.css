@@ -1,3 +1,59 @@
+body[data-theme='lab'],
 [data-theme='lab'] {
   color-scheme: dark;
+  --bb-bg-page: #14171b;
+  --bb-bg-card: #1c2026;
+  --bb-bg-subtle: #232930;
+  --bb-bg-index: #20252b;
+  --bb-bg-brand: #243b36;
+  --bb-text-1: #e8e6e0;
+  --bb-text-2: #9aa1a8;
+  --bb-text-3: #737c85;
+  --bb-border: #333941;
+  --bb-border-strong: #3c444d;
+  --bb-brand-primary: #6bc7b3;
+  --bb-brand-secondary: #8cd8c7;
+  --bb-brand-light: #243b36;
+  --bb-brand-deep: #b8e6da;
+  --bb-allow: #79bf9a;
+  --bb-observe: #d2ad62;
+  --bb-block: #d88486;
+  --bb-info: #88a9c7;
+  --bb-disabled: #626b74;
+  --bb-allow-text: #a9dcbf;
+  --bb-observe-text: #e2c589;
+  --bb-block-text: #edb2b4;
+  --bb-info-text: #b2c9df;
+  --bb-disabled-text: #8a939c;
+  --bb-allow-bg: #22372e;
+  --bb-observe-bg: #382f20;
+  --bb-block-bg: #39272a;
+  --bb-info-bg: #24303c;
+  --bb-gradient-brand: #6bc7b3;
+  --bb-gradient-subtle: #232930;
+  --bb-spine-1: #34433e;
+  --bb-spine-2: #242d2a;
+  --bb-shadow-1: none;
+  --bb-shadow-2: 0 2px 8px rgba(0, 0, 0, 0.28);
+  --bb-shadow-3: 0 8px 20px rgba(0, 0, 0, 0.35);
+  --bb-chart-1: #6bc7b3;
+  --bb-chart-2: #88a9c7;
+  --bb-chart-3: #d2ad62;
+  --bb-chart-4: #d88486;
+  --bb-chart-5: #9aa1a8;
+  --bb-chart-6: #79bf9a;
+  --bb-chart-7: #8cd8c7;
+  --bb-chart-8: #737c85;
+  --bb-scrollbar-track: #14171b;
+  --bb-scrollbar-thumb: #3c444d;
+  --bb-scrollbar-thumb-hover: #515b65;
+  --bb-sidebar-bg: #191d22;
+  --bb-topbar-bg: #191d22;
+  --bb-paper-line: rgba(232, 230, 224, 0.04);
+  --bb-font-display: 'IBM Plex Sans', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+}
+
+body[data-theme='lab'] {
+  background: var(--bb-bg-page);
+  color: var(--bb-text-1);
 }

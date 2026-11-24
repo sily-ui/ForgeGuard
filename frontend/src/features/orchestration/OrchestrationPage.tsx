@@ -283,7 +283,7 @@ export default function OrchestrationPage() {
               <Button disabled={step === 0} onClick={() => setStep((s) => s - 1)}>上一步</Button>
               <Button disabled={step === STEPS.length - 1} onClick={() => setStep((s) => s + 1)}>下一步</Button>
             </div>
-            <div style={{ display: 'flex', gap: 8 }}>
+            <div className="bb-orch-actions" style={{ display: 'flex', gap: 8 }}>
               <Button icon={<Check size={15} />} loading={validateMutation.isPending} onClick={() => validateMutation.mutate()}>校验配置</Button>
               <Button icon={<Save size={15} />} loading={saveMutation.isPending} onClick={() => saveMutation.mutate()}>保存配置</Button>
               <Button type="primary" icon={<Rocket size={15} />} loading={createInstanceMutation.isPending} onClick={() => createInstanceMutation.mutate()}>创建实例</Button>

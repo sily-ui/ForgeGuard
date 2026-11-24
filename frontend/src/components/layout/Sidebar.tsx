@@ -19,12 +19,13 @@ const rowStyle = (active: boolean): React.CSSProperties => ({
   display: 'flex',
   alignItems: 'center',
   gap: 8,
-  height: 36,
-  padding: '0 8px',
-  borderRadius: 8,
+  height: 40,
+  padding: '0 10px',
+  borderRadius: 4,
   textDecoration: 'none',
   color: active ? 'var(--bb-brand-primary)' : 'var(--bb-text-2)',
-  background: active ? 'var(--bb-bg-subtle)' : 'transparent',
+  background: active ? 'var(--bb-bg-card)' : 'transparent',
+  fontWeight: active ? 600 : 500,
   transition: 'background-color 150ms ease, color 150ms ease',
 });
 

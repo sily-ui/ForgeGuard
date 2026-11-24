@@ -15,6 +15,7 @@ export function SectionCard({ title, extra, children, padding = 16, style, bodyS
   const spacing = typeof padding === 'number' ? Math.min(32, Math.max(0, Math.round(padding / 8) * 8)) : 16;
   return (
     <Card
+      className="bb-section-card"
       size="small"
       variant="borderless"
       title={title}

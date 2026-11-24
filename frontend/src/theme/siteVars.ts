@@ -1,7 +1,7 @@
 import { theme } from 'antd';
 
 const FONT_STACK =
-  "'IBM Plex Sans', 'Inter', 'PingFang SC', 'Microsoft YaHei', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+  "'IBM Plex Sans', 'PingFang SC', 'Microsoft YaHei', sans-serif";
 
 function rootVar(name: string, fallback: string): string {
   if (typeof document === 'undefined') return fallback;

@@ -1,6 +1,5 @@
 import { useNavigate } from 'react-router-dom';
 import { App, Button, Descriptions, Typography, theme } from 'antd';
-import { InfoCircleOutlined } from '@ant-design/icons';
 import { ArrowRight, Gauge, UserRound, Boxes } from 'lucide-react';
 import { Logo } from '@/components/common/Logo';
 import { AttackIcon, GuardIcon, ForensicsIcon } from '@/components/icons/SecurityIcons';
@@ -48,7 +47,7 @@ export default function PortalPage() {
           justifyContent: 'space-between',
           gap: 32,
           padding: 32,
-          background: 'var(--bb-bg-card)',
+          backgroundColor: 'var(--bb-bg-card)',
           borderRight: '1px solid var(--bb-border)',
         }}
       >
@@ -72,7 +71,8 @@ export default function PortalPage() {
           </div>
         </div>
 
-        <div style={{ maxWidth: 520 }}>
+        <div className="bb-portal-intro" style={{ maxWidth: 540 }}>
+          <div className="bb-portal-filelabel">CASE FILE / AGENT SECURITY</div>
           <h1
             style={{
               // 字号交给 nudge.css 的 .bb-portal-hero h1，便于站点字号变量生效。
@@ -88,19 +88,20 @@ export default function PortalPage() {
             <br />
             自适应红队与旁路监护
           </h1>
-          <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 32, maxWidth: 460 }}>
-            <InfoCircleOutlined /> 在内存仿真沙盒中编排靶标 Agent，载入真实攻击样本，观测三级判定网关如何实时拦截越界调用，并生成可追溯的根因加固报告。
+          <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 28, maxWidth: 490, fontSize: 14.5 }}>
+            在内存仿真沙盒中编排靶标 Agent，载入真实攻击样本，观测三级判定网关如何实时拦截越界调用，并生成可追溯的根因加固报告。
           </Typography.Text>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            {FEATURES.map((f) => (
-              <div key={f.title} style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
-                <span style={{ display: 'inline-flex', color: 'var(--bb-text-3)', marginTop: 0, flexShrink: 0 }}>
-                  <f.icon size={16} strokeWidth={1.5} />
+          <div className="bb-feature-index" style={{ display: 'flex', flexDirection: 'column' }}>
+            {FEATURES.map((f, index) => (
+              <div key={f.title} className="bb-feature-row">
+                <span className="bb-feature-no">{String(index + 1).padStart(2, '0')}</span>
+                <span style={{ display: 'inline-flex', color: 'var(--bb-brand-primary)', marginTop: 1, flexShrink: 0 }}>
+                  <f.icon size={17} strokeWidth={1.5} />
                 </span>
                 <div>
-                  <div style={{ fontSize: 14.5, fontWeight: 600, color: 'var(--bb-text-1)' }}>{f.title}</div>
-                  <Typography.Text type="secondary" style={{ display: 'block', marginTop: 8 }}><InfoCircleOutlined /> {f.desc}</Typography.Text>
+                  <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--bb-text-1)' }}>{f.title}</div>
+                  <Typography.Text type="secondary" style={{ display: 'block', marginTop: 4, fontSize: 13.5 }}>{f.desc}</Typography.Text>
                 </div>
               </div>
             ))}
@@ -112,13 +113,18 @@ export default function PortalPage() {
 
       {/* 右侧门户区：单一进入动作 */}
       <div className="bb-portal-panel" style={{ flex: '0 0 45%', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 32 }}>
-        <div style={{ width: '100%', maxWidth: 380 }}>
-          <h2 style={{ fontSize: 22, fontWeight: 600, margin: '0 0 8px', color: 'var(--bb-text-1)' }}>进入实验室</h2>
-          <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
-            <InfoCircleOutlined /> 全内存仿真 · 不触及真实系统
+        <div style={{ width: '100%', maxWidth: 400 }}>
+          <div className="bb-portal-filelabel">ACCESS / 访客准入</div>
+          <div className="bb-simulation-stamp" aria-label="仅用于内存仿真">
+            SIMULATION ONLY
+            <small>内存仿真 · 无真实执行</small>
+          </div>
+          <h2 style={{ fontSize: 26, fontWeight: 600, margin: '28px 0 10px', color: 'var(--bb-text-1)', letterSpacing: 0.2 }}>进入实验室</h2>
+          <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 12, fontSize: 14 }}>
+            无需注册，即刻建立独立案卷。
           </Typography.Text>
-          <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 24 }}>
-            <InfoCircleOutlined /> 以游客身份直接开始，无需注册。平台为每个浏览器分配独立工作区，并对模型调用按日限量。
+          <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 24, fontSize: 13.5, lineHeight: 1.8 }}>
+            平台为每个浏览器分配独立工作区，并对模型调用按日限量。所有工具执行均在仿真沙盒内完成。
           </Typography.Text>
 
           <Button
@@ -132,15 +138,16 @@ export default function PortalPage() {
             {error ? '重试进入' : '进入实验室'} <ArrowRight size={16} strokeWidth={1.5} />
           </Button>
 
-          <div style={{ marginTop: 32, display: 'flex', flexDirection: 'column', gap: 16 }}>
-            {ENTRY_NOTES.map((n) => (
-              <div key={n.title} style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
-                <span style={{ display: 'inline-flex', color: 'var(--bb-text-3)', marginTop: 0, flexShrink: 0 }}>
+          <div className="bb-entry-notes" style={{ marginTop: 32, display: 'flex', flexDirection: 'column' }}>
+            {ENTRY_NOTES.map((n, index) => (
+              <div key={n.title} className="bb-entry-row">
+                <span className="bb-entry-no">{String(index + 1).padStart(2, '0')}</span>
+                <span style={{ display: 'inline-flex', color: 'var(--bb-text-2)', marginTop: 1, flexShrink: 0 }}>
                   <n.icon size={16} strokeWidth={1.5} />
                 </span>
                 <div>
-                  <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--bb-text-1)' }}>{n.title}</div>
-                  <Typography.Text type="secondary" style={{ display: 'block', marginTop: 8 }}><InfoCircleOutlined /> {n.desc}</Typography.Text>
+                  <div style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--bb-text-1)' }}>{n.title}</div>
+                  <Typography.Text type="secondary" style={{ display: 'block', marginTop: 2, fontSize: 12.5 }}>{n.desc}</Typography.Text>
                 </div>
               </div>
             ))}

@@ -1,12 +1,11 @@
 :root {
-  --bb-font-display: var(--site-font, 'IBM Plex Sans', 'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif);
+  --bb-font-display: var(--site-font, 'IBM Plex Sans', 'PingFang SC', 'Microsoft YaHei', sans-serif);
 }
 
 body {
   font-family: var(
     --site-font,
     'IBM Plex Sans',
-    'Inter',
     'PingFang SC',
     'Microsoft YaHei',
     -apple-system,
