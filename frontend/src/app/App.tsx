@@ -1,12 +1,13 @@
 import { lazy, Suspense, type ReactNode } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
-import { Spin } from 'antd';
+import { ConfigProvider, Spin } from 'antd';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { LabLayout } from '@/components/layout/LabLayout';
 import { useAuthStore } from '@/stores/authStore';
 import { Logo } from '@/components/common/Logo';
 import { AppTour } from '@/components/tour/AppTour';
 import { TourLauncher } from '@/components/tour/TourLauncher';
+import { darkTheme, lightTheme } from '@/theme/antdTheme';
 
 const PortalPage = lazy(() => import('@/features/portal/PortalPage'));
 const WorkspacePage = lazy(() => import('@/features/workspace/WorkspacePage'));
@@ -24,6 +25,19 @@ function PageLoader() {
       <Logo size={44} />
       <Spin />
     </div>
+  );
+}
+
+// 引导浮层经 Portal 渲染到 body，宿于 App 根部：需按当前路由自选主题，
+// 否则暗色实验舱上的引导卡片会退回全局浅色面板。
+function TourHost() {
+  const location = useLocation();
+  const isLab = /^\/(console|experiments)(\/|$)/.test(location.pathname);
+  return (
+    <ConfigProvider theme={isLab ? darkTheme : lightTheme}>
+      <AppTour />
+      <TourLauncher />
+    </ConfigProvider>
   );
 }
 
@@ -70,8 +84,7 @@ export function App() {
         <Route path="*" element={<Navigate to="/workspace" replace />} />
       </Routes>
       </Suspense>
-      <AppTour />
-      <TourLauncher />
+      <TourHost />
     </>
   );
 }
